@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吃点啥 - 家庭烹饪助手</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f5; }
+        .phone-frame { width: 390px; height: 844px; margin: 40px auto; background: #fff; border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; position: relative; }
+        .status-bar { height: 44px; background: #6750A4; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; color: #fff; font-size: 14px; }
+        .screen { height: 800px; overflow: hidden; position: relative; }
+        .page { position: absolute; width: 100%; height: 100%; transition: transform 0.3s ease; background: #fff; }
+        .page.hidden { transform: translateX(100%); }
+
+        /* 底部导航 */
+        .bottom-nav { position: absolute; bottom: 0; width: 100%; height: 80px; background: #fff; border-top: 1px solid #E8E8E8; display: flex; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        .nav-item.active { color: #6750A4; }
+        .nav-item:active { opacity: 0.6; }
+        .nav-icon { font-size: 24px; margin-bottom: 4px; }
+        .nav-label { font-size: 12px; }
+
+        /* 主页 - Roll点 */
+        .home { background: linear-gradient(135deg, #6750A4 0%, #7D5FA8 100%); }
+        .home-header { padding: 60px 24px 40px; text-align: center; color: #fff; }
+        .home-header h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .home-header p { font-size: 14px; opacity: 0.9; }
+        .roll-button { width: 160px; height: 160px; margin: 60px auto 40px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 32px rgba(0,0,0,0.2); transition: transform 0.2s; }
+        .roll-button:active { transform: scale(0.95); }
+        .roll-button-inner { text-align: center; }
+        .roll-button-icon { font-size: 48px; margin-bottom: 8px; }
+        .roll-button-text { font-size: 18px; font-weight: 600; color: #6750A4; }
+
+        /* 渐进式配置 */
+        .progressive-config { padding: 0 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .config-btn { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; border: 2px solid rgba(255,255,255,0.3); padding: 12px 24px; border-radius: 24px; cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 500; }
+        .config-btn:active { background: rgba(255,255,255,0.3); }
+        .config-btn.small { padding: 8px 16px; font-size: 14px; }
+        .config-row { display: flex; gap: 8px; align-items: center; }
+
+        /* 选择器弹窗 */
+        .selector-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .selector-overlay.show { display: flex; }
+        .selector-panel { background: #fff; border-radius: 24px; padding: 24px; width: 300px; max-height: 400px; overflow-y: auto; }
+        .selector-title { font-size: 20px; font-weight: 600; color: #1C1B1F; margin-bottom: 16px; text-align: center; }
+        .selector-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .selector-option { background: #F5F5F5; color: #1C1B1F; padding: 16px; border-radius: 12px; text-align: center; cursor: pointer; font-size: 16px; font-weight: 500; transition: all 0.2s; }
+        .selector-option:active { background: #E8DEF8; color: #6750A4; }
+        .selector-option.disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* 结果页 */
+        .result-page { padding: 60px 24px 100px; overflow-y: auto; }
+        .result-header { text-align: center; margin-bottom: 24px; }
+        .result-header h2 { font-size: 24px; color: #1C1B1F; margin-bottom: 8px; }
+        .result-summary { font-size: 14px; color: #79747E; }
+        .dish-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 16px; margin-bottom: 12px; }
+        .dish-header { display: flex; align-items: center; gap: 12px; }
+        .dish-icon { font-size: 32px; }
+        .dish-info { flex: 1; }
+        .dish-name { font-size: 18px; font-weight: 600; color: #1C1B1F; }
+        .dish-tags { display: flex; gap: 6px; margin-top: 4px; }
+        .tag { background: #E8DEF8; color: #6750A4; padding: 4px 8px; border-radius: 6px; font-size: 12px; }
+        .action-buttons { display: flex; gap: 12px; padding: 0 24px 100px; }
+        .btn { flex: 1; padding: 16px; border-radius: 12px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #6750A4; color: #fff; }
+        .btn-secondary { background: #E8DEF8; color: #6750A4; }
+
+        /* 菜谱页 */
+        .recipes-page { padding: 60px 0 100px; }
+        .recipes-header { padding: 0 24px 16px; display: flex; justify-content: space-between; align-items: center; }
+        .recipes-title { font-size: 24px; font-weight: 700; color: #1C1B1F; }
+        .add-btn { background: #6750A4; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; }
+        .filter-tabs { display: flex; gap: 8px; padding: 0 24px 16px; overflow-x: auto; }
+        .filter-tab { background: #F5F5F5; color: #79747E; padding: 8px 16px; border-radius: 20px; white-space: nowrap; cursor: pointer; }
+        .filter-tab.active { background: #6750A4; color: #fff; }
+        .recipes-list { padding: 0 24px; }
+        .recipe-item { background: #F5F5F5; border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .recipe-item:active { background: #E8E8E8; }
+
+        /* 菜谱详情页 */
+        .recipe-detail { padding: 60px 24px 100px; overflow-y: auto; }
+        .back-btn { font-size: 24px; cursor: pointer; margin-bottom: 16px; color: #6750A4; }
+        .recipe-detail-header { margin-bottom: 24px; }
+        .recipe-detail-name { font-size: 28px; font-weight: 700; color: #1C1B1F; margin-bottom: 12px; }
+        .section-title { font-size: 18px; font-weight: 600; color: #1C1B1F; margin: 24px 0 12px; }
+        .ingredient-item { padding: 12px; background: #F5F5F5; border-radius: 8px; margin-bottom: 8px; }
+        .step-item { padding: 12px; background: #F5F5F5; border-radius: 8px; margin-bottom: 8px; }
+        .step-number { display: inline-block; background: #6750A4; color: #fff; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; margin-right: 8px; }
+
+        /* 添加菜谱页 */
+        .add-recipe { padding: 60px 24px 100px; overflow-y: auto; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { font-size: 14px; color: #49454F; margin-bottom: 8px; display: block; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid #E8E8E8; border-radius: 8px; font-size: 16px; }
+        .form-textarea { width: 100%; padding: 12px; border: 1px solid #E8E8E8; border-radius: 8px; font-size: 16px; min-height: 100px; resize: vertical; }
+        .save-btn { width: 100%; padding: 16px; background: #6750A4; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .config-options { display: flex; gap: 8px; flex-wrap: wrap; }
+        .option-btn { background: #F5F5F5; color: #6750A4; border: 2px solid transparent; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+        .option-btn.active { background: #E8DEF8; border-color: #6750A4; }
+        .dynamic-list { display: flex; flex-direction: column; gap: 12px; }
+        .dynamic-item { display: flex; gap: 8px; align-items: stretch; }
+        .dynamic-item input, .dynamic-item select { padding: 12px; border: 1px solid #E8E8E8; border-radius: 8px; font-size: 14px; }
+        .dynamic-item .ingredient-name { flex: 2; }
+        .dynamic-item .ingredient-amount { flex: 0 0 70px; text-align: center; }
+        .dynamic-item .ingredient-unit { flex: 0 0 70px; }
+        .dynamic-item .step-desc { flex: 1; }
+        .remove-btn { background: #F5F5F5; color: #79747E; border: none; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; font-size: 20px; flex-shrink: 0; }
+        .remove-btn:active { background: #E8E8E8; }
+        .add-item-btn { background: #E8DEF8; color: #6750A4; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; margin-top: 4px; width: 100%; }
+        .add-item-btn:active { background: #D5C4F0; }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 📡 🔋</span>
+        </div>
+        <div class="screen">
+            <!-- 主页 - Roll点 -->
+            <div class="page home" id="home">
+                <div class="home-header">
+                    <h1>🍜 吃点啥</h1>
+                    <p>今天做什么菜？让我帮你决定</p>
+                </div>
+                <div class="roll-button" onclick="rollMeal()">
+                    <div class="roll-button-inner">
+                        <div class="roll-button-icon">🎲</div>
+                        <div class="roll-button-text">Roll点！</div>
+                    </div>
+                </div>
+                <div class="progressive-config" id="progressiveConfig">
+                    <div class="config-btn" onclick="showDishCountSelector()">几个菜</div>
+                </div>
+            </div>
+
+            <!-- 选择器弹窗 -->
+            <div class="selector-overlay" id="selectorOverlay" onclick="hideSelector(event)">
+                <div class="selector-panel" onclick="event.stopPropagation()">
+                    <div class="selector-title" id="selectorTitle">选择菜数</div>
+                    <div class="selector-options" id="selectorOptions"></div>
+                </div>
+            </div>
+
+            <!-- 结果页 -->
+            <div class="page result-page hidden" id="result">
+                <div class="result-header">
+                    <h2>今天就做这些！</h2>
+                    <div class="result-summary" id="resultSummary"></div>
+                </div>
+                <div id="resultList"></div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="rollMeal()">重新Roll</button>
+                    <button class="btn btn-primary" onclick="confirmMeal()">就这些了</button>
+                </div>
+            </div>
+
+            <!-- 历史页 -->
+            <div class="page recipes-page hidden" id="history">
+                <div class="recipes-header">
+                    <div class="recipes-title">历史记录</div>
+                </div>
+                <div class="recipes-list" id="historyList">
+                    <div style="text-align: center; padding: 60px 24px; color: #79747E;">
+                        暂无历史记录
+                    </div>
+                </div>
+            </div>
+
+            <!-- 菜谱页 -->
+            <div class="page recipes-page hidden" id="recipes">
+                <div class="recipes-header">
+                    <div class="recipes-title">我的菜谱</div>
+                    <div class="add-btn" onclick="showAddRecipe()">+</div>
+                </div>
+                <div class="filter-tabs">
+                    <div class="filter-tab active">全部</div>
+                    <div class="filter-tab">荤菜</div>
+                    <div class="filter-tab">素菜</div>
+                    <div class="filter-tab">汤</div>
+                    <div class="filter-tab">主食</div>
+                </div>
+                <div class="recipes-list" id="recipesList"></div>
+            </div>
+
+            <!-- 菜谱详情页 -->
+            <div class="page recipe-detail hidden" id="recipeDetail">
+                <div class="back-btn" onclick="showRecipes()">← 返回</div>
+                <div class="recipe-detail-header">
+                    <div class="recipe-detail-name" id="detailName">宫保鸡丁</div>
+                    <div class="dish-tags">
+                        <span class="tag" id="detailType">荤菜</span>
+                        <span class="tag" id="detailDifficulty">中等</span>
+                        <span class="tag" id="detailTime">30分钟</span>
+                    </div>
+                </div>
+                <div class="section-title">食材</div>
+                <div id="detailIngredients"></div>
+                <div class="section-title">步骤</div>
+                <div id="detailSteps"></div>
+            </div>
+
+            <!-- 添加菜谱页 -->
+            <div class="page add-recipe hidden" id="addRecipe">
+                <div class="back-btn" onclick="showRecipes()">← 返回</div>
+                <h2 style="font-size: 24px; margin-bottom: 24px;">添加菜谱</h2>
+                <div class="form-group">
+                    <label class="form-label">菜名</label>
+                    <input type="text" class="form-input" id="recipeName" placeholder="例如：宫保鸡丁">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">类型</label>
+                    <div class="config-options" id="recipeType">
+                        <div class="option-btn active" data-value="meat">荤菜</div>
+                        <div class="option-btn" data-value="veg">素菜</div>
+                        <div class="option-btn" data-value="soup">汤</div>
+                        <div class="option-btn" data-value="staple">主食</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">难度</label>
+                    <div class="config-options" id="recipeDifficulty">
+                        <div class="option-btn active" data-value="简单">简单</div>
+                        <div class="option-btn" data-value="中等">中等</div>
+                        <div class="option-btn" data-value="困难">困难</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">预计时间（分钟）</label>
+                    <input type="number" class="form-input" id="recipeTime" placeholder="30" value="30">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">食材</label>
+                    <div class="dynamic-list" id="ingredientsList">
+                        <div class="dynamic-item">
+                            <input type="text" placeholder="例如：鸡胸肉" class="ingredient-name">
+                            <input type="text" placeholder="200" class="ingredient-amount">
+                            <select class="ingredient-unit">
+                                <option>g</option>
+                                <option>ml</option>
+                                <option>个</option>
+                                <option>勺</option>
+                                <option>适量</option>
+                            </select>
+                            <button class="remove-btn" onclick="removeItem(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-item-btn" onclick="addIngredient()">+ 添加食材</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">步骤</label>
+                    <div class="dynamic-list" id="stepsList">
+                        <div class="dynamic-item">
+                            <input type="text" placeholder="步骤描述" class="step-desc">
+                            <button class="remove-btn" onclick="removeItem(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-item-btn" onclick="addStep()">+ 添加步骤</button>
+                </div>
+                <button class="save-btn" onclick="saveRecipe()">保存菜谱</button>
+            </div>
+
+            <!-- 底部导航 -->
+            <div class="bottom-nav">
+                <div class="nav-item active" onclick="showHome()">
+                    <div class="nav-icon">🎲</div>
+                    <div class="nav-label">Roll点</div>
+                </div>
+                <div class="nav-item" onclick="showRecipes()">
+                    <div class="nav-icon">📖</div>
+                    <div class="nav-label">菜谱</div>
+                </div>
+                <div class="nav-item" onclick="showHistory()">
+                    <div class="nav-icon">📜</div>
+                    <div class="nav-label">历史</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const recipes = [
+            { name: '宫保鸡丁', type: 'meat', icon: '🍗', difficulty: '中等', time: '30分钟', ingredients: ['鸡胸肉 200g', '花生米 50g', '干辣椒 10个', '花椒 1勺'], steps: ['鸡肉切丁，加料酒腌制', '热油炒花生米至金黄', '爆香干辣椒和花椒', '下鸡丁炒至变色', '加入调味料翻炒均匀'] },
+            { name: '清炒西兰花', type: 'veg', icon: '🥦', difficulty: '简单', time: '15分钟', ingredients: ['西兰花 1个', '大蒜 3瓣', '盐 适量'], steps: ['西兰花切小朵焯水', '蒜切片爆香', '下西兰花快速翻炒', '加盐调味出锅'] },
+            { name: '番茄炒蛋', type: 'veg', icon: '🍅', difficulty: '简单', time: '10分钟', ingredients: ['番茄 2个', '鸡蛋 3个', '糖 1勺'], steps: ['鸡蛋打散炒熟盛出', '番茄切块炒出汁', '加入鸡蛋翻炒', '加糖盐调味'] },
+            { name: '红烧肉', type: 'meat', icon: '🥩', difficulty: '中等', time: '60分钟', ingredients: ['五花肉 500g', '冰糖 30g', '八角 2个'], steps: ['五花肉切块焯水', '炒糖色', '下肉块上色', '加水和调料炖煮40分钟', '大火收汁'] },
+            { name: '紫菜蛋花汤', type: 'soup', icon: '🍲', difficulty: '简单', time: '10分钟', ingredients: ['紫菜 10g', '鸡蛋 2个', '虾皮 适量'], steps: ['水烧开下紫菜', '加入虾皮', '淋入蛋液', '加盐香油调味'] },
+            { name: '酸辣土豆丝', type: 'veg', icon: '🥔', difficulty: '简单', time: '15分钟', ingredients: ['土豆 2个', '干辣椒 5个', '醋 2勺'], steps: ['土豆切丝泡水', '热油爆香辣椒', '下土豆丝快炒', '加醋盐调味'] },
+        ];
+
+        let config = { total: 0, meat: 0, veg: 0, soup: 0 };
+        let currentSelector = '';
+        let history = [];
+        let currentResult = null;
+
+        function showDishCountSelector() {
+            currentSelector = 'total';
+            document.getElementById('selectorTitle').textContent = '选择菜数';
+            const options = [2,3,4,5,6,7].map(n =>
+                `<div class="selector-option" onclick="selectDishCount(${n})">${n}个菜</div>`
+            ).join('');
+            document.getElementById('selectorOptions').innerHTML = options;
+            document.getElementById('selectorOverlay').classList.add('show');
+        }
+
+        function selectDishCount(n) {
+            config.total = n;
+            config.meat = 0;
+            config.veg = 0;
+            config.soup = 0;
+            hideSelector();
+            updateConfigUI();
+        }
+
+        function showTypeSelector(type) {
+            currentSelector = type;
+            const typeNames = { meat: '荤菜', veg: '素菜', soup: '汤' };
+            document.getElementById('selectorTitle').textContent = `选择${typeNames[type]}数量`;
+
+            const used = config.meat + config.veg + config.soup - config[type];
+            const available = config.total - used;
+
+            let options = '';
+            for (let i = 0; i <= available; i++) {
+                options += `<div class="selector-option" onclick="selectTypeCount('${type}', ${i})">${i}</div>`;
+            }
+            document.getElementById('selectorOptions').innerHTML = options;
+            document.getElementById('selectorOverlay').classList.add('show');
+        }
+
+        function selectTypeCount(type, n) {
+            config[type] = n;
+            hideSelector();
+            updateConfigUI();
+        }
+
+        function updateConfigUI() {
+            const container = document.getElementById('progressiveConfig');
+            let html = `<div class="config-row">
+                <div class="config-btn small" onclick="showDishCountSelector()">${config.total}个菜</div>`;
+
+            if (config.total > 0) {
+                html += `<div class="config-btn small" onclick="showTypeSelector('meat')">荤${config.meat > 0 ? config.meat : ''}</div>`;
+                html += `<div class="config-btn small" onclick="showTypeSelector('veg')">素${config.veg > 0 ? config.veg : ''}</div>`;
+                html += `<div class="config-btn small" onclick="showTypeSelector('soup')">汤${config.soup > 0 ? config.soup : ''}</div>`;
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function hideSelector(event) {
+            if (!event || event.target.id === 'selectorOverlay') {
+                document.getElementById('selectorOverlay').classList.remove('show');
+            }
+        }
+
+        function rollMeal() {
+            const meatRecipes = recipes.filter(r => r.type === 'meat');
+            const vegRecipes = recipes.filter(r => r.type === 'veg');
+            const soupRecipes = recipes.filter(r => r.type === 'soup');
+
+            let selected = [];
+
+            if (config.total === 0) {
+                // 未配置，随机1个菜
+                const allDishes = [...meatRecipes, ...vegRecipes];
+                selected.push(allDishes[Math.floor(Math.random() * allDishes.length)]);
+            } else {
+                // 按配置选择
+                for (let i = 0; i < config.meat; i++) {
+                    const r = meatRecipes[Math.floor(Math.random() * meatRecipes.length)];
+                    if (!selected.includes(r)) selected.push(r);
+                }
+                for (let i = 0; i < config.veg; i++) {
+                    const r = vegRecipes[Math.floor(Math.random() * vegRecipes.length)];
+                    if (!selected.includes(r)) selected.push(r);
+                }
+                for (let i = 0; i < config.soup; i++) {
+                    const r = soupRecipes[Math.floor(Math.random() * soupRecipes.length)];
+                    if (!selected.includes(r)) selected.push(r);
+                }
+            }
+
+            let summary = '';
+            if (config.total === 0) {
+                summary = '随机1个菜';
+            } else {
+                const parts = [];
+                if (config.meat > 0) parts.push(`${config.meat}荤`);
+                if (config.veg > 0) parts.push(`${config.veg}素`);
+                if (config.soup > 0) parts.push(`${config.soup}汤`);
+                summary = `${config.total}菜 · ${parts.join('')}`;
+            }
+            document.getElementById('resultSummary').textContent = summary;
+
+            currentResult = {
+                config: {...config},
+                recipes: selected,
+                summary: summary,
+                timestamp: Date.now()
+            };
+
+            const html = selected.map(r => `
+                <div class="dish-card" onclick="showRecipeDetail('${r.name}')" style="cursor: pointer;">
+                    <div class="dish-header">
+                        <div class="dish-icon">${r.icon}</div>
+                        <div class="dish-info">
+                            <div class="dish-name">${r.name}</div>
+                            <div class="dish-tags">
+                                <span class="tag">${r.type === 'meat' ? '荤菜' : r.type === 'veg' ? '素菜' : '汤'}</span>
+                                <span class="tag">${r.difficulty}</span>
+                                <span class="tag">${r.time}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('resultList').innerHTML = html;
+
+            showPage('result');
+        }
+
+        function confirmMeal() {
+            if (currentResult) {
+                history.push(currentResult);
+            }
+            alert('已保存到历史记录！');
+            showHome();
+        }
+
+        function showRecipes() {
+            const html = recipes.map(r => `
+                <div class="recipe-item" onclick="showRecipeDetail('${r.name}')">
+                    <div class="dish-icon">${r.icon}</div>
+                    <div class="dish-info">
+                        <div class="dish-name">${r.name}</div>
+                        <div class="dish-tags">
+                            <span class="tag">${r.type === 'meat' ? '荤菜' : r.type === 'veg' ? '素菜' : '汤'}</span>
+                            <span class="tag">${r.difficulty}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('recipesList').innerHTML = html;
+            showPage('recipes');
+            updateNav(1);
+        }
+
+        function showRecipeDetail(name) {
+            const recipe = recipes.find(r => r.name === name);
+            document.getElementById('detailName').textContent = recipe.name;
+            document.getElementById('detailType').textContent = recipe.type === 'meat' ? '荤菜' : recipe.type === 'veg' ? '素菜' : '汤';
+            document.getElementById('detailDifficulty').textContent = recipe.difficulty;
+            document.getElementById('detailTime').textContent = recipe.time;
+
+            const ingredientsHtml = recipe.ingredients.map(i => `
+                <div class="ingredient-item">${i}</div>
+            `).join('');
+            document.getElementById('detailIngredients').innerHTML = ingredientsHtml;
+
+            const stepsHtml = recipe.steps.map((s, i) => `
+                <div class="step-item">
+                    <span class="step-number">${i + 1}</span>${s}
+                </div>
+            `).join('');
+            document.getElementById('detailSteps').innerHTML = stepsHtml;
+
+            showPage('recipeDetail');
+        }
+
+        function showAddRecipe() {
+            showPage('addRecipe');
+        }
+
+        function addIngredient() {
+            const list = document.getElementById('ingredientsList');
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.innerHTML = `
+                <input type="text" placeholder="例如：鸡胸肉" class="ingredient-name">
+                <input type="text" placeholder="200" class="ingredient-amount">
+                <select class="ingredient-unit">
+                    <option>g</option>
+                    <option>ml</option>
+                    <option>个</option>
+                    <option>勺</option>
+                    <option>适量</option>
+                </select>
+                <button class="remove-btn" onclick="removeItem(this)">×</button>
+            `;
+            list.appendChild(item);
+        }
+
+        function addStep() {
+            const list = document.getElementById('stepsList');
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.innerHTML = `
+                <input type="text" placeholder="步骤描述" class="step-desc">
+                <button class="remove-btn" onclick="removeItem(this)">×</button>
+            `;
+            list.appendChild(item);
+        }
+
+        function removeItem(btn) {
+            const item = btn.parentElement;
+            const list = item.parentElement;
+            if (list.children.length > 1) {
+                item.remove();
+            } else {
+                alert('至少保留一项');
+            }
+        }
+
+        function saveRecipe() {
+            alert('菜谱已保存！');
+            showRecipes();
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('option-btn')) {
+                const parent = e.target.parentElement;
+                parent.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+            }
+        });
+
+        function showHistory() {
+            if (history.length === 0) {
+                document.getElementById('historyList').innerHTML = `
+                    <div style="text-align: center; padding: 60px 24px; color: #79747E;">
+                        暂无历史记录
+                    </div>
+                `;
+            } else {
+                const html = history.map((item, index) => {
+                    const date = new Date(item.timestamp);
+                    const timeStr = `${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+                    const dishNames = item.recipes.map(r => r.name).join('、');
+                    return `
+                        <div class="recipe-item" onclick="showHistoryDetail(${index})">
+                            <div class="dish-icon">📋</div>
+                            <div class="dish-info">
+                                <div class="dish-name">${item.summary}</div>
+                                <div style="font-size: 14px; color: #79747E; margin-top: 4px;">${dishNames}</div>
+                                <div class="dish-tags">
+                                    <span class="tag">${timeStr}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                document.getElementById('historyList').innerHTML = html;
+            }
+            showPage('history');
+            updateNav(2);
+        }
+
+        function showHistoryDetail(index) {
+            const item = history[index];
+            const date = new Date(item.timestamp);
+            const timeStr = `${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+
+            const html = `
+                <div class="back-btn" onclick="showHistory()">← 返回</div>
+                <div class="result-header">
+                    <h2>${item.summary}</h2>
+                    <div class="result-summary">${timeStr}</div>
+                </div>
+                ${item.recipes.map(r => `
+                    <div class="dish-card" onclick="showRecipeDetail('${r.name}')" style="cursor: pointer;">
+                        <div class="dish-header">
+                            <div class="dish-icon">${r.icon}</div>
+                            <div class="dish-info">
+                                <div class="dish-name">${r.name}</div>
+                                <div class="dish-tags">
+                                    <span class="tag">${r.type === 'meat' ? '荤菜' : r.type === 'veg' ? '素菜' : '汤'}</span>
+                                    <span class="tag">${r.difficulty}</span>
+                                    <span class="tag">${r.time}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+
+            const detailPage = document.createElement('div');
+            detailPage.className = 'page result-page';
+            detailPage.id = 'historyDetail';
+            detailPage.innerHTML = html;
+
+            const oldDetail = document.getElementById('historyDetail');
+            if (oldDetail) oldDetail.remove();
+
+            document.querySelector('.screen').appendChild(detailPage);
+            showPage('historyDetail');
+        }
+
+        function showHome() {
+            showPage('home');
+            updateNav(0);
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
+            });
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        function updateNav(index) {
+            document.querySelectorAll('.nav-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+        }
+    </script>
+</body>
+</html>
