@@ -1,57 +1,100 @@
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
-  alias(libs.plugins.kotlin.compose)
+  alias(libs.plugins.ksp)
 }
 
 android {
-  namespace = "xyz.junerver.eatwhat"
-  compileSdk {
-    version = release(36)
-  }
+  namespace = "com.eatwhat"
+  compileSdk = 34
 
   defaultConfig {
-    applicationId = "xyz.junerver.eatwhat"
+    applicationId = "com.eatwhat"
     minSdk = 24
-    targetSdk = 36
+    targetSdk = 34
     versionCode = 1
-    versionName = "1.0"
+    versionName = "1.0.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+    vectorDrawables {
+      useSupportLibrary = true
+    }
   }
 
   buildTypes {
     release {
-      isMinifyEnabled = false
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      isMinifyEnabled = true
+      proguardFiles(
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+        "proguard-rules.pro"
+      )
     }
   }
+
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
+
   kotlinOptions {
-    jvmTarget = "11"
+    jvmTarget = "17"
+    freeCompilerArgs += listOf(
+      "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+    )
   }
+
   buildFeatures {
     compose = true
+  }
+
+  composeOptions {
+    kotlinCompilerExtensionVersion = "1.5.7"
+  }
+
+  packaging {
+    resources {
+      excludes += "/META-INF/{AL2.0,LGPL2.1}"
+    }
   }
 }
 
 dependencies {
-  implementation(libs.androidx.core.ktx)
-  implementation(libs.androidx.lifecycle.runtime.ktx)
-  implementation(libs.androidx.activity.compose)
+  // Compose BOM
   implementation(platform(libs.androidx.compose.bom))
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.ui.graphics)
   implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.compose.material3)
+  implementation(libs.androidx.compose.material.icons.extended)
+  debugImplementation(libs.androidx.compose.ui.tooling)
+  debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+  // ComposeHooks
+  implementation(libs.compose.hooks)
+
+  // Room
+  implementation(libs.androidx.room.runtime)
+  implementation(libs.androidx.room.ktx)
+  ksp(libs.androidx.room.compiler)
+
+  // Navigation Compose
+  implementation(libs.androidx.navigation.compose)
+
+  // Lifecycle
+  implementation(libs.androidx.lifecycle.runtime.ktx)
+  implementation(libs.androidx.activity.compose)
+
+  // Core
+  implementation(libs.androidx.core.ktx)
+
+  // Testing
   testImplementation(libs.junit)
+  testImplementation(libs.mockk)
+  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.androidx.room.testing)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)
   androidTestImplementation(platform(libs.androidx.compose.bom))
   androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-  debugImplementation(libs.androidx.compose.ui.tooling)
-  debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

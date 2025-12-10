@@ -1,16 +1,38 @@
+# Android/Kotlin
 *.iml
 .gradle
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+/.idea/
 .DS_Store
 /build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
-/.idea/
+
+# Build outputs
+build/
+out/
+*.class
+*.jar
+*.apk
+*.ap_
+*.aab
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# Logs
+*.log
+
+# Environment
+.env*
+
+# Room schema exports (keep in version control)
+!app/schemas/
+
+# Kotlin
+*.kt.swp
+*.kts.swp

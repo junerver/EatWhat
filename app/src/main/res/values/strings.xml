@@ -1,3 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">EatWhat</string>
+    <!-- App Name -->
+    <string name="app_name">吃点啥</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_roll">Roll点</string>
+    <string name="nav_recipes">菜谱</string>
+    <string name="nav_history">历史</string>
+
+    <!-- Roll Screen -->
+    <string name="roll_title">今天吃点啥?</string>
+    <string name="roll_config_title">配置菜品</string>
+    <string name="roll_meat">荤菜</string>
+    <string name="roll_veg">素菜</string>
+    <string name="roll_soup">汤</string>
+    <string name="roll_staple">主食</string>
+    <string name="roll_auto_balance">荤素搭配</string>
+    <string name="roll_button">Roll点</string>
+    <string name="roll_again">重新Roll</string>
+    <string name="roll_confirm">确认</string>
+    <string name="roll_result_title">Roll点结果</string>
+    <string name="roll_error_no_config">请至少选择一种菜品类型</string>
+    <string name="roll_error_insufficient">菜谱数量不足,请添加更多菜谱</string>
+
+    <!-- Recipe List Screen -->
+    <string name="recipe_list_title">菜谱管理</string>
+    <string name="recipe_filter_all">全部</string>
+    <string name="recipe_filter_meat">荤菜</string>
+    <string name="recipe_filter_veg">素菜</string>
+    <string name="recipe_filter_soup">汤</string>
+    <string name="recipe_filter_staple">主食</string>
+    <string name="recipe_search_hint">搜索菜谱或标签</string>
+    <string name="recipe_add">添加菜谱</string>
+    <string name="recipe_empty">还没有菜谱,点击+添加</string>
+
+    <!-- Recipe Detail Screen -->
+    <string name="recipe_detail_title">菜谱详情</string>
+    <string name="recipe_edit">编辑</string>
+    <string name="recipe_delete">删除</string>
+    <string name="recipe_delete_confirm">确定要删除这个菜谱吗?</string>
+    <string name="recipe_ingredients">食材</string>
+    <string name="recipe_steps">烹饪步骤</string>
+    <string name="recipe_tags">标签</string>
+    <string name="recipe_difficulty">难度</string>
+    <string name="recipe_time">预计时间</string>
+    <string name="recipe_time_minutes">%d分钟</string>
+
+    <!-- Add/Edit Recipe Screen -->
+    <string name="recipe_add_title">添加菜谱</string>
+    <string name="recipe_edit_title">编辑菜谱</string>
+    <string name="recipe_name">菜名</string>
+    <string name="recipe_name_hint">请输入菜名</string>
+    <string name="recipe_type">类型</string>
+    <string name="recipe_icon">图标</string>
+    <string name="recipe_icon_hint">选择emoji图标</string>
+    <string name="recipe_difficulty_easy">简单</string>
+    <string name="recipe_difficulty_medium">中等</string>
+    <string name="recipe_difficulty_hard">困难</string>
+    <string name="recipe_ingredient_name">食材名称</string>
+    <string name="recipe_ingredient_amount">数量</string>
+    <string name="recipe_ingredient_unit">单位</string>
+    <string name="recipe_ingredient_add">添加食材</string>
+    <string name="recipe_step_description">步骤描述</string>
+    <string name="recipe_step_add">添加步骤</string>
+    <string name="recipe_tag_add">添加标签</string>
+    <string name="recipe_tag_quick_add">从食材快速添加</string>
+    <string name="recipe_save">保存</string>
+    <string name="recipe_save_success">保存成功</string>
+    <string name="recipe_save_error">保存失败</string>
+    <string name="recipe_validation_name">请输入菜名</string>
+    <string name="recipe_validation_time">时间必须在1-300分钟之间</string>
+    <string name="recipe_validation_ingredients">请至少添加一个食材</string>
+    <string name="recipe_validation_steps">请至少添加一个步骤</string>
+
+    <!-- Prep Screen -->
+    <string name="prep_title">备菜清单</string>
+    <string name="prep_progress">已准备 %1$d/%2$d</string>
+    <string name="prep_start_cooking">开始做菜</string>
+    <string name="prep_empty">没有需要准备的食材</string>
+
+    <!-- History List Screen -->
+    <string name="history_list_title">历史记录</string>
+    <string name="history_empty">还没有历史记录</string>
+    <string name="history_delete">删除</string>
+    <string name="history_delete_confirm">确定要删除这条记录吗?</string>
+    <string name="history_summary">%1$d荤 %2$d素 %3$d汤 %4$d主食</string>
+
+    <!-- History Detail Screen -->
+    <string name="history_detail_title">历史详情</string>
+    <string name="history_recipes">菜谱</string>
+    <string name="history_prep_list">备菜清单</string>
+    <string name="history_recipe_deleted">该菜谱已被删除</string>
+
+    <!-- Units -->
+    <string name="unit_g">克</string>
+    <string name="unit_ml">毫升</string>
+    <string name="unit_piece">个</string>
+    <string name="unit_spoon">勺</string>
+    <string name="unit_moderate">适量</string>
+
+    <!-- Common -->
+    <string name="common_cancel">取消</string>
+    <string name="common_confirm">确定</string>
+    <string name="common_back">返回</string>
+    <string name="common_loading">加载中...</string>
+    <string name="common_error">出错了</string>
+    <string name="common_retry">重试</string>
 </resources>
