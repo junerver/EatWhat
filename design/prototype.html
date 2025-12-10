@@ -100,15 +100,18 @@
         .option-btn.active { background: #E8DEF8; border-color: #6750A4; }
         .dynamic-list { display: flex; flex-direction: column; gap: 12px; }
         .dynamic-item { display: flex; gap: 8px; align-items: stretch; }
-        .dynamic-item input, .dynamic-item select { padding: 12px; border: 1px solid #E8E8E8; border-radius: 8px; font-size: 14px; }
+        .dynamic-item input, .dynamic-item select { padding: 12px; border: 1px solid #E8E8E8; border-radius: 8px; font-size: 14px; width: 100%; }
         .dynamic-item .ingredient-name { flex: 2; }
-        .dynamic-item .ingredient-amount { flex: 0 0 70px; text-align: center; }
-        .dynamic-item .ingredient-unit { flex: 0 0 70px; }
+        .dynamic-item .ingredient-amount { flex: 0 0 50px; text-align: center; }
+        .dynamic-item .ingredient-unit { flex: 0 0 60px; }
         .dynamic-item .step-desc { flex: 1; }
         .remove-btn { background: #F5F5F5; color: #79747E; border: none; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; font-size: 20px; flex-shrink: 0; }
         .remove-btn:active { background: #E8E8E8; }
         .add-item-btn { background: #E8DEF8; color: #6750A4; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; margin-top: 4px; width: 100%; }
         .add-item-btn:active { background: #D5C4F0; }
+        .ingredient-check-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: #F5F5F5; border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
+        .ingredient-check-item.checked { background: #E8DEF8; text-decoration: line-through; opacity: 0.6; }
+        .ingredient-check-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -186,7 +189,7 @@
 
             <!-- 菜谱详情页 -->
             <div class="page recipe-detail hidden" id="recipeDetail">
-                <div class="back-btn" onclick="showRecipes()">← 返回</div>
+                <div class="back-btn" onclick="backFromRecipeDetail()">← 返回</div>
                 <div class="recipe-detail-header">
                     <div class="recipe-detail-name" id="detailName">宫保鸡丁</div>
                     <div class="dish-tags">
@@ -231,6 +234,16 @@
                     <input type="number" class="form-input" id="recipeTime" placeholder="30" value="30">
                 </div>
                 <div class="form-group">
+                    <label class="form-label">标签</label>
+                    <div class="config-options" id="recipeTags">
+                        <div class="option-btn" id="addTagBtn" onclick="showTagInput()">+</div>
+                    </div>
+                    <div id="tagInputContainer" style="display: none; margin-top: 8px; gap: 8px;">
+                        <input type="text" class="form-input" id="tagInput" placeholder="输入标签" style="flex: 1; margin: 0;">
+                        <button class="option-btn active" onclick="confirmAddTag()" style="padding: 12px 16px;">√</button>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label class="form-label">食材</label>
                     <div class="dynamic-list" id="ingredientsList">
                         <div class="dynamic-item">
@@ -243,6 +256,7 @@
                                 <option>勺</option>
                                 <option>适量</option>
                             </select>
+                            <button class="remove-btn" onclick="addIngredientAsTag(this)" style="background: transparent; color: #6750A4;">🏷</button>
                             <button class="remove-btn" onclick="removeItem(this)">×</button>
                         </div>
                     </div>
@@ -259,6 +273,14 @@
                     <button class="add-item-btn" onclick="addStep()">+ 添加步骤</button>
                 </div>
                 <button class="save-btn" onclick="saveRecipe()">保存菜谱</button>
+            </div>
+
+            <!-- 备菜阶段页 -->
+            <div class="page add-recipe hidden" id="prepPage">
+                <div class="back-btn" onclick="showResult()">← 返回</div>
+                <h2 style="font-size: 24px; margin-bottom: 24px;">准备食材</h2>
+                <div id="ingredientChecklist"></div>
+                <button class="save-btn" onclick="startCooking()">开始做菜</button>
             </div>
 
             <!-- 底部导航 -->
@@ -366,6 +388,13 @@
                 // 未配置，随机1个菜
                 const allDishes = [...meatRecipes, ...vegRecipes];
                 selected.push(allDishes[Math.floor(Math.random() * allDishes.length)]);
+            } else if (config.meat + config.veg + config.soup === 0) {
+                // 只选了数量，没选荤素搭配，随机选择
+                const allDishes = [...meatRecipes, ...vegRecipes, ...soupRecipes];
+                while (selected.length < config.total && selected.length < allDishes.length) {
+                    const r = allDishes[Math.floor(Math.random() * allDishes.length)];
+                    if (!selected.includes(r)) selected.push(r);
+                }
             } else {
                 // 按配置选择
                 for (let i = 0; i < config.meat; i++) {
@@ -425,8 +454,46 @@
             if (currentResult) {
                 history.push(currentResult);
             }
-            alert('已保存到历史记录！');
-            showHome();
+            showPrepPage();
+        }
+
+        function showPrepPage() {
+            const ingredientsMap = {};
+            currentResult.recipes.forEach(recipe => {
+                recipe.ingredients.forEach(ing => {
+                    const name = ing.split(' ')[0];
+                    if (!ingredientsMap[name]) {
+                        ingredientsMap[name] = { name: ing, checked: false };
+                    }
+                });
+            });
+
+            currentResult.ingredients = Object.values(ingredientsMap);
+
+            const html = currentResult.ingredients.map((item, index) => `
+                <div class="ingredient-check-item ${item.checked ? 'checked' : ''}" onclick="toggleIngredient(${index})">
+                    <input type="checkbox" id="ing_${index}" ${item.checked ? 'checked' : ''} onchange="event.stopPropagation()">
+                    <label for="ing_${index}" style="flex: 1; cursor: pointer;">${item.name}</label>
+                </div>
+            `).join('');
+            document.getElementById('ingredientChecklist').innerHTML = html;
+            showPage('prepPage');
+        }
+
+        function toggleIngredient(index) {
+            const checkbox = document.getElementById(`ing_${index}`);
+            checkbox.checked = !checkbox.checked;
+            checkbox.parentElement.classList.toggle('checked', checkbox.checked);
+            currentResult.ingredients[index].checked = checkbox.checked;
+        }
+
+        function startCooking() {
+            const historyIndex = history.length - 1;
+            showHistoryDetail(historyIndex);
+        }
+
+        function showResult() {
+            showPage('result');
         }
 
         function showRecipes() {
@@ -447,7 +514,10 @@
             updateNav(1);
         }
 
-        function showRecipeDetail(name) {
+        let recipeDetailBackFunc = null;
+
+        function showRecipeDetail(name, backFunc) {
+            recipeDetailBackFunc = backFunc || showRecipes;
             const recipe = recipes.find(r => r.name === name);
             document.getElementById('detailName').textContent = recipe.name;
             document.getElementById('detailType').textContent = recipe.type === 'meat' ? '荤菜' : recipe.type === 'veg' ? '素菜' : '汤';
@@ -469,8 +539,59 @@
             showPage('recipeDetail');
         }
 
+        function backFromRecipeDetail() {
+            if (recipeDetailBackFunc) {
+                recipeDetailBackFunc();
+            }
+        }
+
         function showAddRecipe() {
             showPage('addRecipe');
+        }
+
+        let recipeTags = [];
+
+        function addTag(tagName) {
+            if (tagName && !recipeTags.includes(tagName)) {
+                recipeTags.push(tagName);
+                updateTagsDisplay();
+            }
+        }
+
+        function removeTag(tagName) {
+            recipeTags = recipeTags.filter(t => t !== tagName);
+            updateTagsDisplay();
+        }
+
+        function updateTagsDisplay() {
+            const container = document.getElementById('recipeTags');
+            container.innerHTML = recipeTags.map(tag => `
+                <div class="option-btn active" onclick="removeTag('${tag}')">${tag} ×</div>
+            `).join('') + '<div class="option-btn" onclick="showTagInput()">+</div>';
+        }
+
+        function showTagInput() {
+            document.getElementById('tagInputContainer').style.display = 'flex';
+            document.getElementById('tagInput').focus();
+        }
+
+        function confirmAddTag() {
+            const input = document.getElementById('tagInput');
+            const tagName = input.value.trim();
+            if (tagName) {
+                addTag(tagName);
+                input.value = '';
+            }
+            document.getElementById('tagInputContainer').style.display = 'none';
+        }
+
+        function addIngredientAsTag(btn) {
+            const item = btn.parentElement;
+            const nameInput = item.querySelector('.ingredient-name');
+            const ingredientName = nameInput.value.trim();
+            if (ingredientName) {
+                addTag(ingredientName);
+            }
         }
 
         function addIngredient() {
@@ -487,6 +608,7 @@
                     <option>勺</option>
                     <option>适量</option>
                 </select>
+                <button class="remove-btn" onclick="addIngredientAsTag(this)" style="background: transparent; color: #6750A4;">🏷</button>
                 <button class="remove-btn" onclick="removeItem(this)">×</button>
             `;
             list.appendChild(item);
@@ -562,14 +684,31 @@
             const date = new Date(item.timestamp);
             const timeStr = `${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
 
+            let ingredientsHtml = '';
+            if (item.ingredients) {
+                const checkedCount = item.ingredients.filter(i => i.checked).length;
+                ingredientsHtml = `
+                    <div style="margin: 16px 0;">
+                        <div style="font-weight: 600; margin-bottom: 12px;">备菜进度: ${checkedCount}/${item.ingredients.length}</div>
+                        ${item.ingredients.map((ing, i) => `
+                            <div class="ingredient-check-item ${ing.checked ? 'checked' : ''}" onclick="toggleHistoryIngredient(${index}, ${i})">
+                                <input type="checkbox" id="hist_${index}_${i}" ${ing.checked ? 'checked' : ''} onchange="event.stopPropagation()">
+                                <label for="hist_${index}_${i}" style="flex: 1; cursor: pointer;">${ing.name}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
             const html = `
                 <div class="back-btn" onclick="showHistory()">← 返回</div>
                 <div class="result-header">
                     <h2>${item.summary}</h2>
                     <div class="result-summary">${timeStr}</div>
                 </div>
+                ${ingredientsHtml}
                 ${item.recipes.map(r => `
-                    <div class="dish-card" onclick="showRecipeDetail('${r.name}')" style="cursor: pointer;">
+                    <div class="dish-card" onclick="showRecipeDetail('${r.name}', () => showHistoryDetail(${index}))" style="cursor: pointer;">
                         <div class="dish-header">
                             <div class="dish-icon">${r.icon}</div>
                             <div class="dish-info">
@@ -595,6 +734,13 @@
 
             document.querySelector('.screen').appendChild(detailPage);
             showPage('historyDetail');
+        }
+
+        function toggleHistoryIngredient(historyIndex, ingredientIndex) {
+            const checkbox = document.getElementById(`hist_${historyIndex}_${ingredientIndex}`);
+            checkbox.checked = !checkbox.checked;
+            checkbox.parentElement.classList.toggle('checked', checkbox.checked);
+            history[historyIndex].ingredients[ingredientIndex].checked = checkbox.checked;
         }
 
         function showHome() {
