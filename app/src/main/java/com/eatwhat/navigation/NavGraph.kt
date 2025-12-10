@@ -4,12 +4,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.eatwhat.ui.components.BottomNavBar
+import com.eatwhat.ui.screens.roll.RollScreen
+import com.eatwhat.ui.screens.recipe.RecipeListScreen
+import com.eatwhat.ui.screens.history.HistoryListScreen
 
 /**
  * Main navigation graph for the app
@@ -27,31 +28,17 @@ fun EatWhatApp() {
             startDestination = Destinations.Roll.route,
             modifier = Modifier.padding(paddingValues)
         ) {
-            // Bottom navigation screens
             composable(Destinations.Roll.route) {
-                // RollScreen will be implemented in Phase 3
-                PlaceholderScreen("Roll点")
+                RollScreen(navController)
             }
 
             composable(Destinations.RecipeList.route) {
-                // RecipeListScreen will be implemented in Phase 4
-                PlaceholderScreen("菜谱")
+                RecipeListScreen(navController)
             }
 
             composable(Destinations.History.route) {
-                // HistoryListScreen will be implemented in Phase 6
-                PlaceholderScreen("历史")
+                HistoryListScreen(navController)
             }
-
-            // Detail screens will be added in later phases
         }
     }
-}
-
-@Composable
-private fun PlaceholderScreen(title: String) {
-    androidx.compose.material3.Text(
-        text = title,
-        modifier = Modifier.padding(16.dp)
-    )
 }
