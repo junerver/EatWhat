@@ -40,6 +40,18 @@ fun PrepScreen(
     val initialPrepList = remember { useCase(rollResult.recipes) }
     val (prepList, setPrepList) = useState(initialPrepList)
 
+    // Save history when entering PrepScreen and store the historyId
+    val saveHistoryUseCase = remember { com.eatwhat.domain.usecase.SaveHistoryUseCase(app.historyRepository) }
+    val (historyId, setHistoryId) = useState<Long?>(null)
+    LaunchedEffect(Unit) {
+        try {
+            val id = saveHistoryUseCase(rollResult, initialPrepList)
+            setHistoryId(id)
+        } catch (e: Exception) {
+            // Handle error if needed
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -99,11 +111,13 @@ fun PrepScreen(
             // 开始做菜按钮
             Button(
                 onClick = {
-                    // TODO: Navigate to HistoryDetailScreen after saving history
-                    // For now, just navigate back
-                    navController.navigateUp()
+                    // 跳转到历史详情页面
+                    historyId?.let { id ->
+                        navController.navigate(com.eatwhat.navigation.Destinations.HistoryDetail.createRoute(id))
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = historyId != null,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF6750A4)
                 ),

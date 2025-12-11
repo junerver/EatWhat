@@ -62,6 +62,7 @@ class RollRepository(private val recipeRepository: RecipeRepository) {
         )
     }
 
+
     /**
      * Validate if there are enough recipes for the config
      */

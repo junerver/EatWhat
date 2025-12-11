@@ -22,3 +22,14 @@ data class TagEntity(
     @ColumnInfo(name = "created_at")
     val createdAt: Long = System.currentTimeMillis()
 )
+
+/**
+ * Convert TagEntity to Tag domain model
+ */
+fun TagEntity.toDomain(): com.eatwhat.domain.model.Tag {
+    return com.eatwhat.domain.model.Tag(
+        id = id,
+        name = name,
+        createdAt = createdAt
+    )
+}

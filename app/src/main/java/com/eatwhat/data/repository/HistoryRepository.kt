@@ -116,9 +116,17 @@ class HistoryRepository(private val database: EatWhatDatabase) {
 
     private fun PrepItemEntity.toDomain(): PrepItemRecord {
         return PrepItemRecord(
+            id = id,
             name = ingredientName,
             isChecked = isChecked
         )
+    }
+
+    /**
+     * Update prep item checked status
+     */
+    suspend fun updatePrepItemChecked(prepItemId: Long, isChecked: Boolean) {
+        historyDao.updatePrepItemChecked(prepItemId, isChecked)
     }
 }
 
@@ -138,6 +146,7 @@ data class RecipeSnapshot(
 )
 
 data class PrepItemRecord(
+    val id: Long,
     val name: String,
     val isChecked: Boolean
 )

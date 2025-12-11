@@ -49,3 +49,16 @@ enum class Unit {
     SPOON,    // 勺
     MODERATE  // 适量
 }
+
+/**
+ * Convert IngredientEntity to Ingredient domain model
+ */
+fun IngredientEntity.toDomain(): com.eatwhat.domain.model.Ingredient {
+    return com.eatwhat.domain.model.Ingredient(
+        id = id,
+        name = name,
+        amount = amount,
+        unit = com.eatwhat.domain.model.Unit.fromString(unit),
+        orderIndex = orderIndex
+    )
+}

@@ -23,6 +23,8 @@ sealed class Destinations(val route: String) {
 
     object Prep : Destinations("prep")
 
+    object Cooking : Destinations("cooking")
+
     object HistoryDetail : Destinations("history/{historyId}") {
         fun createRoute(historyId: Long) = "history/$historyId"
     }

@@ -12,6 +12,7 @@ import com.eatwhat.ui.screens.roll.RollScreen
 import com.eatwhat.ui.screens.roll.RollResultScreen
 import com.eatwhat.ui.screens.recipe.RecipeListScreen
 import com.eatwhat.ui.screens.history.HistoryListScreen
+import com.eatwhat.ui.screens.cooking.CookingScreen
 
 /**
  * Main navigation graph for the app
@@ -69,6 +70,10 @@ fun EatWhatApp() {
 
             composable(Destinations.Prep.route) {
                 com.eatwhat.ui.screens.prep.PrepScreen(navController)
+            }
+
+            composable(Destinations.Cooking.route) {
+                CookingScreen(navController)
             }
         }
     }

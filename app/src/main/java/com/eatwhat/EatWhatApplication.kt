@@ -6,6 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.eatwhat.data.database.EatWhatDatabase
 import com.eatwhat.data.database.entities.*
+import com.eatwhat.data.database.relations.RecipeWithDetails
 import com.eatwhat.data.repository.RecipeRepository
 import com.eatwhat.data.repository.RollRepository
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +34,9 @@ class EatWhatApplication : Application() {
 
     // Temporary storage for current roll result (for navigation)
     var currentRollResult: com.eatwhat.domain.model.RollResult? = null
+
+    // Temporary storage for current cooking recipes (for navigation)
+    var currentCookingRecipes: List<com.eatwhat.data.database.relations.RecipeWithDetails>? = null
 
     override fun onCreate() {
         super.onCreate()

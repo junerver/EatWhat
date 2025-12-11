@@ -34,3 +34,14 @@ data class CookingStepEntity(
 
     val description: String
 )
+
+/**
+ * Convert CookingStepEntity to CookingStep domain model
+ */
+fun CookingStepEntity.toDomain(): com.eatwhat.domain.model.CookingStep {
+    return com.eatwhat.domain.model.CookingStep(
+        id = id,
+        stepNumber = stepNumber,
+        description = description
+    )
+}

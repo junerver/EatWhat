@@ -42,7 +42,7 @@ fun RollResultScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val (rollResult, setRollResult) = useState<List<Recipe>?>(null)
+    val (rollResult, setRollResult) = useState<RollResult?>(null)
     val (isLoading, setIsLoading) = useState(true)
     val (error, setError) = useState<String?>(null)
 
@@ -57,12 +57,7 @@ fun RollResultScreen(
 
     // Store current roll result in Application for navigation
     LaunchedEffect(rollResult) {
-        if (rollResult != null) {
-            app.currentRollResult = RollResult(
-                recipes = rollResult,
-                config = config
-            )
-        }
+        app.currentRollResult = rollResult
     }
 
     fun executeRoll() {
@@ -72,7 +67,7 @@ fun RollResultScreen(
             try {
                 val result = useCase(config)
                 result.fold(
-                    onSuccess = { setRollResult(it.recipes) },
+                    onSuccess = { setRollResult(it) },
                     onFailure = { e ->
                         when (e) {
                             is InsufficientRecipesException -> setError(e.errors.joinToString("\n"))
@@ -141,7 +136,7 @@ fun RollResultScreen(
                 }
                 rollResult != null -> {
                     RollResultContent(
-                        recipes = rollResult,
+                        recipes = rollResult.recipes,
                         config = config,
                         onRecipeClick = { recipe ->
                             navController.navigate("recipe/${recipe.id}")
@@ -158,18 +153,20 @@ fun RollResultScreen(
                                     )
 
                                     // 排除当前菜品和已选中的其他菜品
-                                    val currentIds = rollResult.map { it.id }.toSet()
+                                    val currentIds = rollResult?.recipes?.map { it.id }?.toSet() ?: emptySet()
                                     val availableRecipes = allRecipes.filter { it.id !in currentIds }
 
                                     if (availableRecipes.isNotEmpty()) {
                                         // 随机选择一个新菜品
                                         val newRecipe = availableRecipes.random()
-                                        val updatedList = rollResult.toMutableList()
-                                        val index = updatedList.indexOfFirst { it.id == recipe.id }
-                                        if (index != -1) {
-                                            updatedList[index] = newRecipe
-                                            setRollResult(updatedList)
-//                                            snackbarHostState.showSnackbar("已替换为：${newRecipe.name}")
+                                        rollResult?.let { currentResult ->
+                                            val updatedList = currentResult.recipes.toMutableList()
+                                            val index = updatedList.indexOfFirst { it.id == recipe.id }
+                                            if (index != -1) {
+                                                updatedList[index] = newRecipe
+                                                setRollResult(currentResult.copy(recipes = updatedList))
+//                                                snackbarHostState.showSnackbar("已替换为：${newRecipe.name}")
+                                            }
                                         }
                                     } else {
                                         snackbarHostState.showSnackbar("该类型没有更多菜品了")

@@ -1,24 +1,28 @@
 package com.eatwhat.ui.screens.history
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.repository.HistoryRepository
+import com.eatwhat.data.repository.PrepItemRecord
 import com.eatwhat.data.repository.RecipeSnapshot
-import java.text.SimpleDateFormat
+import kotlinx.coroutines.launch
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryDetailScreen(
     navController: NavController,
@@ -27,143 +31,151 @@ fun HistoryDetailScreen(
     val context = LocalContext.current
     val app = context.applicationContext as EatWhatApplication
     val repository = remember { HistoryRepository(app.database) }
+    val scope = rememberCoroutineScope()
 
     val historyWithRecipes by repository.getHistoryById(historyId)
         .collectAsState(initial = null)
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("历史详情") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "返回")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
         historyWithRecipes?.let { data ->
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(start = 24.dp, end = 24.dp, top = 60.dp, bottom = 100.dp)
             ) {
-                // Header
+                // 返回按钮
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
+                    TextButton(
+                        onClick = { navController.navigateUp() },
+                        modifier = Modifier.padding(bottom = 16.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = formatTimestamp(data.history.timestamp),
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                            Text(
-                                text = data.history.summary,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        Text(
+                            text = "← 返回",
+                            fontSize = 24.sp,
+                            color = Color(0xFF6750A4)
+                        )
                     }
                 }
 
-                // Recipe snapshots
+                // 标题 - 配置摘要
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                text = "菜谱",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Divider()
+                    Text(
+                        text = data.history.summary.ifEmpty { "${data.history.totalCount}个菜" },
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1C1B1F),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
 
-                            data.recipes.forEach { snapshot ->
-                                RecipeSnapshotCard(
-                                    snapshot = snapshot,
-                                    onClick = {
-                                        // Try to navigate to recipe detail
-                                        // If recipe was deleted, this will show empty screen
-                                        navController.navigate("recipe/${snapshot.recipeId}")
-                                    }
-                                )
-                            }
-                        }
-                    }
+                    // 时间显示
+                    Text(
+                        text = formatTimestamp(data.history.timestamp),
+                        fontSize = 14.sp,
+                        color = Color(0xFF79747E),
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
                 }
 
-                // Prep checklist
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                text = "备菜清单",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Divider()
+                // 备菜进度区域
+                if (data.prepItems.isNotEmpty()) {
+                    item {
+                        val checkedCount = data.prepItems.count { it.isChecked }
+                        val totalCount = data.prepItems.size
 
-                            val checkedCount = data.prepItems.count { it.isChecked }
-                            val totalCount = data.prepItems.size
+                        Text(
+                            text = "备菜进度: $checkedCount/$totalCount",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF1C1B1F),
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+                    }
 
-                            Text(
-                                text = "完成度: $checkedCount / $totalCount",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            data.prepItems.forEach { item ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Checkbox(
-                                            checked = item.isChecked,
-                                            onCheckedChange = null,
-                                            enabled = false
-                                        )
-                                        Text(
-                                            text = item.name,
-                                            style = MaterialTheme.typography.bodyMedium
-                                        )
+                    // 备菜清单项
+                    data.prepItems.forEach { item ->
+                        item {
+                            PrepItemCheckRow(
+                                item = item,
+                                onCheckedChange = { checked ->
+                                    scope.launch {
+                                        repository.updatePrepItemChecked(item.id, checked)
                                     }
                                 }
-                            }
+                            )
                         }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
+                }
+
+                // 菜谱卡片列表
+                data.recipes.forEach { snapshot ->
+                    item {
+                        RecipeSnapshotCard(
+                            snapshot = snapshot,
+                            onClick = {
+                                navController.navigate("recipe/${snapshot.recipeId}")
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
             }
         } ?: Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "加载中...",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                fontSize = 16.sp,
+                color = Color(0xFF79747E)
             )
         }
+    }
+}
+
+@Composable
+private fun PrepItemCheckRow(
+    item: PrepItemRecord,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val backgroundColor = if (item.isChecked) Color(0xFFE8DEF8) else Color(0xFFF5F5F5)
+    val textDecoration = if (item.isChecked) TextDecoration.LineThrough else null
+    val opacity = if (item.isChecked) 0.6f else 1f
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .background(backgroundColor, RoundedCornerShape(8.dp))
+            .clickable { onCheckedChange(!item.isChecked) }
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = item.isChecked,
+            onCheckedChange = onCheckedChange,
+            modifier = Modifier.size(20.dp),
+            colors = CheckboxDefaults.colors(
+                checkedColor = Color(0xFF6750A4),
+                uncheckedColor = Color(0xFF79747E)
+            )
+        )
+
+        Text(
+            text = item.name,
+            fontSize = 16.sp,
+            color = Color(0xFF1C1B1F).copy(alpha = opacity),
+            textDecoration = textDecoration,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
@@ -174,17 +186,24 @@ private fun RecipeSnapshotCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = snapshot.icon,
-                style = MaterialTheme.typography.headlineMedium,
+                fontSize = 32.sp,
                 modifier = Modifier.padding(end = 12.dp)
             )
 
@@ -193,43 +212,64 @@ private fun RecipeSnapshotCard(
             ) {
                 Text(
                     text = snapshot.name,
-                    style = MaterialTheme.typography.titleSmall
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1C1B1F)
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Text(
-                        text = when (snapshot.difficulty) {
-                            "EASY" -> "简单"
-                            "MEDIUM" -> "中等"
-                            "HARD" -> "困难"
-                            else -> snapshot.difficulty
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    // 类型标签
+                    val typeText = when (snapshot.type) {
+                        "MEAT" -> "荤菜"
+                        "VEGETABLE" -> "素菜"
+                        "SOUP" -> "汤"
+                        "STAPLE" -> "主食"
+                        else -> snapshot.type
+                    }
+                    Tag(text = typeText)
 
-                    Text(
-                        text = "·",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    // 难度标签
+                    val difficultyText = when (snapshot.difficulty) {
+                        "EASY" -> "简单"
+                        "MEDIUM" -> "中等"
+                        "HARD" -> "困难"
+                        else -> snapshot.difficulty
+                    }
+                    Tag(text = difficultyText)
 
-                    Text(
-                        text = "${snapshot.estimatedTime}分钟",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    // 时间标签
+                    Tag(text = "${snapshot.estimatedTime}分钟")
                 }
             }
         }
     }
 }
 
+@Composable
+private fun Tag(text: String) {
+    Box(
+        modifier = Modifier
+            .background(Color(0xFFE8DEF8), RoundedCornerShape(6.dp))
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            color = Color(0xFF6750A4)
+        )
+    }
+}
+
 private fun formatTimestamp(timestamp: Long): String {
-    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-    return sdf.format(Date(timestamp))
+    val calendar = Calendar.getInstance()
+    calendar.timeInMillis = timestamp
+    val month = calendar.get(Calendar.MONTH) + 1
+    val day = calendar.get(Calendar.DAY_OF_MONTH)
+    val hour = calendar.get(Calendar.HOUR_OF_DAY)
+    val minute = calendar.get(Calendar.MINUTE)
+    return "${month}月${day}日 ${hour}:${String.format("%02d", minute)}"
 }
