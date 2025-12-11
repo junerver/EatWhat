@@ -169,7 +169,7 @@ fun RollResultScreen(
                                         if (index != -1) {
                                             updatedList[index] = newRecipe
                                             setRollResult(updatedList)
-                                            snackbarHostState.showSnackbar("已替换为：${newRecipe.name}")
+//                                            snackbarHostState.showSnackbar("已替换为：${newRecipe.name}")
                                         }
                                     } else {
                                         snackbarHostState.showSnackbar("该类型没有更多菜品了")
