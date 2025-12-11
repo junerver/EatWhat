@@ -1,125 +1,120 @@
 package com.eatwhat.ui.screens.prep
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.eatwhat.domain.model.RollResult
 import com.eatwhat.domain.usecase.GeneratePrepListUseCase
 import com.eatwhat.domain.usecase.PrepListItem
 import xyz.junerver.compose.hooks.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrepScreen(
-    navController: NavController,
-    rollResult: RollResult
+    navController: NavController
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val app = context.applicationContext as com.eatwhat.EatWhatApplication
+    val rollResult = app.currentRollResult
+
+    // If no roll result, navigate back
+    if (rollResult == null) {
+        LaunchedEffect(Unit) {
+            navController.navigateUp()
+        }
+        return
+    }
+
     val useCase = remember { GeneratePrepListUseCase() }
     val initialPrepList = remember { useCase(rollResult.recipes) }
     val (prepList, setPrepList) = useState(initialPrepList)
 
-    val checkedCount = prepList.count { it.isChecked }
-    val totalCount = prepList.size
-    val progress = if (totalCount > 0) checkedCount.toFloat() / totalCount else 0f
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("备菜清单") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "返回")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(start = 24.dp, end = 24.dp, top = 60.dp, bottom = 100.dp)
         ) {
-            // Progress indicator
-            Card(
-                modifier = Modifier.fillMaxWidth()
+            // 返回按钮
+            TextButton(
+                onClick = { navController.navigateUp() },
+                modifier = Modifier.padding(bottom = 16.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "准备进度",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = "$checkedCount / $totalCount",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                Text(
+                    text = "← 返回",
+                    fontSize = 24.sp,
+                    color = Color(0xFF6750A4)
+                )
+            }
 
-                    LinearProgressIndicator(
-                        progress = progress,
-                        modifier = Modifier.fillMaxWidth()
+            // 标题
+            Text(
+                text = "准备食材",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1C1B1F),
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+
+            // 食材清单
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                itemsIndexed(prepList, key = { _, item -> "${item.name}_${item.unit}" }) { index, item ->
+                    IngredientCheckItem(
+                        item = item,
+                        onCheckedChange = { checked ->
+                            setPrepList(
+                                prepList.mapIndexed { i, it ->
+                                    if (i == index) {
+                                        it.copy(isChecked = checked)
+                                    } else {
+                                        it
+                                    }
+                                }
+                            )
+                        }
                     )
                 }
             }
 
-            // Prep list
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(prepList, key = { "${it.name}_${it.unit}" }) { item ->
-                        IngredientCheckItem(
-                            item = item,
-                            onCheckedChange = { checked ->
-                                setPrepList(
-                                    prepList.map {
-                                        if (it.name == item.name && it.unit == item.unit) {
-                                            it.copy(isChecked = checked)
-                                        } else {
-                                            it
-                                        }
-                                    }
-                                )
-                            }
-                        )
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Start cooking button
+            // 开始做菜按钮
             Button(
                 onClick = {
                     // TODO: Navigate to HistoryDetailScreen after saving history
                     // For now, just navigate back
                     navController.navigateUp()
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF6750A4)
+                ),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Text("开始做菜", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = "开始做菜",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
             }
         }
     }
@@ -130,35 +125,31 @@ private fun IngredientCheckItem(
     item: PrepListItem,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val backgroundColor = if (item.isChecked) Color(0xFFE8DEF8) else Color(0xFFF5F5F5)
+    val textDecoration = if (item.isChecked) TextDecoration.LineThrough else null
+    val opacity = if (item.isChecked) 0.6f else 1f
+
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(backgroundColor, RoundedCornerShape(8.dp))
+            .clickable { onCheckedChange(!item.isChecked) }
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = item.isChecked,
-                onCheckedChange = onCheckedChange
+        Checkbox(
+            checked = item.isChecked,
+            onCheckedChange = onCheckedChange,
+            modifier = Modifier.size(20.dp),
+            colors = CheckboxDefaults.colors(
+                checkedColor = Color(0xFF6750A4),
+                uncheckedColor = Color(0xFF79747E)
             )
-
-            Text(
-                text = item.name,
-                style = MaterialTheme.typography.bodyLarge,
-                textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
-                color = if (item.isChecked) {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                }
-            )
-        }
+        )
 
         Text(
-            text = "${item.amount} ${
+            text = "${item.name} ${item.amount}${
                 when (item.unit) {
                     "G" -> "g"
                     "ML" -> "ml"
@@ -168,8 +159,10 @@ private fun IngredientCheckItem(
                     else -> item.unit
                 }
             }",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            fontSize = 16.sp,
+            color = Color(0xFF1C1B1F).copy(alpha = opacity),
+            textDecoration = textDecoration,
+            modifier = Modifier.weight(1f)
         )
     }
 }

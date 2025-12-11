@@ -35,6 +35,10 @@ interface RecipeDao {
     suspend fun getRandomRecipesByType(type: String, count: Int): List<RecipeEntity>
 
     @Transaction
+    @Query("SELECT * FROM recipes WHERE is_deleted = 0 AND type = :type ORDER BY RANDOM() LIMIT :count")
+    suspend fun getRandomRecipesWithDetailsByType(type: String, count: Int): List<RecipeWithDetails>
+
+    @Transaction
     @Query("SELECT * FROM recipes WHERE id = :recipeId AND is_deleted = 0")
     fun getRecipeWithDetails(recipeId: Long): Flow<RecipeWithDetails?>
 

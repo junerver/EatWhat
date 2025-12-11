@@ -38,7 +38,7 @@ class RecipeRepository(private val database: EatWhatDatabase) {
     }
 
     suspend fun getRandomRecipesByType(type: RecipeType, count: Int): List<Recipe> {
-        return recipeDao.getRandomRecipesByType(type.name, count).map { it.toSimpleDomain() }
+        return recipeDao.getRandomRecipesWithDetailsByType(type.name, count).map { it.toDomain() }
     }
 
     fun searchRecipes(query: String): Flow<List<Recipe>> {

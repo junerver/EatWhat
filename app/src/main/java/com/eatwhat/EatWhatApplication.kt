@@ -28,6 +28,12 @@ class EatWhatApplication : Application() {
     lateinit var rollRepository: RollRepository
         private set
 
+    lateinit var historyRepository: com.eatwhat.data.repository.HistoryRepository
+        private set
+
+    // Temporary storage for current roll result (for navigation)
+    var currentRollResult: com.eatwhat.domain.model.RollResult? = null
+
     override fun onCreate() {
         super.onCreate()
 
@@ -43,6 +49,7 @@ class EatWhatApplication : Application() {
         // Initialize repositories
         recipeRepository = RecipeRepository(database)
         rollRepository = RollRepository(recipeRepository)
+        historyRepository = com.eatwhat.data.repository.HistoryRepository(database)
     }
 
     private class DatabaseCallback : RoomDatabase.Callback() {

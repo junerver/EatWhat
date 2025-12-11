@@ -20,8 +20,10 @@ import com.eatwhat.EatWhatApplication
 import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.domain.model.RollConfig
+import com.eatwhat.domain.model.RollResult
 import com.eatwhat.domain.usecase.InsufficientRecipesException
 import com.eatwhat.domain.usecase.RollRecipesUseCase
+import com.eatwhat.navigation.Destinations
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
 
@@ -51,6 +53,16 @@ fun RollResultScreen(
             soupCount = soupCount,
             stapleCount = stapleCount
         )
+    }
+
+    // Store current roll result in Application for navigation
+    LaunchedEffect(rollResult) {
+        if (rollResult != null) {
+            app.currentRollResult = RollResult(
+                recipes = rollResult,
+                config = config
+            )
+        }
     }
 
     fun executeRoll() {
@@ -139,17 +151,28 @@ fun RollResultScreen(
                             // 重新Roll单个菜品
                             scope.launch {
                                 try {
-                                    val newRecipes = app.recipeRepository.getRandomRecipesByType(
+                                    // 获取该类型的所有菜品（最多10个）
+                                    val allRecipes = app.recipeRepository.getRandomRecipesByType(
                                         recipe.type,
-                                        1
+                                        10
                                     )
-                                    if (newRecipes.isNotEmpty()) {
+
+                                    // 排除当前菜品和已选中的其他菜品
+                                    val currentIds = rollResult.map { it.id }.toSet()
+                                    val availableRecipes = allRecipes.filter { it.id !in currentIds }
+
+                                    if (availableRecipes.isNotEmpty()) {
+                                        // 随机选择一个新菜品
+                                        val newRecipe = availableRecipes.random()
                                         val updatedList = rollResult.toMutableList()
                                         val index = updatedList.indexOfFirst { it.id == recipe.id }
                                         if (index != -1) {
-                                            updatedList[index] = newRecipes.first()
+                                            updatedList[index] = newRecipe
                                             setRollResult(updatedList)
+                                            snackbarHostState.showSnackbar("已替换为：${newRecipe.name}")
                                         }
+                                    } else {
+                                        snackbarHostState.showSnackbar("该类型没有更多菜品了")
                                     }
                                 } catch (e: Exception) {
                                     snackbarHostState.showSnackbar("重新Roll失败: ${e.message}")
@@ -157,8 +180,8 @@ fun RollResultScreen(
                             }
                         },
                         onConfirm = {
-                            // TODO: 保存到历史记录
-                            navController.popBackStack()
+                            // 跳转到食材准备页面
+                            navController.navigate(Destinations.Prep.route)
                         },
                         onBack = {
                             navController.popBackStack()

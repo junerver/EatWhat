@@ -66,6 +66,10 @@ fun EatWhatApp() {
                 val stapleCount = backStackEntry.arguments?.getString("stapleCount")?.toIntOrNull() ?: 0
                 RollResultScreen(navController, meatCount, vegCount, soupCount, stapleCount)
             }
+
+            composable(Destinations.Prep.route) {
+                com.eatwhat.ui.screens.prep.PrepScreen(navController)
+            }
         }
     }
 }
