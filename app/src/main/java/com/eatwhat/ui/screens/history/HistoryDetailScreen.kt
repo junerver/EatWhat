@@ -158,7 +158,11 @@ fun HistoryDetailScreen(
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator()
+            Text(
+                text = "加载中...",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

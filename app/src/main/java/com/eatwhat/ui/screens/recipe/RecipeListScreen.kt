@@ -1,13 +1,17 @@
 package com.eatwhat.ui.screens.recipe
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -16,30 +20,30 @@ import com.eatwhat.EatWhatApplication
 import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.ui.components.RecipeCard
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun RecipeListScreen(navController: NavController) {
     val context = LocalContext.current
     val app = context.applicationContext as EatWhatApplication
     val repository = remember { app.recipeRepository }
+    val scope = rememberCoroutineScope()
 
-    val (selectedType, setSelectedType) = useState<RecipeType?>(null)
     val (searchQuery, setSearchQuery) = useState("")
     val (isSearching, setIsSearching) = useState(false)
 
-    // Get recipes based on filter
-    val recipesFlow: Flow<List<Recipe>> = remember(selectedType, searchQuery) {
-        when {
-            searchQuery.isNotEmpty() -> repository.searchRecipes(searchQuery)
-            selectedType != null -> repository.getRecipesByType(selectedType)
-            else -> repository.getAllRecipes()
-        }
-    }
+    // Tab配置
+    val tabs = listOf(
+        null to "全部",
+        RecipeType.MEAT to "荤菜 🍗",
+        RecipeType.VEG to "素菜 🥬",
+        RecipeType.SOUP to "汤 🍲",
+        RecipeType.STAPLE to "主食 🍚"
+    )
 
-    val recipes by recipesFlow.collectAsState(initial = emptyList())
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
 
     Scaffold(
         topBar = {
@@ -80,74 +84,85 @@ fun RecipeListScreen(navController: NavController) {
                 )
             }
 
-            // Type filter tabs
+            // Type filter tabs - 支持点击切换
             ScrollableTabRow(
-                selectedTabIndex = when (selectedType) {
-                    null -> 0
-                    RecipeType.MEAT -> 1
-                    RecipeType.VEG -> 2
-                    RecipeType.SOUP -> 3
-                    RecipeType.STAPLE -> 4
-                },
+                selectedTabIndex = pagerState.currentPage,
                 modifier = Modifier.fillMaxWidth(),
                 edgePadding = 16.dp
             ) {
-                Tab(
-                    selected = selectedType == null,
-                    onClick = { setSelectedType(null) },
-                    text = { Text("全部") }
-                )
-                Tab(
-                    selected = selectedType == RecipeType.MEAT,
-                    onClick = { setSelectedType(RecipeType.MEAT) },
-                    text = { Text("荤菜 🍗") }
-                )
-                Tab(
-                    selected = selectedType == RecipeType.VEG,
-                    onClick = { setSelectedType(RecipeType.VEG) },
-                    text = { Text("素菜 🥬") }
-                )
-                Tab(
-                    selected = selectedType == RecipeType.SOUP,
-                    onClick = { setSelectedType(RecipeType.SOUP) },
-                    text = { Text("汤 🍲") }
-                )
-                Tab(
-                    selected = selectedType == RecipeType.STAPLE,
-                    onClick = { setSelectedType(RecipeType.STAPLE) },
-                    text = { Text("主食 🍚") }
-                )
-            }
-
-            // Recipe list
-            if (recipes.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = androidx.compose.ui.Alignment.Center
-                ) {
-                    Text(
-                        text = if (searchQuery.isNotEmpty()) "未找到相关菜谱" else "暂无菜谱",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                tabs.forEachIndexed { index, (_, title) ->
+                    Tab(
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        },
+                        text = { Text(title) }
                     )
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(recipes, key = { it.id }) { recipe ->
-                        RecipeCard(
-                            recipe = recipe,
-                            onClick = {
-                                navController.navigate("recipe/${recipe.id}")
-                            }
-                        )
+            }
+
+            // 支持左右滑动切换的内容区
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                val selectedType = tabs[page].first
+
+                // 根据当前tab获取菜谱
+                val recipesFlow = remember(selectedType, searchQuery) {
+                    when {
+                        searchQuery.isNotEmpty() -> repository.searchRecipes(searchQuery)
+                        selectedType != null -> repository.getRecipesByType(selectedType)
+                        else -> repository.getAllRecipes()
                     }
                 }
+
+                val recipes by recipesFlow.collectAsState(initial = emptyList())
+
+                RecipeListContent(
+                    recipes = recipes,
+                    searchQuery = searchQuery,
+                    onRecipeClick = { recipe ->
+                        navController.navigate("recipe/${recipe.id}")
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecipeListContent(
+    recipes: List<Recipe>,
+    searchQuery: String,
+    onRecipeClick: (Recipe) -> Unit
+) {
+    if (recipes.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = if (searchQuery.isNotEmpty()) "未找到相关菜谱" else "暂无菜谱",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(recipes, key = { it.id }) { recipe ->
+                RecipeCard(
+                    recipe = recipe,
+                    onClick = { onRecipeClick(recipe) }
+                )
             }
         }
     }

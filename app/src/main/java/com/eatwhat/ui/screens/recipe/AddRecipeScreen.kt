@@ -450,14 +450,13 @@ fun AddRecipeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isSaving
                 ) {
-                    if (isSaving) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    } else {
-                        Text(if (isEditMode) "保存" else "添加")
-                    }
+                    Text(
+                        text = if (isSaving) {
+                            if (isEditMode) "保存中..." else "添加中..."
+                        } else {
+                            if (isEditMode) "保存" else "添加"
+                        }
+                    )
                 }
             }
         }
