@@ -32,17 +32,58 @@ fun RollScreen(navController: NavController) {
     val (currentType, setCurrentType) = useState("")
 
     fun executeRoll() {
-        val finalMeatCount = if (totalCount == 0) 1 else meatCount
-        val finalVegCount = if (totalCount == 0) 0 else vegCount
-        val finalSoupCount = if (totalCount == 0) 0 else soupCount
-        val finalStapleCount = 0
+        // 如果没有选择菜数，默认1个荤菜
+        if (totalCount == 0) {
+            navController.navigate(
+                Destinations.RollResult.createRoute(
+                    meatCount = 1,
+                    vegCount = 0,
+                    soupCount = 0,
+                    stapleCount = 0
+                )
+            )
+            return
+        }
 
+        // 检查用户已分配的菜数
+        val allocated = meatCount + vegCount + soupCount
+        val remaining = totalCount - allocated
+
+        // 如果用户没有分配任何类型，自动平均分配
+        if (allocated == 0) {
+            val autoMeat = totalCount / 2
+            val autoVeg = totalCount - autoMeat
+            navController.navigate(
+                Destinations.RollResult.createRoute(
+                    meatCount = autoMeat,
+                    vegCount = autoVeg,
+                    soupCount = 0,
+                    stapleCount = 0
+                )
+            )
+            return
+        }
+
+        // 如果有剩余未分配的菜数，自动分配给素菜和汤
+        var finalMeatCount = meatCount
+        var finalVegCount = vegCount
+        var finalSoupCount = soupCount
+
+        if (remaining > 0) {
+            // 剩余的菜数平均分配给素菜和汤
+            val autoVeg = remaining / 2
+            val autoSoup = remaining - autoVeg
+            finalVegCount += autoVeg
+            finalSoupCount += autoSoup
+        }
+
+        // 使用最终分配的数量
         navController.navigate(
             Destinations.RollResult.createRoute(
                 meatCount = finalMeatCount,
                 vegCount = finalVegCount,
                 soupCount = finalSoupCount,
-                stapleCount = finalStapleCount
+                stapleCount = 0
             )
         )
     }

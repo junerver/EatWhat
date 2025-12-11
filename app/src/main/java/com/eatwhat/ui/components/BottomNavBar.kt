@@ -1,17 +1,13 @@
 package com.eatwhat.ui.components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.eatwhat.R
@@ -29,17 +25,17 @@ fun BottomNavBar(navController: NavController) {
     val items = listOf(
         BottomNavItem(
             route = Destinations.Roll.route,
-            icon = Icons.Filled.Shuffle,
+            emoji = "🎲",
             label = stringResource(R.string.nav_roll)
         ),
         BottomNavItem(
             route = Destinations.RecipeList.route,
-            icon = Icons.Filled.Restaurant,
+            emoji = "📖",
             label = stringResource(R.string.nav_recipes)
         ),
         BottomNavItem(
             route = Destinations.History.route,
-            icon = Icons.Filled.History,
+            emoji = "📜",
             label = stringResource(R.string.nav_history)
         )
     )
@@ -47,8 +43,18 @@ fun BottomNavBar(navController: NavController) {
     NavigationBar {
         items.forEach { item ->
             NavigationBarItem(
-                icon = { Icon(item.icon, contentDescription = item.label) },
-                label = { Text(item.label) },
+                icon = {
+                    Text(
+                        text = item.emoji,
+                        fontSize = 24.sp
+                    )
+                },
+                label = {
+                    Text(
+                        text = item.label,
+                        fontSize = 12.sp
+                    )
+                },
                 selected = currentRoute == item.route,
                 onClick = {
                     if (currentRoute != item.route) {
@@ -71,6 +77,6 @@ fun BottomNavBar(navController: NavController) {
 
 private data class BottomNavItem(
     val route: String,
-    val icon: ImageVector,
+    val emoji: String,
     val label: String
 )
