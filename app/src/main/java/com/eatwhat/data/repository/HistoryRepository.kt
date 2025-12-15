@@ -3,7 +3,11 @@ package com.eatwhat.data.repository
 import com.eatwhat.data.database.EatWhatDatabase
 import com.eatwhat.data.database.entities.*
 import com.eatwhat.data.database.relations.HistoryWithDetails
-import com.eatwhat.domain.model.*
+import com.eatwhat.domain.model.Difficulty
+import com.eatwhat.domain.model.HistoryRecord
+import com.eatwhat.domain.model.Recipe
+import com.eatwhat.domain.model.RecipeType
+import com.eatwhat.domain.model.RollConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -15,8 +19,8 @@ class HistoryRepository(private val database: EatWhatDatabase) {
     private val historyDao = database.historyDao()
 
     fun getAllHistory(): Flow<List<HistoryRecord>> {
-        return historyDao.getAllHistory().map { list ->
-            list.map { it.toDomain() }
+        return historyDao.getAllHistoryWithDetails().map { list ->
+            list.map { it.toHistoryRecord() }
         }
     }
 
@@ -91,7 +95,36 @@ class HistoryRepository(private val database: EatWhatDatabase) {
             meatCount = meatCount,
             vegCount = vegCount,
             soupCount = soupCount,
-            summary = summary
+            summary = summary,
+            customName = customName,
+            isLocked = isLocked
+        )
+    }
+
+    private fun HistoryWithDetails.toHistoryRecord(): HistoryRecord {
+        return HistoryRecord(
+            id = history.id,
+            syncId = history.syncId,
+            timestamp = history.timestamp,
+            totalCount = history.totalCount,
+            meatCount = history.meatCount,
+            vegCount = history.vegCount,
+            soupCount = history.soupCount,
+            summary = history.summary,
+            customName = history.customName,
+            isLocked = history.isLocked,
+            recipes = recipeSnapshots.map { it.toDomainSnapshot() }
+        )
+    }
+
+    private fun HistoryRecipeCrossRef.toDomainSnapshot(): com.eatwhat.domain.model.RecipeSnapshot {
+        return com.eatwhat.domain.model.RecipeSnapshot(
+            recipeId = recipeId,
+            name = recipeName,
+            type = try { RecipeType.valueOf(recipeType) } catch (e: Exception) { RecipeType.MEAT },
+            icon = recipeIcon,
+            difficulty = try { Difficulty.valueOf(recipeDifficulty) } catch (e: Exception) { Difficulty.MEDIUM },
+            estimatedTime = recipeTime
         )
     }
 
@@ -127,6 +160,27 @@ class HistoryRepository(private val database: EatWhatDatabase) {
      */
     suspend fun updatePrepItemChecked(prepItemId: Long, isChecked: Boolean) {
         historyDao.updatePrepItemChecked(prepItemId, isChecked)
+    }
+
+    /**
+     * Toggle history record locked status
+     */
+    suspend fun toggleHistoryLocked(historyId: Long, isLocked: Boolean) {
+        historyDao.updateHistoryLocked(historyId, isLocked)
+    }
+
+    /**
+     * Delete all unlocked history records
+     */
+    suspend fun deleteAllUnlockedHistory() {
+        historyDao.deleteAllUnlockedHistory()
+    }
+
+    /**
+     * Update history record custom name
+     */
+    suspend fun updateHistoryCustomName(historyId: Long, customName: String) {
+        historyDao.updateHistoryCustomName(historyId, customName)
     }
 }
 

@@ -48,6 +48,7 @@ class EatWhatApplication : Application() {
             "eatwhat.db"
         )
             .addCallback(DatabaseCallback())
+            .addMigrations(EatWhatDatabase.MIGRATION_1_2, EatWhatDatabase.MIGRATION_2_3)
             .build()
 
         // Initialize repositories

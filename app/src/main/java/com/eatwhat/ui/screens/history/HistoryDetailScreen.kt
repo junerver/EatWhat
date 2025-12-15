@@ -1,10 +1,17 @@
 package com.eatwhat.ui.screens.history
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,6 +43,10 @@ fun HistoryDetailScreen(
     val historyWithRecipes by repository.getHistoryById(historyId)
         .collectAsState(initial = null)
 
+    // 编辑名称对话框状态
+    var showEditNameDialog by remember { mutableStateOf(false) }
+    var editingName by remember { mutableStateOf("") }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -61,55 +72,120 @@ fun HistoryDetailScreen(
                     }
                 }
 
-                // 标题 - 配置摘要
+                // 标题 - 自定义名称或配置摘要
                 item {
-                    Text(
-                        text = data.history.summary.ifEmpty { "${data.history.totalCount}个菜" },
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1C1B1F),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = data.history.customName.ifEmpty {
+                                    data.history.summary.ifEmpty { "${data.history.totalCount}个菜" }
+                                },
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1C1B1F),
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
 
-                    // 时间显示
-                    Text(
-                        text = formatTimestamp(data.history.timestamp),
-                        fontSize = 14.sp,
-                        color = Color(0xFF79747E),
-                        modifier = Modifier.padding(bottom = 24.dp)
-                    )
+                            // 如果有自定义名称，显示配置摘要作为副标题
+                            if (data.history.customName.isNotEmpty()) {
+                                Text(
+                                    text = data.history.summary.ifEmpty { "${data.history.totalCount}个菜" },
+                                    fontSize = 14.sp,
+                                    color = Color(0xFF79747E),
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                )
+                            }
+
+                            // 时间显示
+                            Text(
+                                text = formatTimestamp(data.history.timestamp),
+                                fontSize = 14.sp,
+                                color = Color(0xFF79747E),
+                                modifier = Modifier.padding(bottom = 24.dp)
+                            )
+                        }
+
+                        // 编辑按钮
+                        IconButton(
+                            onClick = {
+                                editingName = data.history.customName
+                                showEditNameDialog = true
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "编辑名称",
+                                tint = Color(0xFF6750A4)
+                            )
+                        }
+                    }
                 }
 
-                // 备菜进度区域
+                // 备菜进度区域（可折叠）
                 if (data.prepItems.isNotEmpty()) {
                     item {
                         val checkedCount = data.prepItems.count { it.isChecked }
                         val totalCount = data.prepItems.size
+                        val allChecked = checkedCount == totalCount
 
-                        Text(
-                            text = "备菜进度: $checkedCount/$totalCount",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF1C1B1F),
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
-                    }
+                        // 默认状态：全部完成时折叠，否则展开
+                        var expanded by remember(allChecked) {
+                            mutableStateOf(!allChecked)
+                        }
 
-                    // 备菜清单项
-                    data.prepItems.forEach { item ->
-                        item {
-                            PrepItemCheckRow(
-                                item = item,
-                                onCheckedChange = { checked ->
-                                    scope.launch {
-                                        repository.updatePrepItemChecked(item.id, checked)
-                                    }
-                                }
+                        // 标题行（可点击展开/折叠）
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expanded = !expanded }
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "备菜进度: $checkedCount/$totalCount",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF1C1B1F)
+                            )
+
+                            Icon(
+                                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = if (expanded) "收起" else "展开",
+                                tint = Color(0xFF6750A4)
                             )
                         }
-                    }
 
-                    item {
+                        // 备菜清单（可折叠动画）
+                        AnimatedVisibility(
+                            visible = expanded,
+                            enter = expandVertically(),
+                            exit = shrinkVertically()
+                        ) {
+                            Column {
+                                data.prepItems.forEach { item ->
+                                    PrepItemCheckRow(
+                                        item = item,
+                                        onCheckedChange = { checked ->
+                                            scope.launch {
+                                                repository.updatePrepItemChecked(item.id, checked)
+                                            }
+                                            // 如果勾选了最后一个未完成项，自动折叠
+                                            if (checked && checkedCount + 1 == totalCount) {
+                                                expanded = false
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
                         Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
@@ -135,6 +211,58 @@ fun HistoryDetailScreen(
                 text = "加载中...",
                 fontSize = 16.sp,
                 color = Color(0xFF79747E)
+            )
+        }
+
+        // 编辑名称对话框
+        if (showEditNameDialog) {
+            AlertDialog(
+                onDismissRequest = { showEditNameDialog = false },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null,
+                        tint = Color(0xFF6750A4)
+                    )
+                },
+                title = {
+                    Text("编辑名称")
+                },
+                text = {
+                    Column {
+                        Text(
+                            text = "为这个菜肴搭配起个名字，方便管理收藏",
+                            fontSize = 14.sp,
+                            color = Color(0xFF79747E),
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        OutlinedTextField(
+                            value = editingName,
+                            onValueChange = { editingName = it },
+                            label = { Text("自定义名称") },
+                            placeholder = { Text("例如：周末家宴、快手晚餐") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            scope.launch {
+                                repository.updateHistoryCustomName(historyId, editingName.trim())
+                            }
+                            showEditNameDialog = false
+                        }
+                    ) {
+                        Text("保存")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showEditNameDialog = false }) {
+                        Text("取消")
+                    }
+                }
             )
         }
     }

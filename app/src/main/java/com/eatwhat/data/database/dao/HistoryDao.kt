@@ -35,8 +35,21 @@ interface HistoryDao {
     fun getHistoryWithDetails(historyId: Long): Flow<HistoryWithDetails?>
 
     @Transaction
-    @Query("SELECT * FROM history_records WHERE is_deleted = 0 ORDER BY timestamp DESC")
+    @Query("SELECT * FROM history_records WHERE is_deleted = 0 ORDER BY is_locked DESC, timestamp DESC")
     fun getAllHistoryWithDetails(): Flow<List<HistoryWithDetails>>
+
+    // ========== Lock/Unlock Operations ==========
+
+    @Query("UPDATE history_records SET is_locked = :isLocked, last_modified = :timestamp WHERE id = :historyId")
+    suspend fun updateHistoryLocked(historyId: Long, isLocked: Boolean, timestamp: Long = System.currentTimeMillis())
+
+    @Query("UPDATE history_records SET is_deleted = 1, last_modified = :timestamp WHERE is_deleted = 0 AND is_locked = 0")
+    suspend fun deleteAllUnlockedHistory(timestamp: Long = System.currentTimeMillis())
+
+    // ========== Custom Name Operations ==========
+
+    @Query("UPDATE history_records SET custom_name = :customName, last_modified = :timestamp WHERE id = :historyId")
+    suspend fun updateHistoryCustomName(historyId: Long, customName: String, timestamp: Long = System.currentTimeMillis())
 
     // ========== History-Recipe Cross Reference ==========
 

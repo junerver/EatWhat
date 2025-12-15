@@ -12,6 +12,8 @@ data class HistoryRecord(
     val vegCount: Int,
     val soupCount: Int,
     val summary: String,
+    val customName: String = "",
+    val isLocked: Boolean = false,
     val recipes: List<RecipeSnapshot> = emptyList(),
     val prepItems: List<PrepItem> = emptyList(),
     val lastModified: Long = System.currentTimeMillis()

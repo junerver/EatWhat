@@ -14,7 +14,8 @@ import java.util.UUID
     tableName = "history_records",
     indices = [
         Index(value = ["timestamp"]),
-        Index(value = ["sync_id"], unique = true)
+        Index(value = ["sync_id"], unique = true),
+        Index(value = ["is_locked"])
     ]
 )
 data class HistoryRecordEntity(
@@ -39,6 +40,12 @@ data class HistoryRecordEntity(
     val soupCount: Int,
 
     val summary: String,
+
+    @ColumnInfo(name = "custom_name", defaultValue = "")
+    val customName: String = "",
+
+    @ColumnInfo(name = "is_locked", defaultValue = "0")
+    val isLocked: Boolean = false,
 
     @ColumnInfo(name = "last_modified")
     val lastModified: Long = System.currentTimeMillis(),
