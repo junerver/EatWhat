@@ -10,11 +10,11 @@
 
 ## Quick Links
 
-- 📋 [Complete Project Rules](../AGENTS.md) - Read this for all development guidelines
-- 📚 [Rules Sync Guide](../docs/RULES-SYNC.md) - How to update and maintain rules
-- 📁 [Project Structure](../AGENTS.md#-project-structure)
-- 🎨 [UI Development](../AGENTS.md#-ui-development)
-- 🗄️ [Database Guidelines](../AGENTS.md#%EF%B8%8F-database-guidelines)
+- 📋 [Complete Project Rules](../../AGENTS.md) - Read this for all development guidelines
+- 📚 [Rules Sync Guide](../../docs/RULES-SYNC.md) - How to update and maintain rules
+- 📁 [Project Structure](../../AGENTS.md#-project-structure)
+- 🎨 [UI Development](../../AGENTS.md#-ui-development)
+- 🗄️ [Database Guidelines](../../AGENTS.md#%EF%B8%8F-database-guidelines)
 
 ## For Kilocode Users
 
