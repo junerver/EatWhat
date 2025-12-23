@@ -37,6 +37,7 @@ import com.eatwhat.data.repository.PrepItemRecord
 import com.eatwhat.data.repository.RecipeSnapshot
 import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
+import com.eatwhat.ui.components.SimpleCircularProgressIndicator
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -301,7 +302,10 @@ fun HistoryDetailScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                CircularProgressIndicator(color = PrimaryOrange)
+                SimpleCircularProgressIndicator(
+                    color = PrimaryOrange,
+                    strokeWidth = 4.dp
+                )
                 Text(
                     text = "加载中...",
                     style = MaterialTheme.typography.bodyLarge,

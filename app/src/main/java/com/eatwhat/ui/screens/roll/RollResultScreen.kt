@@ -31,6 +31,7 @@ import com.eatwhat.domain.usecase.RollRecipesUseCase
 import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
+import com.eatwhat.ui.components.SimpleCircularProgressIndicator
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
 
@@ -125,7 +126,10 @@ fun RollResultScreen(
                             style = MaterialTheme.typography.titleMedium,
                             color = Color.Gray
                         )
-                        CircularProgressIndicator(color = PrimaryOrange)
+                        SimpleCircularProgressIndicator(
+                            color = PrimaryOrange,
+                            strokeWidth = 4.dp
+                        )
                     }
                 }
                 error != null -> {
