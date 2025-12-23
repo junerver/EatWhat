@@ -3,7 +3,6 @@ package com.eatwhat.ui.screens.recipe
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,23 +35,16 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.domain.model.*
-import com.eatwhat.domain.model.Unit as IngredientUnit
 import com.eatwhat.ui.components.FoodEmojis
 import com.eatwhat.ui.components.RecipeIconPicker
+import com.eatwhat.ui.theme.PrimaryOrange
+import com.eatwhat.ui.theme.SoftBlue
+import com.eatwhat.ui.theme.SoftGreen
+import com.eatwhat.ui.theme.WarmYellow
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
 import kotlin.random.Random
-
-// 定义主题色
-private val PrimaryOrange = Color(0xFFFF6B35)
-private val PrimaryOrangeLight = Color(0xFFFF8C5A)
-private val PrimaryOrangeDark = Color(0xFFE55A2B)
-private val SoftGreen = Color(0xFF4CAF50)
-private val SoftBlue = Color(0xFF2196F3)
-private val SoftPurple = Color(0xFF9C27B0)
-private val WarmYellow = Color(0xFFFFC107)
-private val CardBackground = Color(0xFFFFFBF8)
-private val SectionIconBackground = Color(0xFFFFF3E0)
+import com.eatwhat.domain.model.Unit as IngredientUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

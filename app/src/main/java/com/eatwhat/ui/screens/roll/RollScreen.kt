@@ -23,15 +23,11 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import com.eatwhat.navigation.Destinations
+import com.eatwhat.ui.theme.PrimaryOrange
+import com.eatwhat.ui.theme.PrimaryOrangeLight
+import com.eatwhat.ui.theme.SoftBlue
+import com.eatwhat.ui.theme.SoftGreen
 import xyz.junerver.compose.hooks.*
-
-// 定义主题色
-private val PrimaryOrange = Color(0xFFFF6B35)
-private val PrimaryOrangeLight = Color(0xFFFF8C5A)
-private val PrimaryOrangeDark = Color(0xFFE55A2B)
-private val SoftGreen = Color(0xFF4CAF50)
-private val SoftBlue = Color(0xFF2196F3)
-private val WarmYellow = Color(0xFFFFC107)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
