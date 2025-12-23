@@ -7,16 +7,24 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -32,6 +40,14 @@ import com.eatwhat.ui.components.RecipeIcon
 import kotlinx.coroutines.launch
 import java.util.*
 
+// 定义主题色
+private val PrimaryOrange = Color(0xFFFF6B35)
+private val SoftGreen = Color(0xFF4CAF50)
+private val SoftBlue = Color(0xFF2196F3)
+private val WarmYellow = Color(0xFFFFC107)
+private val PageBackground = Color(0xFFF5F5F5)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryDetailScreen(
     navController: NavController,
@@ -49,82 +65,112 @@ fun HistoryDetailScreen(
     var showEditNameDialog by remember { mutableStateOf(false) }
     var editingName by remember { mutableStateOf("") }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { 
+                    Text(
+                        "菜单详情",
+                        fontWeight = FontWeight.Bold
+                    ) 
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "返回"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            historyWithRecipes?.let { data ->
+                                editingName = data.history.customName
+                                showEditNameDialog = true
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "编辑名称",
+                            tint = PrimaryOrange
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
+            )
+        },
+        containerColor = PageBackground
+    ) { paddingValues ->
         historyWithRecipes?.let { data ->
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(start = 24.dp, end = 24.dp, top = 60.dp, bottom = 100.dp)
+                    .padding(paddingValues),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 返回按钮
+                // Header Card
                 item {
-                    TextButton(
-                        onClick = { navController.navigateUp() },
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    ) {
-                        Text(
-                            text = "← 返回",
-                            fontSize = 24.sp,
-                            color = Color(0xFF6750A4)
-                        )
-                    }
-                }
-
-                // 标题 - 自定义名称或配置摘要
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 4.dp,
+                                shape = RoundedCornerShape(20.dp),
+                                spotColor = Color.Black.copy(alpha = 0.1f)
+                            ),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Column(
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            Text(
+                                text = "🍽️",
+                                fontSize = 48.sp
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
                             Text(
                                 text = data.history.customName.ifEmpty {
                                     data.history.summary.ifEmpty { "${data.history.totalCount}个菜" }
                                 },
-                                fontSize = 24.sp,
+                                style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1C1B1F),
-                                modifier = Modifier.padding(bottom = 8.dp)
+                                color = Color(0xFF1C1B1F)
                             )
 
                             // 如果有自定义名称，显示配置摘要作为副标题
                             if (data.history.customName.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = data.history.summary.ifEmpty { "${data.history.totalCount}个菜" },
-                                    fontSize = 14.sp,
-                                    color = Color(0xFF79747E),
-                                    modifier = Modifier.padding(bottom = 4.dp)
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.Gray
                                 )
                             }
 
-                            // 时间显示
-                            Text(
-                                text = formatTimestamp(data.history.timestamp),
-                                fontSize = 14.sp,
-                                color = Color(0xFF79747E),
-                                modifier = Modifier.padding(bottom = 24.dp)
-                            )
-                        }
+                            Spacer(modifier = Modifier.height(8.dp))
 
-                        // 编辑按钮
-                        IconButton(
-                            onClick = {
-                                editingName = data.history.customName
-                                showEditNameDialog = true
+                            // 时间标签
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = PrimaryOrange.copy(alpha = 0.1f)
+                            ) {
+                                Text(
+                                    text = formatTimestamp(data.history.timestamp),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = PrimaryOrange,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                )
                             }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "编辑名称",
-                                tint = Color(0xFF6750A4)
-                            )
                         }
                     }
                 }
@@ -135,85 +181,133 @@ fun HistoryDetailScreen(
                         val checkedCount = data.prepItems.count { it.isChecked }
                         val totalCount = data.prepItems.size
                         val allChecked = checkedCount == totalCount
+                        val progress = if (totalCount > 0) checkedCount.toFloat() / totalCount else 0f
 
                         // 默认状态：全部完成时折叠，否则展开
                         var expanded by remember(allChecked) {
                             mutableStateOf(!allChecked)
                         }
 
-                        // 标题行（可点击展开/折叠）
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { expanded = !expanded }
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                        SectionCard(
+                            title = "备菜进度",
+                            subtitle = "$checkedCount / $totalCount",
+                            icon = Icons.Outlined.ShoppingCart,
+                            iconBackgroundColor = SoftGreen.copy(alpha = 0.1f),
+                            iconTint = SoftGreen,
+                            isExpanded = expanded,
+                            onToggle = { expanded = !expanded },
+                            progress = progress
                         ) {
-                            Text(
-                                text = "备菜进度: $checkedCount/$totalCount",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF1C1B1F)
-                            )
-
-                            Icon(
-                                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = if (expanded) "收起" else "展开",
-                                tint = Color(0xFF6750A4)
-                            )
-                        }
-
-                        // 备菜清单（可折叠动画）
-                        AnimatedVisibility(
-                            visible = expanded,
-                            enter = expandVertically(),
-                            exit = shrinkVertically()
-                        ) {
-                            Column {
-                                data.prepItems.forEach { item ->
-                                    PrepItemCheckRow(
-                                        item = item,
-                                        onCheckedChange = { checked ->
-                                            scope.launch {
-                                                repository.updatePrepItemChecked(item.id, checked)
+                            AnimatedVisibility(
+                                visible = expanded,
+                                enter = expandVertically(),
+                                exit = shrinkVertically()
+                            ) {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    data.prepItems.forEachIndexed { index, item ->
+                                        PrepItemCheckRow(
+                                            index = index + 1,
+                                            item = item,
+                                            onCheckedChange = { checked ->
+                                                scope.launch {
+                                                    repository.updatePrepItemChecked(item.id, checked)
+                                                }
+                                                // 如果勾选了最后一个未完成项，自动折叠
+                                                if (checked && checkedCount + 1 == totalCount) {
+                                                    expanded = false
+                                                }
                                             }
-                                            // 如果勾选了最后一个未完成项，自动折叠
-                                            if (checked && checkedCount + 1 == totalCount) {
-                                                expanded = false
-                                            }
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
                             }
                         }
-
-                        Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
 
                 // 菜谱卡片列表
-                data.recipes.forEach { snapshot ->
-                    item {
-                        RecipeSnapshotCard(
-                            snapshot = snapshot,
-                            onClick = {
-                                navController.navigate("recipe/${snapshot.recipeId}")
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 4.dp,
+                                shape = RoundedCornerShape(20.dp),
+                                spotColor = Color.Black.copy(alpha = 0.1f)
+                            ),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(20.dp)
+                        ) {
+                            // Header
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(SoftBlue.copy(alpha = 0.1f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.MenuBook,
+                                        contentDescription = null,
+                                        tint = SoftBlue,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
+                                Text(
+                                    "菜谱列表",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
                             }
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            data.recipes.forEachIndexed { index, snapshot ->
+                                RecipeSnapshotCard(
+                                    snapshot = snapshot,
+                                    onClick = {
+                                        navController.navigate("recipe/${snapshot.recipeId}")
+                                    }
+                                )
+                                if (index < data.recipes.lastIndex) {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                }
+                            }
+                        }
                     }
+                }
+
+                // Bottom spacing
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         } ?: Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "加载中...",
-                fontSize = 16.sp,
-                color = Color(0xFF79747E)
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                CircularProgressIndicator(color = PrimaryOrange)
+                Text(
+                    text = "加载中...",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Gray
+                )
+            }
         }
 
         // 编辑名称对话框
@@ -224,7 +318,7 @@ fun HistoryDetailScreen(
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = null,
-                        tint = Color(0xFF6750A4)
+                        tint = PrimaryOrange
                     )
                 },
                 title = {
@@ -234,8 +328,8 @@ fun HistoryDetailScreen(
                     Column {
                         Text(
                             text = "为这个菜肴搭配起个名字，方便管理收藏",
-                            fontSize = 14.sp,
-                            color = Color(0xFF79747E),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                         OutlinedTextField(
@@ -244,7 +338,11 @@ fun HistoryDetailScreen(
                             label = { Text("自定义名称") },
                             placeholder = { Text("例如：周末家宴、快手晚餐") },
                             singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = PrimaryOrange,
+                                cursorColor = PrimaryOrange
+                            )
                         )
                     }
                 },
@@ -255,7 +353,10 @@ fun HistoryDetailScreen(
                                 repository.updateHistoryCustomName(historyId, editingName.trim())
                             }
                             showEditNameDialog = false
-                        }
+                        },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = PrimaryOrange
+                        )
                     ) {
                         Text("保存")
                     }
@@ -271,41 +372,149 @@ fun HistoryDetailScreen(
 }
 
 @Composable
+private fun SectionCard(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    iconBackgroundColor: Color,
+    iconTint: Color,
+    isExpanded: Boolean,
+    onToggle: () -> Unit,
+    progress: Float,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 4.dp,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = Color.Black.copy(alpha = 0.1f)
+            ),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            // Header - clickable
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onToggle() },
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(iconBackgroundColor),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            icon,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            subtitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (progress >= 1f) SoftGreen else Color.Gray
+                        )
+                    }
+                }
+
+                Icon(
+                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = if (isExpanded) "收起" else "展开",
+                    tint = iconTint
+                )
+            }
+
+            // Progress bar
+            Spacer(modifier = Modifier.height(12.dp))
+            LinearProgressIndicator(
+                progress = progress,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp)),
+                color = if (progress >= 1f) SoftGreen else PrimaryOrange,
+                trackColor = Color(0xFFE0E0E0)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            content()
+        }
+    }
+}
+
+@Composable
 private fun PrepItemCheckRow(
+    index: Int,
     item: PrepItemRecord,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    val backgroundColor = if (item.isChecked) Color(0xFFE8DEF8) else Color(0xFFF5F5F5)
+    val backgroundColor = if (item.isChecked) SoftGreen.copy(alpha = 0.1f) else Color(0xFFF8F8F8)
+    val borderColor = if (item.isChecked) SoftGreen.copy(alpha = 0.3f) else Color(0xFFE0E0E0)
     val textDecoration = if (item.isChecked) TextDecoration.LineThrough else null
-    val opacity = if (item.isChecked) 0.6f else 1f
+    val textOpacity = if (item.isChecked) 0.6f else 1f
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .background(backgroundColor, RoundedCornerShape(8.dp))
-            .clickable { onCheckedChange(!item.isChecked) }
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = backgroundColor,
+        border = androidx.compose.foundation.BorderStroke(1.dp, borderColor),
+        onClick = { onCheckedChange(!item.isChecked) }
     ) {
-        Checkbox(
-            checked = item.isChecked,
-            onCheckedChange = onCheckedChange,
-            modifier = Modifier.size(20.dp),
-            colors = CheckboxDefaults.colors(
-                checkedColor = Color(0xFF6750A4),
-                uncheckedColor = Color(0xFF79747E)
-            )
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Checkbox
+            Surface(
+                shape = CircleShape,
+                color = if (item.isChecked) SoftGreen else Color.White,
+                border = if (!item.isChecked) androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFE0E0E0)) else null,
+                modifier = Modifier.size(24.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    if (item.isChecked) {
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+            }
 
-        Text(
-            text = item.name,
-            fontSize = 16.sp,
-            color = Color(0xFF1C1B1F).copy(alpha = opacity),
-            textDecoration = textDecoration,
-            modifier = Modifier.weight(1f)
-        )
+            Text(
+                text = item.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF1C1B1F).copy(alpha = textOpacity),
+                textDecoration = textDecoration,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
 }
 
@@ -317,18 +526,14 @@ private fun RecipeSnapshotCard(
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F8F8)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Use RecipeIcon to display image or emoji
@@ -344,25 +549,25 @@ private fun RecipeSnapshotCard(
             ) {
                 Text(
                     text = snapshot.name,
-                    fontSize = 18.sp,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF1C1B1F)
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     // 类型标签
-                    val typeText = when (snapshot.type) {
-                        "MEAT" -> "荤菜"
-                        "VEGETABLE" -> "素菜"
-                        "SOUP" -> "汤"
-                        "STAPLE" -> "主食"
-                        else -> snapshot.type
+                    val (typeText, typeColor) = when (snapshot.type) {
+                        "MEAT" -> "荤菜" to Color(0xFFE57373)
+                        "VEG" -> "素菜" to SoftGreen
+                        "SOUP" -> "汤" to SoftBlue
+                        "STAPLE" -> "主食" to WarmYellow
+                        else -> snapshot.type to Color.Gray
                     }
-                    Tag(text = typeText)
+                    InfoTag(text = typeText, color = typeColor)
 
                     // 难度标签
                     val difficultyText = when (snapshot.difficulty) {
@@ -371,10 +576,10 @@ private fun RecipeSnapshotCard(
                         "HARD" -> "困难"
                         else -> snapshot.difficulty
                     }
-                    Tag(text = difficultyText)
+                    InfoTag(text = difficultyText, color = Color.Gray)
 
                     // 时间标签
-                    Tag(text = "${snapshot.estimatedTime}分钟")
+                    InfoTag(text = "${snapshot.estimatedTime}分钟", color = Color.Gray)
                 }
             }
         }
@@ -382,16 +587,17 @@ private fun RecipeSnapshotCard(
 }
 
 @Composable
-private fun Tag(text: String) {
-    Box(
-        modifier = Modifier
-            .background(Color(0xFFE8DEF8), RoundedCornerShape(6.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+private fun InfoTag(text: String, color: Color) {
+    Surface(
+        shape = RoundedCornerShape(6.dp),
+        color = color.copy(alpha = 0.1f)
     ) {
         Text(
             text = text,
-            fontSize = 12.sp,
-            color = Color(0xFF6750A4)
+            style = MaterialTheme.typography.labelSmall,
+            color = color,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }
 }

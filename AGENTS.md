@@ -90,6 +90,156 @@ app/src/main/java/com/eatwhat/
 
 ## 🎨 UI Development
 
+### Design System
+
+#### Color Palette
+
+项目使用温暖、现代的配色方案：
+
+```kotlin
+// 主色调 - 温暖橙色系
+private val PrimaryOrange = Color(0xFFFF6B35)      // 主要操作、强调
+private val PrimaryOrangeLight = Color(0xFFFF8C5A) // 浅色变体
+private val PrimaryOrangeDark = Color(0xFFE55A2B)  // 深色变体
+
+// 功能色
+private val SoftGreen = Color(0xFF4CAF50)   // 食材相关、成功状态
+private val SoftBlue = Color(0xFF2196F3)    // 步骤相关、信息状态
+private val SoftPurple = Color(0xFF9C27B0)  // 特殊功能
+private val WarmYellow = Color(0xFFFFC107)  // 中等难度、警告
+
+// 背景色
+private val CardBackground = Color(0xFFFFFBF8)  // 卡片背景
+private val PageBackground = Color(0xFFF5F5F5)  // 页面背景
+```
+
+#### 卡片设计规范
+
+**SectionCard 组件模式**：
+
+- 白色背景 (`Color.White`)
+- 20dp 圆角 (`RoundedCornerShape(20.dp)`)
+- 4dp 柔和阴影 (`shadow(elevation = 4.dp)`)
+- 20dp 内边距
+- 带图标标题区域（图标背景 40x40dp，12dp 圆角）
+
+```kotlin
+Card(
+    modifier = Modifier
+        .fillMaxWidth()
+        .shadow(
+            elevation = 4.dp,
+            shape = RoundedCornerShape(20.dp),
+            spotColor = Color.Black.copy(alpha = 0.1f)
+        ),
+    shape = RoundedCornerShape(20.dp),
+    colors = CardDefaults.cardColors(containerColor = Color.White)
+)
+```
+
+#### 输入框设计规范
+
+**StyledTextField 模式**：
+
+- 无边框设计
+- 灰色背景 (`Color(0xFFF8F8F8)`)
+- 12dp 圆角
+- 支持 leading/trailing 图标
+- 自定义 placeholder 样式
+
+```kotlin
+Surface(
+    shape = RoundedCornerShape(12.dp),
+    color = Color(0xFFF8F8F8)
+) {
+    BasicTextField(
+        decorationBox = { innerTextField ->
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // leadingIcon
+                innerTextField()
+                // trailingIcon
+            }
+        }
+    )
+}
+```
+
+#### 选择器设计规范
+
+**类型/难度选择器**：
+
+- 卡片式设计，非传统 Chip
+- Emoji + 文字组合
+- 选中状态：彩色边框 + 浅色背景
+- 未选中状态：灰色背景 (`Color(0xFFF5F5F5)`)
+
+```kotlin
+Surface(
+    onClick = onClick,
+    shape = RoundedCornerShape(12.dp),
+    color = if (isSelected) color.copy(alpha = 0.15f) else Color(0xFFF5F5F5),
+    border = if (isSelected) BorderStroke(2.dp, color) else null
+) {
+    Column(
+        modifier = Modifier.padding(vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(emoji, fontSize = 20.sp)
+        Text(label, style = MaterialTheme.typography.labelSmall)
+    }
+}
+```
+
+#### 列表项设计规范
+
+**食材输入卡片**：
+
+- 浅绿色背景 (`Color(0xFFF8FBF8)`)
+- 1dp 绿色边框 (`SoftGreen.copy(alpha = 0.2f)`)
+- 16dp 圆角
+- 圆形序号徽章（28dp，绿色背景）
+- 紧凑型单位选择器
+
+**烹饪步骤卡片**：
+
+- 浅蓝色背景 (`Color(0xFFF5F9FF)`)
+- 1dp 蓝色边框 (`SoftBlue.copy(alpha = 0.2f)`)
+- 渐变圆形步骤编号（40dp）
+- 时间线连接器（2dp 宽，16dp 高）
+
+#### 标签设计规范
+
+**TagsFlowRow**：
+
+- 使用 `FlowRow` 布局
+- 彩色粉彩背景（随机柔和色）
+- 20dp 圆角胶囊形状
+- 32dp 高度
+- 添加按钮使用主色调浅色背景
+
+#### 按钮设计规范
+
+**主要操作按钮**：
+
+- `FilledTonalButton` 配合主色调
+- 图标 + 文字组合
+- 加载状态显示 `CircularProgressIndicator`
+
+**添加按钮**：
+
+- 圆形设计（36dp）
+- 浅色背景（10% 透明度）
+- 图标使用对应功能色
+
+#### 动画规范
+
+- 列表项使用 `AnimatedVisibility`
+- 进入动画：`fadeIn() + expandVertically()`
+- 退出动画：`fadeOut() + shrinkVertically()`
+
 ### ComposeHooks Usage Pattern
 
 ```kotlin
@@ -114,8 +264,15 @@ fun FeatureScreen(navController: NavController) {
     )
 
     // UI implementation
-    Scaffold { paddingValues ->
-        // Content
+    Scaffold(
+        containerColor = Color(0xFFF5F5F5) // 使用统一页面背景色
+    ) { paddingValues ->
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            // 使用 SectionCard 组织内容
+        }
     }
 }
 ```
@@ -129,6 +286,9 @@ fun FeatureScreen(navController: NavController) {
 - Implement proper error states and loading states
 - Use `remember` and `rememberSaveable` appropriately
 - Avoid side effects in composition
+- **使用统一的设计规范组件**（SectionCard, StyledTextField 等）
+- **保持颜色系统一致性**（使用预定义的主题色）
+- **遵循圆角规范**（卡片 20dp，输入框 12dp，标签 20dp）
 
 ### UI Testing
 

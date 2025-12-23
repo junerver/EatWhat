@@ -5,11 +5,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -28,6 +33,14 @@ import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
+
+// 定义主题色
+private val PrimaryOrange = Color(0xFFFF6B35)
+private val PrimaryOrangeLight = Color(0xFFFF8C5A)
+private val SoftGreen = Color(0xFF4CAF50)
+private val SoftBlue = Color(0xFF2196F3)
+private val WarmYellow = Color(0xFFFFC107)
+private val PageBackground = Color(0xFFF5F5F5)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -89,7 +102,7 @@ fun RollResultScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color.White
+        containerColor = PageBackground
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -100,17 +113,19 @@ fun RollResultScreen(
                 isLoading -> {
                     Column(
                         modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text(
                             text = "🎲",
-                            fontSize = 48.sp
+                            fontSize = 64.sp
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "正在Roll...",
-                            style = MaterialTheme.typography.bodyLarge
+                            text = "正在为你挑选...",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.Gray
                         )
+                        CircularProgressIndicator(color = PrimaryOrange)
                     }
                 }
                 error != null -> {
@@ -118,20 +133,25 @@ fun RollResultScreen(
                         modifier = Modifier
                             .align(Alignment.Center)
                             .padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text(
                             text = "😅",
-                            fontSize = 48.sp
+                            fontSize = 64.sp
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = error,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error
+                            color = Color(0xFFE57373)
                         )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Button(onClick = { navController.popBackStack() }) {
+                        Button(
+                            onClick = { navController.popBackStack() },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PrimaryOrange
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
                             Text("返回添加菜谱")
                         }
                     }
@@ -167,7 +187,6 @@ fun RollResultScreen(
                                             if (index != -1) {
                                                 updatedList[index] = newRecipe
                                                 setRollResult(currentResult.copy(recipes = updatedList))
-//                                                snackbarHostState.showSnackbar("已替换为：${newRecipe.name}")
                                             }
                                         }
                                     } else {
@@ -205,18 +224,28 @@ private fun RollResultContent(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        // 顶部返回按钮
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        // 顶部返回栏
+        Surface(
+            color = Color.White,
+            shadowElevation = 2.dp
         ) {
-            TextButton(onClick = onBack) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "返回",
+                        tint = Color(0xFF1C1B1F)
+                    )
+                }
                 Text(
-                    text = "← 返回",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color(0xFF6750A4)
+                    text = "今日菜单",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -226,28 +255,47 @@ private fun RollResultContent(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
-            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp)
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // 标题和摘要
             item {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "今天就做这些！",
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontWeight = FontWeight.Bold
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 4.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            spotColor = Color.Black.copy(alpha = 0.1f)
                         ),
-                        color = Color(0xFF1C1B1F)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = buildSummary(config),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF79747E)
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "🎉",
+                            fontSize = 40.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "今天就做这些！",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color(0xFF1C1B1F)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = buildSummary(config),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
+                        )
+                    }
                 }
             }
 
@@ -258,50 +306,54 @@ private fun RollResultContent(
                     onClick = { onRecipeClick(recipe) },
                     onReRoll = { onReRollSingle(recipe) }
                 )
-                Spacer(modifier = Modifier.height(12.dp))
             }
         }
 
         // 底部操作按钮
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        Surface(
+            color = Color.White,
+            shadowElevation = 8.dp
         ) {
-            Button(
-                onClick = onReRoll,
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFE8DEF8),
-                    contentColor = Color(0xFF6750A4)
-                ),
-                shape = RoundedCornerShape(12.dp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = "重新Roll",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold
+                OutlinedButton(
+                    onClick = onReRoll,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = PrimaryOrange
                     ),
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-            }
+                    border = androidx.compose.foundation.BorderStroke(2.dp, PrimaryOrange),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "🎲 重新Roll",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
 
-            Button(
-                onClick = onConfirm,
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF6750A4)
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    text = "就这些了",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold
+                Button(
+                    onClick = onConfirm,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PrimaryOrange
                     ),
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "✓ 就这些了",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
             }
         }
     }
@@ -314,12 +366,15 @@ private fun DishCard(
     onReRoll: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 4.dp,
+                shape = RoundedCornerShape(16.dp),
+                spotColor = Color.Black.copy(alpha = 0.1f)
+            ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Row(
             modifier = Modifier
@@ -352,72 +407,69 @@ private fun DishCard(
                     color = Color(0xFF1C1B1F)
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 // 标签行
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    InfoTag(text = getRecipeTypeName(recipe.type))
-                    InfoTag(text = getDifficultyName(recipe.difficulty))
+                    val (typeColor, typeName) = when (recipe.type) {
+                        RecipeType.MEAT -> Color(0xFFE57373) to "荤菜"
+                        RecipeType.VEG -> SoftGreen to "素菜"
+                        RecipeType.SOUP -> SoftBlue to "汤"
+                        RecipeType.STAPLE -> WarmYellow to "主食"
+                    }
+                    InfoTag(text = typeName, color = typeColor)
+                    InfoTag(text = getDifficultyName(recipe.difficulty), color = Color.Gray)
                     if (recipe.estimatedTime > 0) {
-                        InfoTag(text = "${recipe.estimatedTime}分钟")
+                        InfoTag(text = "${recipe.estimatedTime}分钟", color = Color.Gray)
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             // 右侧重新Roll按钮
-            IconButton(
+            Surface(
                 onClick = onReRoll,
-                modifier = Modifier.size(40.dp)
+                shape = CircleShape,
+                color = PrimaryOrange.copy(alpha = 0.1f),
+                modifier = Modifier.size(44.dp)
             ) {
-                Text(
-                    text = "🎲",
-                    fontSize = 20.sp
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "🎲",
+                        fontSize = 22.sp
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun InfoTag(text: String) {
+private fun InfoTag(text: String, color: Color) {
     Surface(
-        shape = RoundedCornerShape(6.dp),
-        color = Color(0xFFE8DEF8)
+        shape = RoundedCornerShape(8.dp),
+        color = color.copy(alpha = 0.1f)
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall,
-            color = Color(0xFF6750A4),
+            color = color,
+            fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }
 }
 
 private fun buildSummary(config: RollConfig): String {
-    val total = config.meatCount + config.vegCount + config.soupCount + config.stapleCount
-    return if (total == 1) "随机1个菜" else "随机${total}个菜"
-}
-
-private fun getRecipeEmoji(type: RecipeType): String {
-    return when (type) {
-        RecipeType.MEAT -> "🍗"
-        RecipeType.VEG -> "🥦"
-        RecipeType.SOUP -> "🍲"
-        RecipeType.STAPLE -> "🍚"
-    }
-}
-
-private fun getRecipeTypeName(type: RecipeType): String {
-    return when (type) {
-        RecipeType.MEAT -> "荤菜"
-        RecipeType.VEG -> "素菜"
-        RecipeType.SOUP -> "汤"
-        RecipeType.STAPLE -> "主食"
-    }
+    val parts = mutableListOf<String>()
+    if (config.meatCount > 0) parts.add("${config.meatCount}荤")
+    if (config.vegCount > 0) parts.add("${config.vegCount}素")
+    if (config.soupCount > 0) parts.add("${config.soupCount}汤")
+    if (config.stapleCount > 0) parts.add("${config.stapleCount}主食")
+    return if (parts.isEmpty()) "随机菜品" else parts.joinToString(" + ")
 }
 
 private fun getDifficultyName(difficulty: com.eatwhat.domain.model.Difficulty): String {

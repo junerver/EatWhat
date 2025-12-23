@@ -1,21 +1,30 @@
 package com.eatwhat.ui.screens.history
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.repository.HistoryRepository
@@ -23,6 +32,11 @@ import com.eatwhat.domain.model.HistoryRecord
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+
+// 定义主题色
+private val PrimaryOrange = Color(0xFFFF6B35)
+private val SoftPurple = Color(0xFF9C27B0)
+private val PageBackground = Color(0xFFF5F5F5)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,20 +57,30 @@ fun HistoryListScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("历史记录") },
+                title = { 
+                    Text(
+                        "历史记录",
+                        fontWeight = FontWeight.Bold
+                    ) 
+                },
                 actions = {
                     // 一键清除按钮（仅当有未锁定记录时显示）
                     if (unlockedCount > 0) {
                         IconButton(onClick = { showClearDialog = true }) {
                             Icon(
                                 imageVector = Icons.Default.DeleteSweep,
-                                contentDescription = "清除未锁定记录"
+                                contentDescription = "清除未锁定记录",
+                                tint = Color(0xFFE57373)
                             )
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
             )
-        }
+        },
+        containerColor = PageBackground
     ) { paddingValues ->
         if (historyList.isEmpty()) {
             Box(
@@ -65,11 +89,25 @@ fun HistoryListScreen(navController: NavController) {
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "暂无历史记录",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "📋",
+                        fontSize = 64.sp
+                    )
+                    Text(
+                        text = "暂无历史记录",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = "Roll 一些菜谱后这里会显示记录",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray.copy(alpha = 0.7f)
+                    )
+                }
             }
         } else {
             LazyColumn(
@@ -77,7 +115,7 @@ fun HistoryListScreen(navController: NavController) {
                     .fillMaxSize()
                     .padding(paddingValues),
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(historyList, key = { it.id }) { history ->
                     if (history.isLocked) {
@@ -128,7 +166,7 @@ fun HistoryListScreen(navController: NavController) {
                 Icon(
                     imageVector = Icons.Default.DeleteSweep,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
+                    tint = Color(0xFFE57373)
                 )
             },
             title = {
@@ -146,7 +184,7 @@ fun HistoryListScreen(navController: NavController) {
                         showClearDialog = false
                     },
                     colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
+                        contentColor = Color(0xFFE57373)
                     )
                 ) {
                     Text("确认删除")
@@ -184,19 +222,19 @@ private fun SwipeToDeleteItem(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp),
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFFE57373))
+                    .padding(horizontal = 20.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "删除",
-                    tint = MaterialTheme.colorScheme.error
+                    tint = Color.White
                 )
             }
         },
-        dismissContent = {
-            content()
-        },
+        dismissContent = { content() },
         directions = setOf(DismissDirection.EndToStart)
     )
 }
@@ -211,17 +249,26 @@ private fun HistoryCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(
+                elevation = 4.dp,
+                shape = RoundedCornerShape(16.dp),
+                spotColor = Color.Black.copy(alpha = 0.1f)
+            )
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
             ),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (history.isLocked) {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                SoftPurple.copy(alpha = 0.05f)
             } else {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                Color.White
             }
-        )
+        ),
+        border = if (history.isLocked) {
+            androidx.compose.foundation.BorderStroke(1.dp, SoftPurple.copy(alpha = 0.3f))
+        } else null
     ) {
         Row(
             modifier = Modifier
@@ -231,10 +278,18 @@ private fun HistoryCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 左侧图标
-            Text(
-                text = "📋",
-                style = MaterialTheme.typography.headlineMedium
-            )
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(PrimaryOrange.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "🍽️",
+                    fontSize = 24.sp
+                )
+            }
 
             // 中间内容
             Column(
@@ -244,37 +299,41 @@ private fun HistoryCard(
                 // 主标题：优先显示自定义名称，否则显示 summary
                 Text(
                     text = history.customName.ifEmpty {
-                        history.summary.ifEmpty { "${history.totalCount}菜" }
+                        history.summary.ifEmpty { "${history.totalCount}个菜" }
                     },
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1C1B1F)
                 )
 
                 // 第二行：如果有自定义名称，显示配置摘要；否则显示菜名列表
                 if (history.customName.isNotEmpty()) {
                     Text(
-                        text = history.summary.ifEmpty { "${history.totalCount}菜" },
+                        text = history.summary.ifEmpty { "${history.totalCount}个菜" },
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = Color.Gray
                     )
                 } else if (history.recipes.isNotEmpty()) {
                     Text(
                         text = history.recipes.joinToString("、") { it.name },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = Color.Gray,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
 
                 // 时间标签
+                Spacer(modifier = Modifier.height(2.dp))
                 Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = MaterialTheme.shapes.small
+                    shape = RoundedCornerShape(8.dp),
+                    color = PrimaryOrange.copy(alpha = 0.1f)
                 ) {
                     Text(
                         text = formatTimestamp(history.timestamp),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = PrimaryOrange,
+                        fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -282,12 +341,20 @@ private fun HistoryCard(
 
             // 右侧锁定图标
             if (history.isLocked) {
-                Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = "已锁定",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
+                Surface(
+                    shape = CircleShape,
+                    color = SoftPurple.copy(alpha = 0.1f),
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "已锁定",
+                            tint = SoftPurple,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
             }
         }
     }

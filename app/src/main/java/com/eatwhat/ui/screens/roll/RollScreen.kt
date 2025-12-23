@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -19,6 +20,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.eatwhat.navigation.Destinations
 import xyz.junerver.compose.hooks.*
+
+// 定义主题色
+private val PrimaryOrange = Color(0xFFFF6B35)
+private val PrimaryOrangeLight = Color(0xFFFF8C5A)
+private val PrimaryOrangeDark = Color(0xFFE55A2B)
+private val SoftGreen = Color(0xFF4CAF50)
+private val SoftBlue = Color(0xFF2196F3)
+private val WarmYellow = Color(0xFFFFC107)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +102,7 @@ fun RollScreen(navController: NavController) {
             .fillMaxSize()
             .background(
                 brush = Brush.linearGradient(
-                    colors = listOf(Color(0xFF6750A4), Color(0xFF7D5FA8)),
+                    colors = listOf(PrimaryOrange, PrimaryOrangeLight),
                     start = Offset(0f, 0f),
                     end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
                 )
@@ -105,12 +114,13 @@ fun RollScreen(navController: NavController) {
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(60.dp))
 
+            // Title
             Text(
                 text = "🍜 吃点啥",
                 style = MaterialTheme.typography.headlineLarge.copy(
-                    fontSize = 32.sp,
+                    fontSize = 36.sp,
                     fontWeight = FontWeight.Bold
                 ),
                 color = Color.White
@@ -118,18 +128,20 @@ fun RollScreen(navController: NavController) {
 
             Text(
                 text = "今天做什么菜？让我帮你决定",
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 color = Color.White.copy(alpha = 0.9f),
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(top = 12.dp)
             )
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(80.dp))
 
+            // Main Roll Button
             Surface(
-                modifier = Modifier.size(160.dp),
+                modifier = Modifier
+                    .size(180.dp)
+                    .shadow(16.dp, CircleShape),
                 shape = CircleShape,
                 color = Color.White,
-                shadowElevation = 8.dp,
                 onClick = { executeRoll() }
             ) {
                 Column(
@@ -137,62 +149,90 @@ fun RollScreen(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(text = "🎲", fontSize = 48.sp)
+                    Text(text = "🎲", fontSize = 56.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Roll点！",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold
+                        text = "Roll 一下！",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
                         ),
-                        color = Color(0xFF6750A4),
-                        modifier = Modifier.padding(top = 8.dp)
+                        color = PrimaryOrange
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(60.dp))
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            // Config buttons
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // Dish count button
                 ConfigButton(
-                    label = if (totalCount == 0) "几个菜" else "${totalCount}个菜",
+                    emoji = "🍽️",
+                    label = if (totalCount == 0) "选择菜数" else "${totalCount}个菜",
                     onClick = { setShowDishCountDialog(true) }
                 )
 
+                // Type distribution buttons
                 if (totalCount > 0) {
-                    ConfigButton(
-                        label = "荤${if (meatCount > 0) meatCount else ""}",
-                        small = true,
-                        onClick = {
-                            setCurrentType("meat")
-                            setShowTypeDialog(true)
-                        }
-                    )
-                    ConfigButton(
-                        label = "素${if (vegCount > 0) vegCount else ""}",
-                        small = true,
-                        onClick = {
-                            setCurrentType("veg")
-                            setShowTypeDialog(true)
-                        }
-                    )
-                    ConfigButton(
-                        label = "汤${if (soupCount > 0) soupCount else ""}",
-                        small = true,
-                        onClick = {
-                            setCurrentType("soup")
-                            setShowTypeDialog(true)
-                        }
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TypeConfigChip(
+                            emoji = "🍗",
+                            label = "荤",
+                            count = meatCount,
+                            color = Color(0xFFE57373),
+                            onClick = {
+                                setCurrentType("meat")
+                                setShowTypeDialog(true)
+                            }
+                        )
+                        TypeConfigChip(
+                            emoji = "🥬",
+                            label = "素",
+                            count = vegCount,
+                            color = SoftGreen,
+                            onClick = {
+                                setCurrentType("veg")
+                                setShowTypeDialog(true)
+                            }
+                        )
+                        TypeConfigChip(
+                            emoji = "🍲",
+                            label = "汤",
+                            count = soupCount,
+                            color = SoftBlue,
+                            onClick = {
+                                setCurrentType("soup")
+                                setShowTypeDialog(true)
+                            }
+                        )
+                    }
+                    
+                    // Show remaining allocation hint
+                    val allocated = meatCount + vegCount + soupCount
+                    val remaining = totalCount - allocated
+                    if (remaining > 0) {
+                        Text(
+                            text = "还有 $remaining 个菜未分配，将自动随机分配",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.8f)
+                        )
+                    }
                 }
             }
         }
     }
 
+    // Dish count selector dialog
     if (showDishCountDialog) {
         SelectorDialog(
             title = "选择菜数",
+            emoji = "🍽️",
             options = listOf(2, 3, 4, 5, 6, 7),
             onSelect = { count ->
                 setTotalCount(count)
@@ -205,6 +245,7 @@ fun RollScreen(navController: NavController) {
         )
     }
 
+    // Type count selector dialog
     if (showTypeDialog) {
         val used = meatCount + vegCount + soupCount - when (currentType) {
             "meat" -> meatCount
@@ -214,13 +255,17 @@ fun RollScreen(navController: NavController) {
         }
         val available = totalCount - used
 
+        val (emoji, title, color) = when (currentType) {
+            "meat" -> Triple("🍗", "选择荤菜数量", Color(0xFFE57373))
+            "veg" -> Triple("🥬", "选择素菜数量", SoftGreen)
+            "soup" -> Triple("🍲", "选择汤数量", SoftBlue)
+            else -> Triple("", "", Color.Gray)
+        }
+
         TypeSelectorDialog(
-            title = when (currentType) {
-                "meat" -> "选择荤菜数量"
-                "veg" -> "选择素菜数量"
-                "soup" -> "选择汤数量"
-                else -> ""
-            },
+            title = title,
+            emoji = emoji,
+            color = color,
             maxCount = available,
             onSelect = { count ->
                 when (currentType) {
@@ -237,34 +282,64 @@ fun RollScreen(navController: NavController) {
 
 @Composable
 private fun ConfigButton(
+    emoji: String,
     label: String,
-    small: Boolean = false,
     onClick: () -> Unit
 ) {
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(24.dp),
         color = Color.White.copy(alpha = 0.2f),
-        border = BorderStroke(2.dp, Color.White.copy(alpha = 0.3f))
+        border = BorderStroke(2.dp, Color.White.copy(alpha = 0.4f))
     ) {
-        Text(
-            text = label,
-            color = Color.White,
-            style = if (small)
-                MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
-            else
-                MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
-            modifier = Modifier.padding(
-                horizontal = if (small) 16.dp else 24.dp,
-                vertical = if (small) 8.dp else 12.dp
+        Row(
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(emoji, fontSize = 20.sp)
+            Text(
+                text = label,
+                color = Color.White,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
             )
-        )
+        }
+    }
+}
+
+@Composable
+private fun TypeConfigChip(
+    emoji: String,
+    label: String,
+    count: Int,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        color = if (count > 0) Color.White else Color.White.copy(alpha = 0.2f),
+        border = if (count > 0) BorderStroke(2.dp, color) else BorderStroke(1.dp, Color.White.copy(alpha = 0.4f))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(emoji, fontSize = 16.sp)
+            Text(
+                text = if (count > 0) "$label$count" else label,
+                color = if (count > 0) color else Color.White,
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
+            )
+        }
     }
 }
 
 @Composable
 private fun SelectorDialog(
     title: String,
+    emoji: String,
     options: List<Int>,
     onSelect: (Int) -> Unit,
     onDismiss: () -> Unit
@@ -273,43 +348,52 @@ private fun SelectorDialog(
         Surface(
             shape = RoundedCornerShape(24.dp),
             color = Color.White,
-            modifier = Modifier.padding(24.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Text(emoji, fontSize = 40.sp)
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = Color(0xFF1C1B1F)
                 )
+                Spacer(modifier = Modifier.height(24.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                // Options grid - 2 columns
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     options.chunked(3).forEach { row ->
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.weight(1f)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             row.forEach { option ->
                                 Surface(
                                     onClick = { onSelect(option) },
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = Color(0xFFF5F5F5),
-                                    modifier = Modifier.fillMaxWidth()
+                                    shape = RoundedCornerShape(16.dp),
+                                    color = PrimaryOrange.copy(alpha = 0.1f),
+                                    border = BorderStroke(1.dp, PrimaryOrange.copy(alpha = 0.3f)),
+                                    modifier = Modifier.weight(1f)
                                 ) {
                                     Text(
                                         text = "${option}个菜",
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontWeight = FontWeight.Medium
                                         ),
-                                        modifier = Modifier.padding(16.dp),
+                                        color = PrimaryOrange,
+                                        modifier = Modifier.padding(vertical = 16.dp),
                                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                     )
                                 }
+                            }
+                            // Fill empty slots
+                            repeat(3 - row.size) {
+                                Spacer(modifier = Modifier.weight(1f))
                             }
                         }
                     }
@@ -322,6 +406,8 @@ private fun SelectorDialog(
 @Composable
 private fun TypeSelectorDialog(
     title: String,
+    emoji: String,
+    color: Color,
     maxCount: Int,
     onSelect: (Int) -> Unit,
     onDismiss: () -> Unit
@@ -330,43 +416,52 @@ private fun TypeSelectorDialog(
         Surface(
             shape = RoundedCornerShape(24.dp),
             color = Color.White,
-            modifier = Modifier.padding(24.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Text(emoji, fontSize = 40.sp)
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = Color(0xFF1C1B1F)
                 )
+                Spacer(modifier = Modifier.height(24.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                // Options grid
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    (0..maxCount).chunked(3).forEach { row ->
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.weight(1f)
+                    (0..maxCount).toList().chunked(4).forEach { row ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             row.forEach { count ->
                                 Surface(
                                     onClick = { onSelect(count) },
                                     shape = RoundedCornerShape(12.dp),
-                                    color = Color(0xFFF5F5F5),
-                                    modifier = Modifier.fillMaxWidth()
+                                    color = color.copy(alpha = 0.1f),
+                                    border = BorderStroke(1.dp, color.copy(alpha = 0.3f)),
+                                    modifier = Modifier.weight(1f)
                                 ) {
                                     Text(
                                         text = count.toString(),
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontWeight = FontWeight.Medium
                                         ),
-                                        modifier = Modifier.padding(16.dp),
+                                        color = color,
+                                        modifier = Modifier.padding(vertical = 14.dp),
                                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                     )
                                 }
+                            }
+                            // Fill empty slots
+                            repeat(4 - row.size) {
+                                Spacer(modifier = Modifier.weight(1f))
                             }
                         }
                     }
