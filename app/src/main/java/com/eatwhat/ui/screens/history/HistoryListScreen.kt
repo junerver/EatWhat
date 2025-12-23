@@ -1,5 +1,7 @@
 package com.eatwhat.ui.screens.history
 
+import android.util.Log
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -29,6 +31,7 @@ import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.repository.HistoryRepository
 import com.eatwhat.domain.model.HistoryRecord
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -40,7 +43,10 @@ private val PageBackground = Color(0xFFF5F5F5)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryListScreen(navController: NavController) {
+fun HistoryListScreen(
+    navController: NavController,
+    highlightId: Long? = null
+) {
     val context = LocalContext.current
     val app = context.applicationContext as EatWhatApplication
     val repository = remember { HistoryRepository(app.database) }
@@ -50,6 +56,30 @@ fun HistoryListScreen(navController: NavController) {
 
     // 确认清除对话框状态
     var showClearDialog by remember { mutableStateOf(false) }
+    
+    // 高亮状态：存储需要闪烁的 historyId
+    var currentHighlightId by remember { mutableStateOf<Long?>(null) }
+    
+    // 从全局状态读取高亮 ID 并启动闪烁效果
+    LaunchedEffect(Unit) {
+        val globalHighlightId = app.highlightHistoryId
+        Log.d("HistoryListScreen", "=== HistoryListScreen Loaded ===")
+        Log.d("HistoryListScreen", "Global highlightHistoryId: $globalHighlightId")
+        
+        if (globalHighlightId != null && globalHighlightId > 0) {
+            Log.d("HistoryListScreen", "✓ Valid global highlightId, starting animation for: $globalHighlightId")
+            currentHighlightId = globalHighlightId
+            
+            // 2秒后清除高亮
+            delay(2000)
+            Log.d("HistoryListScreen", "✓ Clearing highlight after 2 seconds")
+            currentHighlightId = null
+            // 清除全局状态，避免下次进入时再次触发
+            app.highlightHistoryId = null
+        } else {
+            Log.d("HistoryListScreen", "✗ No valid global highlightId, skipping animation")
+        }
+    }
 
     // 计算未锁定记录数量
     val unlockedCount = historyList.count { !it.isLocked }
@@ -118,10 +148,13 @@ fun HistoryListScreen(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(historyList, key = { it.id }) { history ->
+                    val isHighlighted = currentHighlightId == history.id
+                    
                     if (history.isLocked) {
                         // 锁定的条目不能滑动删除
                         HistoryCard(
                             history = history,
+                            isHighlighted = isHighlighted,
                             onClick = {
                                 navController.navigate("history/${history.id}")
                             },
@@ -142,6 +175,7 @@ fun HistoryListScreen(navController: NavController) {
                         ) {
                             HistoryCard(
                                 history = history,
+                                isHighlighted = isHighlighted,
                                 onClick = {
                                     navController.navigate("history/${history.id}")
                                 },
@@ -243,14 +277,36 @@ private fun SwipeToDeleteItem(
 @Composable
 private fun HistoryCard(
     history: HistoryRecord,
+    isHighlighted: Boolean = false,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
+    // 闪烁动画：在2秒内从 1f 到 0f 到 1f 重复
+    val infiniteTransition = rememberInfiniteTransition(label = "highlight")
+    val highlightAlpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "highlightAlpha"
+    )
+    
+    // 计算边框颜色和宽度
+    val borderColor = when {
+        isHighlighted -> PrimaryOrange.copy(alpha = highlightAlpha)
+        history.isLocked -> SoftPurple.copy(alpha = 0.3f)
+        else -> Color.Transparent
+    }
+    
+    val borderWidth = if (isHighlighted) 3.dp else if (history.isLocked) 1.dp else 0.dp
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .shadow(
-                elevation = 4.dp,
+                elevation = if (isHighlighted) 8.dp else 4.dp,
                 shape = RoundedCornerShape(16.dp),
                 spotColor = Color.Black.copy(alpha = 0.1f)
             )
@@ -266,8 +322,8 @@ private fun HistoryCard(
                 Color.White
             }
         ),
-        border = if (history.isLocked) {
-            androidx.compose.foundation.BorderStroke(1.dp, SoftPurple.copy(alpha = 0.3f))
+        border = if (borderWidth > 0.dp) {
+            androidx.compose.foundation.BorderStroke(borderWidth, borderColor)
         } else null
     ) {
         Row(

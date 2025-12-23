@@ -5,10 +5,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.eatwhat.ui.components.BottomNavBar
 import com.eatwhat.ui.screens.roll.RollScreen
 import com.eatwhat.ui.screens.roll.RollResultScreen
@@ -62,8 +64,18 @@ fun EatWhatApp() {
                 RecipeListScreen(navController)
             }
 
-            composable(Destinations.History.route) {
-                HistoryListScreen(navController)
+            composable(
+                route = Destinations.History.route,
+                arguments = listOf(
+                    navArgument("highlightId") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) { backStackEntry ->
+                val highlightId = backStackEntry.arguments?.getString("highlightId")?.toLongOrNull()
+                HistoryListScreen(navController, highlightId)
             }
 
             composable(Destinations.RecipeDetail.route) { backStackEntry ->

@@ -25,16 +25,19 @@ fun BottomNavBar(navController: NavController) {
     val items = listOf(
         BottomNavItem(
             route = Destinations.Roll.route,
+            navigateRoute = Destinations.Roll.route,
             emoji = "🎲",
             label = stringResource(R.string.nav_roll)
         ),
         BottomNavItem(
             route = Destinations.RecipeList.route,
+            navigateRoute = Destinations.RecipeList.route,
             emoji = "📖",
             label = stringResource(R.string.nav_recipes)
         ),
         BottomNavItem(
             route = Destinations.History.route,
+            navigateRoute = Destinations.History.routeWithoutArgs,
             emoji = "📜",
             label = stringResource(R.string.nav_history)
         )
@@ -42,6 +45,8 @@ fun BottomNavBar(navController: NavController) {
 
     NavigationBar {
         items.forEach { item ->
+            val isSelected = currentRoute?.startsWith(item.route.substringBefore("?")) == true
+            
             NavigationBarItem(
                 icon = {
                     Text(
@@ -55,10 +60,10 @@ fun BottomNavBar(navController: NavController) {
                         fontSize = 12.sp
                     )
                 },
-                selected = currentRoute == item.route,
+                selected = isSelected,
                 onClick = {
-                    if (currentRoute != item.route) {
-                        navController.navigate(item.route) {
+                    if (!isSelected) {
+                        navController.navigate(item.navigateRoute) {
                             // Pop up to the start destination to avoid building up a large stack
                             popUpTo(Destinations.Roll.route) {
                                 saveState = true
@@ -77,6 +82,7 @@ fun BottomNavBar(navController: NavController) {
 
 private data class BottomNavItem(
     val route: String,
+    val navigateRoute: String,
     val emoji: String,
     val label: String
 )

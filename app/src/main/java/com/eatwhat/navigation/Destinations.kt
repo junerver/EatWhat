@@ -8,7 +8,14 @@ sealed class Destinations(val route: String) {
     // Bottom navigation destinations
     object Roll : Destinations("roll")
     object RecipeList : Destinations("recipes")
-    object History : Destinations("history")
+    object History : Destinations("history?highlightId={highlightId}") {
+        val routeWithoutArgs = "history"
+        fun createRoute(highlightId: Long? = null) = if (highlightId != null) {
+            "history?highlightId=$highlightId"
+        } else {
+            "history"
+        }
+    }
 
     // Detail destinations
     object RecipeDetail : Destinations("recipe/{recipeId}") {

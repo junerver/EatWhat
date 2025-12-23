@@ -252,8 +252,11 @@ fun PrepScreen(
                     onClick = {
                         // 跳转到历史详情页面
                         historyId?.let { id ->
+                            // 设置全局高亮 ID
+                            app.highlightHistoryId = id
+                            
                             // 先导航到 History 列表（清除当前栈）
-                            navController.navigate(com.eatwhat.navigation.Destinations.History.route) {
+                            navController.navigate(com.eatwhat.navigation.Destinations.History.routeWithoutArgs) {
                                 // 清除所有返回栈，回到起始页面
                                 popUpTo(0) {
                                     inclusive = true

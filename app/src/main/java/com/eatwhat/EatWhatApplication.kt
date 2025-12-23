@@ -37,6 +37,13 @@ class EatWhatApplication : Application() {
 
     // Temporary storage for current cooking recipes (for navigation)
     var currentCookingRecipes: List<com.eatwhat.data.database.relations.RecipeWithDetails>? = null
+    
+    // Store the history ID that should be highlighted when returning to history list
+    var highlightHistoryId: Long? = null
+        set(value) {
+            field = value
+            android.util.Log.d("EatWhatApplication", "Setting highlightHistoryId to: $value")
+        }
 
     override fun onCreate() {
         super.onCreate()
