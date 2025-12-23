@@ -8,6 +8,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -40,6 +41,8 @@ import java.util.*
 private val PrimaryOrange = Color(0xFFFF6B35)
 private val SoftPurple = Color(0xFF9C27B0)
 private val PageBackground = Color(0xFFF5F5F5)
+private val ZebraLight = Color.White
+private val ZebraDark = Color(0xFFFAFAFA)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -145,16 +148,19 @@ fun HistoryListScreen(
                     .fillMaxSize()
                     .padding(paddingValues),
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(historyList, key = { it.id }) { history ->
+                itemsIndexed(historyList, key = { _, history -> history.id }) { index, history ->
                     val isHighlighted = currentHighlightId == history.id
+                    // 斑马纹效果：使用索引决定背景色
+                    val zebraBackground = if (index % 2 == 0) ZebraLight else ZebraDark
                     
                     if (history.isLocked) {
                         // 锁定的条目不能滑动删除
                         HistoryCard(
                             history = history,
                             isHighlighted = isHighlighted,
+                            zebraBackground = zebraBackground,
                             onClick = {
                                 navController.navigate("history/${history.id}")
                             },
@@ -176,6 +182,7 @@ fun HistoryListScreen(
                             HistoryCard(
                                 history = history,
                                 isHighlighted = isHighlighted,
+                                zebraBackground = zebraBackground,
                                 onClick = {
                                     navController.navigate("history/${history.id}")
                                 },
@@ -278,6 +285,7 @@ private fun SwipeToDeleteItem(
 private fun HistoryCard(
     history: HistoryRecord,
     isHighlighted: Boolean = false,
+    zebraBackground: Color = Color.White,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
@@ -296,19 +304,19 @@ private fun HistoryCard(
     // 计算边框颜色和宽度
     val borderColor = when {
         isHighlighted -> PrimaryOrange.copy(alpha = highlightAlpha)
-        history.isLocked -> SoftPurple.copy(alpha = 0.3f)
+        history.isLocked -> SoftPurple
         else -> Color.Transparent
     }
     
-    val borderWidth = if (isHighlighted) 3.dp else if (history.isLocked) 1.dp else 0.dp
+    val borderWidth = if (isHighlighted) 3.dp else if (history.isLocked) 2.dp else 0.dp
     
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .shadow(
-                elevation = if (isHighlighted) 8.dp else 4.dp,
+                elevation = if (isHighlighted) 8.dp else 2.dp,
                 shape = RoundedCornerShape(16.dp),
-                spotColor = Color.Black.copy(alpha = 0.1f)
+                spotColor = Color.Black.copy(alpha = 0.08f)
             )
             .combinedClickable(
                 onClick = onClick,
@@ -316,11 +324,7 @@ private fun HistoryCard(
             ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (history.isLocked) {
-                SoftPurple.copy(alpha = 0.05f)
-            } else {
-                Color.White
-            }
+            containerColor = zebraBackground
         ),
         border = if (borderWidth > 0.dp) {
             androidx.compose.foundation.BorderStroke(borderWidth, borderColor)
@@ -397,19 +401,19 @@ private fun HistoryCard(
 
             // 右侧锁定图标
             if (history.isLocked) {
-                Surface(
-                    shape = CircleShape,
-                    color = SoftPurple.copy(alpha = 0.1f),
-                    modifier = Modifier.size(32.dp)
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(SoftPurple.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = "已锁定",
-                            tint = SoftPurple,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "已锁定",
+                        tint = SoftPurple,
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
             }
         }
