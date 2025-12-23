@@ -250,16 +250,17 @@ fun PrepScreen(
             ) {
                 Button(
                     onClick = {
-                        // 跳转到历史详情页面，并清除所有中间页面
+                        // 跳转到历史详情页面
                         historyId?.let { id ->
-                            navController.navigate(com.eatwhat.navigation.Destinations.HistoryDetail.createRoute(id)) {
-                                // 清除到 History 列表页面，保留 History 在返回栈
-                                // 这样从 HistoryDetail 返回时会回到 History 列表
-                                popUpTo(com.eatwhat.navigation.Destinations.History.route) {
-                                    inclusive = false
+                            // 先导航到 History 列表（清除当前栈）
+                            navController.navigate(com.eatwhat.navigation.Destinations.History.route) {
+                                // 清除所有返回栈，回到起始页面
+                                popUpTo(0) {
+                                    inclusive = true
                                 }
-                                launchSingleTop = true
                             }
+                            // 然后导航到 HistoryDetail
+                            navController.navigate(com.eatwhat.navigation.Destinations.HistoryDetail.createRoute(id))
                         }
                     },
                     modifier = Modifier
