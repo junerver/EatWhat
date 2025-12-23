@@ -54,24 +54,34 @@ fun PrepScreen(
 
     val useCase = remember { GeneratePrepListUseCase() }
     val initialPrepList = remember { useCase(rollResult.recipes) }
-    val (prepList, setPrepList) = useState(initialPrepList)
 
     // Save history when entering PrepScreen and store the historyId
     val saveHistoryUseCase = remember { com.eatwhat.domain.usecase.SaveHistoryUseCase(app.historyRepository) }
     val historyRepository = remember { app.historyRepository }
-    val (historyId, setHistoryId) = useState<Long?>(null)
-    val (prepItemIds, setPrepItemIds) = useState<List<Long>>(emptyList())
+    var historyId by remember { mutableStateOf<Long?>(null) }
     
     LaunchedEffect(Unit) {
         try {
             val id = saveHistoryUseCase(rollResult, initialPrepList)
-            setHistoryId(id)
-            // Get prep item IDs from database
-            historyRepository.getPrepItemsByHistoryId(id).collect { items ->
-                setPrepItemIds(items.map { it.id })
-            }
+            historyId = id
         } catch (e: Exception) {
             // Handle error if needed
+        }
+    }
+    
+    // Read prep items from database - only when historyId is available
+    val prepItemsFromDb by historyRepository.getPrepItemsByHistoryId(historyId ?: 0L)
+        .collectAsState(initial = emptyList())
+
+    // Convert database entities to PrepListItem for display
+    val prepList = remember(prepItemsFromDb) {
+        prepItemsFromDb.map { entity ->
+            PrepListItem(
+                name = entity.ingredientName,
+                amount = "",
+                unit = "",
+                isChecked = entity.isChecked
+            )
         }
     }
 
@@ -221,20 +231,10 @@ fun PrepScreen(
                             index = index + 1,
                             item = item,
                             onCheckedChange = { checked ->
-                                // Update local state
-                                setPrepList(
-                                    prepList.mapIndexed { i, it ->
-                                        if (i == index) {
-                                            it.copy(isChecked = checked)
-                                        } else {
-                                            it
-                                        }
-                                    }
-                                )
-                                // Update database if historyId and prepItemIds are available
-                                if (prepItemIds.isNotEmpty() && index < prepItemIds.size) {
+                                // Update database directly
+                                if (prepItemsFromDb.isNotEmpty() && index < prepItemsFromDb.size) {
                                     scope.launch {
-                                        historyRepository.updatePrepItemChecked(prepItemIds[index], checked)
+                                        historyRepository.updatePrepItemChecked(prepItemsFromDb[index].id, checked)
                                     }
                                 }
                             }
@@ -250,9 +250,15 @@ fun PrepScreen(
             ) {
                 Button(
                     onClick = {
-                        // 跳转到历史详情页面
+                        // 跳转到历史详情页面，并清除 PrepScreen 从返回栈中
                         historyId?.let { id ->
-                            navController.navigate(com.eatwhat.navigation.Destinations.HistoryDetail.createRoute(id))
+                            navController.navigate(com.eatwhat.navigation.Destinations.HistoryDetail.createRoute(id)) {
+                                // 清除 PrepScreen，返回时直接回到 History 列表
+                                popUpTo(com.eatwhat.navigation.Destinations.Prep.route) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                            }
                         }
                     },
                     modifier = Modifier
