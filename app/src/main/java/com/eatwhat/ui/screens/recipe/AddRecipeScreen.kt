@@ -91,6 +91,75 @@ fun AddRecipeScreen(
         }
     }
 
+    // Save function extracted for use in TopAppBar
+    val onSave: () -> Unit = {
+        // Validation
+        if (name.isBlank()) {
+            scope.launch {
+                snackbarHostState.showSnackbar("请输入菜名")
+            }
+        } else {
+            val time = estimatedTime.toIntOrNull()
+            if (time == null || time < 1 || time > 300) {
+                scope.launch {
+                    snackbarHostState.showSnackbar("预计时间必须在1-300分钟之间")
+                }
+            } else if (ingredients.any { it.name.isBlank() }) {
+                scope.launch {
+                    snackbarHostState.showSnackbar("请填写所有食材名称")
+                }
+            } else if (steps.any { it.description.isBlank() }) {
+                scope.launch {
+                    snackbarHostState.showSnackbar("请填写所有步骤描述")
+                }
+            } else {
+                // Save recipe
+                scope.launch {
+                    setIsSaving(true)
+                    try {
+                        val recipe = Recipe(
+                            id = recipeId ?: 0,
+                            syncId = java.util.UUID.randomUUID().toString(),
+                            name = name,
+                            type = type,
+                            icon = icon,
+                            imageBase64 = imageBase64,
+                            difficulty = difficulty,
+                            estimatedTime = time,
+                            ingredients = ingredients.mapIndexed { index, ing ->
+                                Ingredient(
+                                    name = ing.name,
+                                    amount = ing.amount,
+                                    unit = ing.unit,
+                                    orderIndex = index
+                                )
+                            },
+                            steps = steps.mapIndexed { index, step ->
+                                CookingStep(
+                                    stepNumber = index + 1,
+                                    description = step.description
+                                )
+                            },
+                            tags = tags.map { Tag(name = it) }
+                        )
+
+                        if (isEditMode) {
+                            recipeRepository.updateRecipe(recipe)
+                        } else {
+                            recipeRepository.insertRecipe(recipe)
+                        }
+
+                        navController.navigateUp()
+                    } catch (e: Exception) {
+                        snackbarHostState.showSnackbar("保存失败: ${e.message}")
+                    } finally {
+                        setIsSaving(false)
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -98,6 +167,23 @@ fun AddRecipeScreen(
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                    }
+                },
+                actions = {
+                    // Save button with check icon
+                    IconButton(
+                        onClick = onSave,
+                        enabled = !isSaving
+                    ) {
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = if (isEditMode) "保存" else "添加",
+                            tint = if (isSaving) {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                            } else {
+                                MaterialTheme.colorScheme.primary
+                            }
+                        )
                     }
                 }
             )
@@ -357,96 +443,6 @@ fun AddRecipeScreen(
                 }
             }
 
-            // Save Button
-            item {
-                Button(
-                    onClick = {
-                        // Validation
-                        if (name.isBlank()) {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("请输入菜名")
-                            }
-                            return@Button
-                        }
-
-                        val time = estimatedTime.toIntOrNull()
-                        if (time == null || time < 1 || time > 300) {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("预计时间必须在1-300分钟之间")
-                            }
-                            return@Button
-                        }
-
-                        if (ingredients.any { it.name.isBlank() }) {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("请填写所有食材名称")
-                            }
-                            return@Button
-                        }
-
-                        if (steps.any { it.description.isBlank() }) {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("请填写所有步骤描述")
-                            }
-                            return@Button
-                        }
-
-                        // Save recipe
-                        scope.launch {
-                            setIsSaving(true)
-                            try {
-                                val recipe = Recipe(
-                                    id = recipeId ?: 0,
-                                    syncId = java.util.UUID.randomUUID().toString(),
-                                    name = name,
-                                    type = type,
-                                    icon = icon,
-                                    imageBase64 = imageBase64,
-                                    difficulty = difficulty,
-                                    estimatedTime = time,
-                                    ingredients = ingredients.mapIndexed { index, ing ->
-                                        Ingredient(
-                                            name = ing.name,
-                                            amount = ing.amount,
-                                            unit = ing.unit,
-                                            orderIndex = index
-                                        )
-                                    },
-                                    steps = steps.mapIndexed { index, step ->
-                                        CookingStep(
-                                            stepNumber = index + 1,
-                                            description = step.description
-                                        )
-                                    },
-                                    tags = tags.map { Tag(name = it) }
-                                )
-
-                                if (isEditMode) {
-                                    recipeRepository.updateRecipe(recipe)
-                                } else {
-                                    recipeRepository.insertRecipe(recipe)
-                                }
-
-                                navController.navigateUp()
-                            } catch (e: Exception) {
-                                snackbarHostState.showSnackbar("保存失败: ${e.message}")
-                            } finally {
-                                setIsSaving(false)
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !isSaving
-                ) {
-                    Text(
-                        text = if (isSaving) {
-                            if (isEditMode) "保存中..." else "添加中..."
-                        } else {
-                            if (isEditMode) "保存" else "添加"
-                        }
-                    )
-                }
-            }
         }
     }
 }
