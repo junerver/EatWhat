@@ -62,11 +62,11 @@ fun CookingScreen(
         topBar = {
             Column {
                 TopAppBar(
-                    title = { 
+                    title = {
                         Text(
                             "做菜指导",
                             fontWeight = FontWeight.Bold
-                        ) 
+                        )
                     },
                     navigationIcon = {
                         IconButton(onClick = { navController.navigateUp() }) {
@@ -75,7 +75,8 @@ fun CookingScreen(
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.White
-                    )
+                    ),
+                    windowInsets = WindowInsets.statusBars
                 )
                 
                 // Progress bar

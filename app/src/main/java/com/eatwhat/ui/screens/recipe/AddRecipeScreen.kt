@@ -225,7 +225,8 @@ fun AddRecipeScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
-                )
+                ),
+                windowInsets = WindowInsets.statusBars
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },

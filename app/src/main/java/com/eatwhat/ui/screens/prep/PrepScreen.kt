@@ -98,11 +98,11 @@ fun PrepScreen(
             ) {
                 Column {
                     TopAppBar(
-                        title = { 
+                        title = {
                             Text(
                                 "准备食材",
                                 fontWeight = FontWeight.Bold
-                            ) 
+                            )
                         },
                         navigationIcon = {
                             IconButton(onClick = { navController.navigateUp() }) {
@@ -114,7 +114,8 @@ fun PrepScreen(
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = Color.White
-                        )
+                        ),
+                        windowInsets = WindowInsets.statusBars
                     )
                     
                     // Progress bar

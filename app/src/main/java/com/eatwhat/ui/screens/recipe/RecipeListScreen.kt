@@ -65,11 +65,11 @@ fun RecipeListScreen(navController: NavController) {
         topBar = {
             Column {
                 TopAppBar(
-                    title = { 
+                    title = {
                         Text(
                             "我的菜谱",
                             fontWeight = FontWeight.Bold
-                        ) 
+                        )
                     },
                     actions = {
                         // 搜索按钮
@@ -83,7 +83,8 @@ fun RecipeListScreen(navController: NavController) {
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.White
-                    )
+                    ),
+                    windowInsets = WindowInsets.statusBars
                 )
                 
                 // 搜索栏

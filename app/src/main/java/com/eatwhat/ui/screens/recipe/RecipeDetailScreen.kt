@@ -85,7 +85,8 @@ fun RecipeDetailScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White
-                )
+                ),
+                windowInsets = WindowInsets.statusBars
             )
         },
         containerColor = PageBackground

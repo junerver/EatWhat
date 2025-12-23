@@ -70,11 +70,11 @@ fun HistoryDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Text(
                         "菜单详情",
                         fontWeight = FontWeight.Bold
-                    ) 
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = {
@@ -104,7 +104,8 @@ fun HistoryDetailScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White
-                )
+                ),
+                windowInsets = WindowInsets.statusBars
             )
         },
         containerColor = PageBackground

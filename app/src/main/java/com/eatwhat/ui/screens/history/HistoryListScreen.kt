@@ -90,11 +90,11 @@ fun HistoryListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Text(
                         "历史记录",
                         fontWeight = FontWeight.Bold
-                    ) 
+                    )
                 },
                 actions = {
                     // 一键清除按钮（仅当有未锁定记录时显示）
@@ -110,7 +110,8 @@ fun HistoryListScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White
-                )
+                ),
+                windowInsets = WindowInsets.statusBars
             )
         },
         containerColor = PageBackground
