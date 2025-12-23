@@ -185,6 +185,13 @@ class HistoryRepository(private val database: EatWhatDatabase) {
     suspend fun updateHistoryCustomName(historyId: Long, customName: String) {
         historyDao.updateHistoryCustomName(historyId, customName)
     }
+
+    /**
+     * Get prep items by history ID
+     */
+    fun getPrepItemsByHistoryId(historyId: Long): Flow<List<PrepItemEntity>> {
+        return historyDao.getPrepItemsByHistoryId(historyId)
+    }
 }
 
 data class HistoryWithRecipes(

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.domain.usecase.GeneratePrepListUseCase
 import com.eatwhat.domain.usecase.PrepListItem
+import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
 
 // 定义主题色
@@ -41,6 +42,7 @@ fun PrepScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     val app = context.applicationContext as com.eatwhat.EatWhatApplication
     val rollResult = app.currentRollResult
+    val scope = rememberCoroutineScope()
 
     // If no roll result, navigate back
     if (rollResult == null) {
@@ -56,11 +58,18 @@ fun PrepScreen(
 
     // Save history when entering PrepScreen and store the historyId
     val saveHistoryUseCase = remember { com.eatwhat.domain.usecase.SaveHistoryUseCase(app.historyRepository) }
+    val historyRepository = remember { app.historyRepository }
     val (historyId, setHistoryId) = useState<Long?>(null)
+    val (prepItemIds, setPrepItemIds) = useState<List<Long>>(emptyList())
+    
     LaunchedEffect(Unit) {
         try {
             val id = saveHistoryUseCase(rollResult, initialPrepList)
             setHistoryId(id)
+            // Get prep item IDs from database
+            historyRepository.getPrepItemsByHistoryId(id).collect { items ->
+                setPrepItemIds(items.map { it.id })
+            }
         } catch (e: Exception) {
             // Handle error if needed
         }
@@ -212,6 +221,7 @@ fun PrepScreen(
                             index = index + 1,
                             item = item,
                             onCheckedChange = { checked ->
+                                // Update local state
                                 setPrepList(
                                     prepList.mapIndexed { i, it ->
                                         if (i == index) {
@@ -221,6 +231,12 @@ fun PrepScreen(
                                         }
                                     }
                                 )
+                                // Update database if historyId and prepItemIds are available
+                                if (prepItemIds.isNotEmpty() && index < prepItemIds.size) {
+                                    scope.launch {
+                                        historyRepository.updatePrepItemChecked(prepItemIds[index], checked)
+                                    }
+                                }
                             }
                         )
                     }
