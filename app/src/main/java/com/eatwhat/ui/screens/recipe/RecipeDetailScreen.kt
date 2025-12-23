@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
-import com.eatwhat.domain.model.Recipe
+import com.eatwhat.navigation.Destinations
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
 
@@ -45,7 +45,7 @@ fun RecipeDetailScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-                        navController.navigate("recipe/edit/$recipeId")
+                        navController.navigate(Destinations.EditRecipe.createRoute(recipeId))
                     }) {
                         Icon(Icons.Default.Edit, contentDescription = "编辑")
                     }

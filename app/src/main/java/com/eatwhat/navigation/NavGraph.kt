@@ -53,6 +53,11 @@ fun EatWhatApp() {
                 com.eatwhat.ui.screens.recipe.AddRecipeScreen(navController)
             }
 
+            composable(Destinations.EditRecipe.route) { backStackEntry ->
+                val recipeId = backStackEntry.arguments?.getString("recipeId")?.toLongOrNull()
+                com.eatwhat.ui.screens.recipe.AddRecipeScreen(navController, recipeId)
+            }
+
             composable(Destinations.HistoryDetail.route) { backStackEntry ->
                 val historyId = backStackEntry.arguments?.getString("historyId")?.toLongOrNull()
                 if (historyId != null) {

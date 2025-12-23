@@ -134,6 +134,54 @@ fun AddRecipeScreen(
                             }
                         }
 
+                        // Tags (moved here, after type selector)
+                        Text("标签", style = MaterialTheme.typography.labelMedium)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedTextField(
+                                value = newTag,
+                                onValueChange = setNewTag,
+                                label = { Text("新标签") },
+                                modifier = Modifier.weight(1f),
+                                singleLine = true
+                            )
+
+                            IconButton(
+                                onClick = {
+                                    if (newTag.isNotBlank() && !tags.contains(newTag)) {
+                                        setTags(tags + newTag)
+                                        setNewTag("")
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = "添加标签")
+                            }
+                        }
+
+                        if (tags.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                tags.forEach { tag ->
+                                    AssistChip(
+                                        onClick = { setTags(tags.filter { it != tag }) },
+                                        label = { Text(tag) },
+                                        trailingIcon = {
+                                            Icon(
+                                                Icons.Default.Close,
+                                                contentDescription = "删除",
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
                         // Icon picker
                         OutlinedTextField(
                             value = icon,
@@ -306,64 +354,6 @@ fun AddRecipeScreen(
                                     modifier = Modifier.padding(top = 8.dp)
                                 ) {
                                     Icon(Icons.Default.Delete, contentDescription = "删除")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Tags
-            item {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text("标签", style = MaterialTheme.typography.titleMedium)
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            OutlinedTextField(
-                                value = newTag,
-                                onValueChange = setNewTag,
-                                label = { Text("新标签") },
-                                modifier = Modifier.weight(1f),
-                                singleLine = true
-                            )
-
-                            IconButton(
-                                onClick = {
-                                    if (newTag.isNotBlank() && !tags.contains(newTag)) {
-                                        setTags(tags + newTag)
-                                        setNewTag("")
-                                    }
-                                }
-                            ) {
-                                Icon(Icons.Default.Add, contentDescription = "添加标签")
-                            }
-                        }
-
-                        if (tags.isNotEmpty()) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                tags.forEach { tag ->
-                                    AssistChip(
-                                        onClick = { setTags(tags.filter { it != tag }) },
-                                        label = { Text(tag) },
-                                        trailingIcon = {
-                                            Icon(
-                                                Icons.Default.Close,
-                                                contentDescription = "删除",
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    )
                                 }
                             }
                         }
