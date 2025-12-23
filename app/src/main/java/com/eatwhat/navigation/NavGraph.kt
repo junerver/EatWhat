@@ -3,9 +3,11 @@ package com.eatwhat.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.eatwhat.ui.components.BottomNavBar
 import com.eatwhat.ui.screens.roll.RollScreen
@@ -21,14 +23,36 @@ import com.eatwhat.ui.screens.cooking.CookingScreen
 @Composable
 fun EatWhatApp() {
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    // 定义应该隐藏底部导航栏的页面
+    val hideBottomBarRoutes = setOf(
+        Destinations.RollResult.route,
+        Destinations.Prep.route,
+        Destinations.HistoryDetail.route,
+        Destinations.RecipeDetail.route,
+        Destinations.AddRecipe.route,
+        Destinations.EditRecipe.route,
+        Destinations.Cooking.route
+    )
+
+    // 判断当前路由是否应该隐藏底部栏（支持带参数的路由）
+    val shouldHideBottomBar = hideBottomBarRoutes.any { route ->
+        currentRoute?.startsWith(route.substringBefore("{")) == true
+    }
 
     Scaffold(
-        bottomBar = { BottomNavBar(navController) }
+        bottomBar = {
+            if (!shouldHideBottomBar) {
+                BottomNavBar(navController)
+            }
+        }
     ) { paddingValues ->
         NavHost(
             navController = navController,
             startDestination = Destinations.Roll.route,
-            modifier = Modifier.padding(paddingValues)
+            modifier = if (shouldHideBottomBar) Modifier else Modifier.padding(paddingValues)
         ) {
             composable(Destinations.Roll.route) {
                 RollScreen(navController)
