@@ -331,49 +331,21 @@ fun AddRecipeScreen(
                         }
 
                         ingredients.forEachIndexed { index, ingredient ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                OutlinedTextField(
-                                    value = ingredient.name,
-                                    onValueChange = { newName ->
-                                        setIngredients(
-                                            ingredients.toMutableList().apply {
-                                                this[index] = ingredient.copy(name = newName)
-                                            }
-                                        )
-                                    },
-                                    label = { Text("名称") },
-                                    modifier = Modifier.weight(1f),
-                                    singleLine = true
-                                )
-
-                                OutlinedTextField(
-                                    value = ingredient.amount,
-                                    onValueChange = { newAmount ->
-                                        setIngredients(
-                                            ingredients.toMutableList().apply {
-                                                this[index] = ingredient.copy(amount = newAmount)
-                                            }
-                                        )
-                                    },
-                                    label = { Text("数量") },
-                                    modifier = Modifier.width(80.dp),
-                                    singleLine = true
-                                )
-
-                                IconButton(
-                                    onClick = {
-                                        if (ingredients.size > 1) {
-                                            setIngredients(ingredients.filterIndexed { i, _ -> i != index })
+                            IngredientInputRow(
+                                ingredient = ingredient,
+                                onIngredientChange = { newIngredient ->
+                                    setIngredients(
+                                        ingredients.toMutableList().apply {
+                                            this[index] = newIngredient
                                         }
+                                    )
+                                },
+                                onDelete = {
+                                    if (ingredients.size > 1) {
+                                        setIngredients(ingredients.filterIndexed { i, _ -> i != index })
                                     }
-                                ) {
-                                    Icon(Icons.Default.Delete, contentDescription = "删除")
                                 }
-                            }
+                            )
                         }
                     }
                 }
@@ -456,6 +428,104 @@ data class IngredientInput(
 data class StepInput(
     val description: String = ""
 )
+
+/**
+ * Get display name for Unit enum in Chinese
+ */
+private fun IngredientUnit.getDisplayName(): String {
+    return when (this) {
+        IngredientUnit.G -> "克"
+        IngredientUnit.ML -> "毫升"
+        IngredientUnit.PIECE -> "个"
+        IngredientUnit.SPOON -> "勺"
+        IngredientUnit.MODERATE -> "适量"
+    }
+}
+
+/**
+ * Ingredient input row with name, amount, and unit selector
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun IngredientInputRow(
+    ingredient: IngredientInput,
+    onIngredientChange: (IngredientInput) -> Unit,
+    onDelete: () -> Unit
+) {
+    var unitExpanded by remember { mutableStateOf(false) }
+    
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Name input
+        OutlinedTextField(
+            value = ingredient.name,
+            onValueChange = { newName ->
+                onIngredientChange(ingredient.copy(name = newName))
+            },
+            label = { Text("名称") },
+            modifier = Modifier.weight(1f),
+            singleLine = true
+        )
+
+        // Amount input
+        OutlinedTextField(
+            value = ingredient.amount,
+            onValueChange = { newAmount ->
+                onIngredientChange(ingredient.copy(amount = newAmount))
+            },
+            label = { Text("数量") },
+            modifier = Modifier.width(60.dp),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+
+        // Unit selector
+        ExposedDropdownMenuBox(
+            expanded = unitExpanded,
+            onExpandedChange = { unitExpanded = it },
+            modifier = Modifier.width(80.dp)
+        ) {
+            OutlinedTextField(
+                value = ingredient.unit.getDisplayName(),
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("单位") },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded)
+                },
+                modifier = Modifier
+                    .menuAnchor()
+                    .width(80.dp),
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodySmall
+            )
+            
+            ExposedDropdownMenu(
+                expanded = unitExpanded,
+                onDismissRequest = { unitExpanded = false }
+            ) {
+                IngredientUnit.values().forEach { unit ->
+                    DropdownMenuItem(
+                        text = { Text(unit.getDisplayName()) },
+                        onClick = {
+                            onIngredientChange(ingredient.copy(unit = unit))
+                            unitExpanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                    )
+                }
+            }
+        }
+
+        // Delete button
+        IconButton(onClick = onDelete) {
+            Icon(Icons.Default.Delete, contentDescription = "删除")
+        }
+    }
+}
 
 /**
  * Generate a random pastel (light) color for tags
