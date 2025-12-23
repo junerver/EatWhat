@@ -1,5 +1,6 @@
 package com.eatwhat.ui.screens.history
 
+import android.app.Activity
 import android.util.Log
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -24,10 +25,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.repository.HistoryRepository
@@ -63,6 +66,14 @@ fun HistoryListScreen(
     // 高亮状态：存储需要闪烁的 historyId
     var currentHighlightId by remember { mutableStateOf<Long?>(null) }
     
+    // 设置透明状态栏
+    val view = LocalView.current
+    SideEffect {
+        val window = (view.context as Activity).window
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+    }
+    
     // 从全局状态读取高亮 ID 并启动闪烁效果
     LaunchedEffect(Unit) {
         val globalHighlightId = app.highlightHistoryId
@@ -87,40 +98,48 @@ fun HistoryListScreen(
     // 计算未锁定记录数量
     val unlockedCount = historyList.count { !it.isLocked }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "历史记录",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                actions = {
-                    // 一键清除按钮（仅当有未锁定记录时显示）
-                    if (unlockedCount > 0) {
-                        IconButton(onClick = { showClearDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Default.DeleteSweep,
-                                contentDescription = "清除未锁定记录",
-                                tint = Color(0xFFE57373)
-                            )
-                        }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(PageBackground)
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+    ) {
+        // TopAppBar
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = Color.White
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "历史记录",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                // 一键清除按钮（仅当有未锁定记录时显示）
+                if (unlockedCount > 0) {
+                    IconButton(onClick = { showClearDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.DeleteSweep,
+                            contentDescription = "清除未锁定记录",
+                            tint = Color(0xFFE57373)
+                        )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                ),
-                windowInsets = WindowInsets.statusBars
-            )
-        },
-        containerColor = PageBackground
-    ) { paddingValues ->
+                }
+            }
+        }
+        
+        // Content
         if (historyList.isEmpty()) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
@@ -145,9 +164,7 @@ fun HistoryListScreen(
             }
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {

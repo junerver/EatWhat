@@ -1,5 +1,6 @@
 package com.eatwhat.ui.screens.recipe
 
+import android.app.Activity
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -24,9 +25,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.domain.model.Recipe
@@ -50,6 +53,14 @@ fun RecipeListScreen(navController: NavController) {
     val (searchQuery, setSearchQuery) = useState("")
     val (isSearching, setIsSearching) = useState(false)
 
+    // 设置透明状态栏
+    val view = LocalView.current
+    SideEffect {
+        val window = (view.context as Activity).window
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+    }
+
     // Tab配置 - 使用 emoji 和颜色
     val tabs = listOf(
         null to TabInfo("全部", "📋", Color(0xFF6750A4)),
@@ -61,17 +72,33 @@ fun RecipeListScreen(navController: NavController) {
 
     val pagerState = rememberPagerState(pageCount = { tabs.size })
 
-    Scaffold(
-        topBar = {
-            Column {
-                TopAppBar(
-                    title = {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(PageBackground)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+        ) {
+            // TopAppBar
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.White
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
-                            "我的菜谱",
-                            fontWeight = FontWeight.Bold
+                            text = "我的菜谱",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
                         )
-                    },
-                    actions = {
                         // 搜索按钮
                         IconButton(onClick = { setIsSearching(!isSearching) }) {
                             Icon(
@@ -80,96 +107,74 @@ fun RecipeListScreen(navController: NavController) {
                                 tint = PrimaryOrange
                             )
                         }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.White
-                    ),
-                    windowInsets = WindowInsets.statusBars
-                )
-                
-                // 搜索栏
-                AnimatedVisibility(
-                    visible = isSearching,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color(0xFFF8F8F8)
+                    }
+                    
+                    // 搜索栏
+                    AnimatedVisibility(
+                        visible = isSearching,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
                     ) {
-                        Row(
+                        Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFF8F8F8)
                         ) {
-                            Icon(
-                                Icons.Default.Search,
-                                contentDescription = null,
-                                tint = Color.Gray,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            BasicTextField(
-                                value = searchQuery,
-                                onValueChange = setSearchQuery,
-                                modifier = Modifier.weight(1f),
-                                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                    color = MaterialTheme.colorScheme.onSurface
-                                ),
-                                singleLine = true,
-                                decorationBox = { innerTextField ->
-                                    Box {
-                                        if (searchQuery.isEmpty()) {
-                                            Text(
-                                                "搜索菜谱或标签",
-                                                style = MaterialTheme.typography.bodyLarge,
-                                                color = Color.Gray
-                                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.Search,
+                                    contentDescription = null,
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                BasicTextField(
+                                    value = searchQuery,
+                                    onValueChange = setSearchQuery,
+                                    modifier = Modifier.weight(1f),
+                                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    singleLine = true,
+                                    decorationBox = { innerTextField ->
+                                        Box {
+                                            if (searchQuery.isEmpty()) {
+                                                Text(
+                                                    "搜索菜谱或标签",
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                    color = Color.Gray
+                                                )
+                                            }
+                                            innerTextField()
                                         }
-                                        innerTextField()
                                     }
-                                }
-                            )
-                            if (searchQuery.isNotEmpty()) {
-                                IconButton(
-                                    onClick = { setSearchQuery("") },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Close,
-                                        contentDescription = "清除",
-                                        tint = Color.Gray,
-                                        modifier = Modifier.size(18.dp)
-                                    )
+                                )
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(
+                                        onClick = { setSearchQuery("") },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = "清除",
+                                            tint = Color.Gray,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate("recipe/add") },
-                containerColor = PrimaryOrange,
-                contentColor = Color.White,
-                shape = CircleShape,
-                modifier = Modifier.shadow(8.dp, CircleShape)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "添加菜谱")
-            }
-        },
-        containerColor = PageBackground
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+            
             // 类型选择器 - 卡片式设计
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -222,7 +227,7 @@ fun RecipeListScreen(navController: NavController) {
                     }
                 }
             }
-
+            
             Spacer(modifier = Modifier.height(8.dp))
 
             // 支持左右滑动切换的内容区
@@ -251,6 +256,21 @@ fun RecipeListScreen(navController: NavController) {
                     }
                 )
             }
+        }
+        
+        // FloatingActionButton
+        FloatingActionButton(
+            onClick = { navController.navigate("recipe/add") },
+            containerColor = PrimaryOrange,
+            contentColor = Color.White,
+            shape = CircleShape,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .shadow(8.dp, CircleShape)
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "添加菜谱")
         }
     }
 }

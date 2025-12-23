@@ -54,7 +54,8 @@ fun EatWhatApp() {
         NavHost(
             navController = navController,
             startDestination = Destinations.Roll.route,
-            modifier = if (shouldHideBottomBar) Modifier else Modifier.padding(paddingValues)
+            // 不应用 paddingValues，让各 Screen 自行处理 insets
+            modifier = Modifier
         ) {
             composable(Destinations.Roll.route) {
                 RollScreen(navController)

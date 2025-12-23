@@ -1,5 +1,6 @@
 package com.eatwhat.ui.screens.roll
 
+import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,10 +14,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import com.eatwhat.navigation.Destinations
 import xyz.junerver.compose.hooks.*
@@ -39,6 +43,14 @@ fun RollScreen(navController: NavController) {
     val (showDishCountDialog, setShowDishCountDialog) = useState(false)
     val (showTypeDialog, setShowTypeDialog) = useState(false)
     val (currentType, setCurrentType) = useState("")
+    
+    // 设置橙色状态栏
+    val view = LocalView.current
+    SideEffect {
+        val window = (view.context as Activity).window
+        window.statusBarColor = PrimaryOrange.toArgb()
+        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+    }
 
     fun executeRoll() {
         // 如果没有选择菜数，默认1个荤菜
@@ -107,6 +119,8 @@ fun RollScreen(navController: NavController) {
                     end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
                 )
             )
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
         Column(
             modifier = Modifier
@@ -114,7 +128,7 @@ fun RollScreen(navController: NavController) {
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Title
             Text(
