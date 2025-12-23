@@ -45,7 +45,7 @@ class HistoryRepository(private val database: EatWhatDatabase) {
 
         val historyId = historyDao.insertHistoryRecord(historyEntity)
 
-        // Save recipe snapshots
+        // Save recipe snapshots (including image if available)
         val snapshots = recipes.map { recipe ->
             HistoryRecipeCrossRef(
                 historyId = historyId,
@@ -53,6 +53,7 @@ class HistoryRepository(private val database: EatWhatDatabase) {
                 recipeName = recipe.name,
                 recipeType = recipe.type.name,
                 recipeIcon = recipe.icon,
+                recipeImageBase64 = recipe.imageBase64,
                 recipeDifficulty = recipe.difficulty.name,
                 recipeTime = recipe.estimatedTime
             )
@@ -123,6 +124,7 @@ class HistoryRepository(private val database: EatWhatDatabase) {
             name = recipeName,
             type = try { RecipeType.valueOf(recipeType) } catch (e: Exception) { RecipeType.MEAT },
             icon = recipeIcon,
+            imageBase64 = recipeImageBase64,
             difficulty = try { Difficulty.valueOf(recipeDifficulty) } catch (e: Exception) { Difficulty.MEDIUM },
             estimatedTime = recipeTime
         )
@@ -142,6 +144,7 @@ class HistoryRepository(private val database: EatWhatDatabase) {
             name = recipeName,
             type = recipeType,
             icon = recipeIcon,
+            imageBase64 = recipeImageBase64,
             difficulty = recipeDifficulty,
             estimatedTime = recipeTime
         )
@@ -190,11 +193,16 @@ data class HistoryWithRecipes(
     val prepItems: List<PrepItemRecord>
 )
 
+/**
+ * Recipe snapshot for history records
+ * @property imageBase64 Base64 encoded WebP image (optional, takes precedence over icon)
+ */
 data class RecipeSnapshot(
     val recipeId: Long,
     val name: String,
     val type: String,
     val icon: String,
+    val imageBase64: String? = null,
     val difficulty: String,
     val estimatedTime: Int
 )

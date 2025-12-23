@@ -88,6 +88,12 @@ dependencies {
   // Core
   implementation(libs.androidx.core.ktx)
 
+  // ExifInterface for image orientation
+  implementation(libs.androidx.exifinterface)
+
+  // Coil for image loading in Compose
+  implementation(libs.coil.compose)
+
   // Testing
   testImplementation(libs.junit)
   testImplementation(libs.mockk)

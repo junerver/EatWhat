@@ -14,6 +14,8 @@ import com.eatwhat.data.database.entities.*
  * Version 1: Initial schema with all entities
  * Version 2: Add is_locked column to history_records
  * Version 3: Add custom_name column to history_records
+ * Version 4: Add image_base64 column to recipes for storing WebP images as Base64
+ * Version 5: Add recipe_image_base64 column to history_recipe_cross_ref for storing image snapshots
  */
 @Database(
     entities = [
@@ -26,7 +28,7 @@ import com.eatwhat.data.database.entities.*
         HistoryRecipeCrossRef::class,
         PrepItemEntity::class
     ],
-    version = 3,
+    version = 5,
     exportSchema = true
 )
 abstract class EatWhatDatabase : RoomDatabase() {
@@ -48,6 +50,33 @@ abstract class EatWhatDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // Add custom_name column with default empty string
                 db.execSQL("ALTER TABLE history_records ADD COLUMN custom_name TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        /**
+         * Migration from version 3 to 4
+         * Adds image_base64 column to recipes table for storing WebP images as Base64 strings
+         * This supports custom dish images that take precedence over emoji icons
+         * The column is nullable to maintain backward compatibility
+         */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add image_base64 column with default null
+                // This column stores WebP compressed images encoded as Base64 strings
+                // When not null, it takes precedence over the icon emoji for display
+                db.execSQL("ALTER TABLE recipes ADD COLUMN image_base64 TEXT DEFAULT NULL")
+            }
+        }
+
+        /**
+         * Migration from version 4 to 5
+         * Adds recipe_image_base64 column to history_recipe_cross_ref table
+         * This stores a snapshot of the recipe image at the time of history creation
+         */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add recipe_image_base64 column with default null
+                db.execSQL("ALTER TABLE history_recipe_cross_ref ADD COLUMN recipe_image_base64 TEXT DEFAULT NULL")
             }
         }
     }

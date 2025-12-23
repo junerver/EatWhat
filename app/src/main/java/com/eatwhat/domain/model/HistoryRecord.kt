@@ -22,12 +22,16 @@ data class HistoryRecord(
 /**
  * Recipe snapshot in history
  * Preserves recipe data even if original is deleted
+ *
+ * @property icon Emoji icon (fallback when imageBase64 is null)
+ * @property imageBase64 Base64 encoded WebP image snapshot (optional)
  */
 data class RecipeSnapshot(
     val recipeId: Long,
     val name: String,
     val type: RecipeType,
     val icon: String,
+    val imageBase64: String? = null,
     val difficulty: Difficulty,
     val estimatedTime: Int
 )

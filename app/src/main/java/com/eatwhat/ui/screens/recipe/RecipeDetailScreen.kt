@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.navigation.Destinations
+import com.eatwhat.ui.components.IconSize
+import com.eatwhat.ui.components.RecipeIcon
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
 
@@ -73,9 +75,11 @@ fun RecipeDetailScreen(
                             modifier = Modifier.padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
-                                text = recipeData.icon,
-                                style = MaterialTheme.typography.displayLarge
+                            // Use RecipeIcon to display image or emoji
+                            RecipeIcon(
+                                emoji = recipeData.icon,
+                                imageBase64 = recipeData.imageBase64,
+                                size = IconSize.LARGE
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(

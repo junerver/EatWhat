@@ -27,6 +27,8 @@ import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.repository.HistoryRepository
 import com.eatwhat.data.repository.PrepItemRecord
 import com.eatwhat.data.repository.RecipeSnapshot
+import com.eatwhat.ui.components.IconSize
+import com.eatwhat.ui.components.RecipeIcon
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -329,9 +331,11 @@ private fun RecipeSnapshotCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = snapshot.icon,
-                fontSize = 32.sp,
+            // Use RecipeIcon to display image or emoji
+            RecipeIcon(
+                emoji = snapshot.icon,
+                imageBase64 = snapshot.imageBase64,
+                size = IconSize.MEDIUM,
                 modifier = Modifier.padding(end = 12.dp)
             )
 

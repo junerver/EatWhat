@@ -24,6 +24,8 @@ import com.eatwhat.domain.model.RollResult
 import com.eatwhat.domain.usecase.InsufficientRecipesException
 import com.eatwhat.domain.usecase.RollRecipesUseCase
 import com.eatwhat.navigation.Destinations
+import com.eatwhat.ui.components.IconSize
+import com.eatwhat.ui.components.RecipeIcon
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
 
@@ -325,12 +327,14 @@ private fun DishCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 左侧图标
-            Text(
-                text = getRecipeEmoji(recipe.type),
-                fontSize = 32.sp,
-                modifier = Modifier.clickable(onClick = onClick)
-            )
+            // 左侧图标 - 使用菜谱的图片或emoji
+            Box(modifier = Modifier.clickable(onClick = onClick)) {
+                RecipeIcon(
+                    emoji = recipe.icon,
+                    imageBase64 = recipe.imageBase64,
+                    size = IconSize.MEDIUM
+                )
+            }
 
             Spacer(modifier = Modifier.width(12.dp))
 

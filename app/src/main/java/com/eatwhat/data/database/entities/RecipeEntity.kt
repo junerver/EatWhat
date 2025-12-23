@@ -9,6 +9,9 @@ import java.util.UUID
 /**
  * Recipe entity for Room database
  * Represents a recipe with all its metadata
+ *
+ * @property icon Emoji icon for the recipe (fallback when imageBase64 is null)
+ * @property imageBase64 Base64 encoded WebP image of the finished dish (optional, takes precedence over icon)
  */
 @Entity(
     tableName = "recipes",
@@ -29,7 +32,16 @@ data class RecipeEntity(
 
     val type: String, // RecipeType: MEAT, VEG, SOUP, STAPLE
 
-    val icon: String, // Emoji icon
+    val icon: String, // Emoji icon (fallback when imageBase64 is null)
+
+    /**
+     * Base64 encoded WebP image of the finished dish
+     * When not null, this takes precedence over the icon emoji
+     * Format: WebP image compressed and encoded as Base64 string
+     * Supports future data export/import and cloud sync
+     */
+    @ColumnInfo(name = "image_base64")
+    val imageBase64: String? = null,
 
     val difficulty: String, // Difficulty: EASY, MEDIUM, HARD
 

@@ -31,9 +31,11 @@ fun RecipeCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = recipe.icon,
-                style = MaterialTheme.typography.headlineMedium,
+            // Use RecipeIcon component to display either image or emoji
+            RecipeIcon(
+                emoji = recipe.icon,
+                imageBase64 = recipe.imageBase64,
+                size = IconSize.MEDIUM,
                 modifier = Modifier.padding(end = 16.dp)
             )
 
