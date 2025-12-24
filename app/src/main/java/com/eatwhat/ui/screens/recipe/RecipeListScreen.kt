@@ -351,7 +351,12 @@ private fun RecipeListContent(
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = 16.dp,
+                bottom = 88.dp  // 为底部导航栏预留空间
+            ),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(recipes, key = { it.id }) { recipe ->
