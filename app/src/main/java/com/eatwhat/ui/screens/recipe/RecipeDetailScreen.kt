@@ -1,6 +1,7 @@
 package com.eatwhat.ui.screens.recipe
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -283,7 +284,7 @@ fun RecipeDetailScreen(
                 Text(
                     text = "加载中...",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -424,9 +425,12 @@ private fun IngredientRow(
     amount: String,
     unit: String
 ) {
+    val isDark = isSystemInDarkTheme()
+    val rowBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF8FBF8)
+
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = Color(0xFFF8FBF8),
+        color = rowBackground,
         border = androidx.compose.foundation.BorderStroke(1.dp, SoftGreen.copy(alpha = 0.2f))
     ) {
         Row(
@@ -458,13 +462,14 @@ private fun IngredientRow(
                 Text(
                     name,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             Text(
                 text = if (unit == "适量") "适量" else "$amount$unit",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -479,6 +484,9 @@ private fun StepRow(
     description: String,
     isLast: Boolean
 ) {
+    val isDark = isSystemInDarkTheme()
+    val stepBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF5F9FF)
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -502,17 +510,18 @@ private fun StepRow(
                 color = Color.White
             )
         }
-        
+
         // Step content
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = Color(0xFFF5F9FF),
+            color = stepBackground,
             border = androidx.compose.foundation.BorderStroke(1.dp, SoftBlue.copy(alpha = 0.2f)),
             modifier = Modifier.weight(1f)
         ) {
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(12.dp),
                 lineHeight = 22.sp
             )

@@ -5,6 +5,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -471,7 +472,7 @@ private fun SectionCard(
                         Text(
                             subtitle,
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (progress >= 1f) SoftGreen else Color.Gray
+                            color = if (progress >= 1f) SoftGreen else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -485,6 +486,8 @@ private fun SectionCard(
 
             // Progress bar
             Spacer(modifier = Modifier.height(12.dp))
+            val isDark = isSystemInDarkTheme()
+            val trackColor = if (isDark) Color(0xFF3C3C3F) else Color(0xFFE0E0E0)
             LinearProgressIndicator(
                 progress = progress,
                 modifier = Modifier
@@ -492,7 +495,7 @@ private fun SectionCard(
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
                 color = if (progress >= 1f) SoftGreen else PrimaryOrange,
-                trackColor = Color(0xFFE0E0E0)
+                trackColor = trackColor
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -508,8 +511,14 @@ private fun PrepItemCheckRow(
     item: PrepItemRecord,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    val backgroundColor = if (item.isChecked) SoftGreen.copy(alpha = 0.1f) else Color(0xFFF8F8F8)
-    val borderColor = if (item.isChecked) SoftGreen.copy(alpha = 0.3f) else Color(0xFFE0E0E0)
+    val isDark = isSystemInDarkTheme()
+    val uncheckedBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF8F8F8)
+    val uncheckedBorderColor = if (isDark) Color(0xFF4A4A4A) else Color(0xFFE0E0E0)
+    val uncheckedCheckboxColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
+    val uncheckedCheckboxBorderColor = if (isDark) Color(0xFF5A5A5A) else Color(0xFFE0E0E0)
+
+    val backgroundColor = if (item.isChecked) SoftGreen.copy(alpha = 0.1f) else uncheckedBackground
+    val borderColor = if (item.isChecked) SoftGreen.copy(alpha = 0.3f) else uncheckedBorderColor
     val textDecoration = if (item.isChecked) TextDecoration.LineThrough else null
     val textOpacity = if (item.isChecked) 0.6f else 1f
 
@@ -529,8 +538,8 @@ private fun PrepItemCheckRow(
             // Checkbox
             Surface(
                 shape = CircleShape,
-                color = if (item.isChecked) SoftGreen else Color.White,
-                border = if (!item.isChecked) androidx.compose.foundation.BorderStroke(2.dp, Color(0xFFE0E0E0)) else null,
+                color = if (item.isChecked) SoftGreen else uncheckedCheckboxColor,
+                border = if (!item.isChecked) androidx.compose.foundation.BorderStroke(2.dp, uncheckedCheckboxBorderColor) else null,
                 modifier = Modifier.size(24.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
@@ -562,11 +571,14 @@ private fun RecipeSnapshotCard(
     snapshot: RecipeSnapshot,
     onClick: () -> Unit
 ) {
+    val isDark = isSystemInDarkTheme()
+    val cardBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF8F8F8)
+
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F8F8)),
+        colors = CardDefaults.cardColors(containerColor = cardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(

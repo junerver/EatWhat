@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -173,6 +174,8 @@ fun PrepScreen(
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
+                        val isDarkForProgress = isSystemInDarkTheme()
+                        val progressTrackColor = if (isDarkForProgress) Color(0xFF3C3C3F) else Color(0xFFE0E0E0)
                         LinearProgressIndicator(
                             progress = progress,
                             modifier = Modifier
@@ -180,7 +183,7 @@ fun PrepScreen(
                                 .height(8.dp)
                                 .clip(RoundedCornerShape(4.dp)),
                             color = if (checkedCount == totalCount) SoftGreen else PrimaryOrange,
-                            trackColor = Color(0xFFE0E0E0)
+                            trackColor = progressTrackColor
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -325,8 +328,13 @@ private fun IngredientCheckCard(
     item: PrepListItem,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    val backgroundColor = if (item.isChecked) SoftGreen.copy(alpha = 0.1f) else Color.White
-    val borderColor = if (item.isChecked) SoftGreen.copy(alpha = 0.3f) else Color(0xFFE0E0E0)
+    val isDark = isSystemInDarkTheme()
+    val uncheckedBackground = if (isDark) MaterialTheme.colorScheme.surface else Color.White
+    val uncheckedBorderColor = if (isDark) Color(0xFF4A4A4A) else Color(0xFFE0E0E0)
+    val uncheckedCheckboxColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF5F5F5)
+
+    val backgroundColor = if (item.isChecked) SoftGreen.copy(alpha = 0.1f) else uncheckedBackground
+    val borderColor = if (item.isChecked) SoftGreen.copy(alpha = 0.3f) else uncheckedBorderColor
     val textDecoration = if (item.isChecked) TextDecoration.LineThrough else null
     val textOpacity = if (item.isChecked) 0.6f else 1f
 
@@ -353,7 +361,7 @@ private fun IngredientCheckCard(
             // Checkbox
             Surface(
                 shape = CircleShape,
-                color = if (item.isChecked) SoftGreen else Color(0xFFF5F5F5),
+                color = if (item.isChecked) SoftGreen else uncheckedCheckboxColor,
                 modifier = Modifier.size(28.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {

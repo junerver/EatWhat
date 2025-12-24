@@ -3,6 +3,7 @@ package com.eatwhat.ui.screens.roll
 import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,14 +40,40 @@ fun RollScreen(navController: NavController) {
     val (showDishCountDialog, setShowDishCountDialog) = useState(false)
     val (showTypeDialog, setShowTypeDialog) = useState(false)
     val (currentType, setCurrentType) = useState("")
-    
-    // 设置橙色状态栏
+
+    // 检测深色模式
+    val isDarkTheme = isSystemInDarkTheme()
+
+    // 设置状态栏颜色：深色模式使用透明，浅色模式使用橙色
     val view = LocalView.current
     SideEffect {
         val window = (view.context as Activity).window
-        window.statusBarColor = PrimaryOrange.toArgb()
+        window.statusBarColor = if (isDarkTheme) {
+            android.graphics.Color.TRANSPARENT
+        } else {
+            PrimaryOrange.toArgb()
+        }
         WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
     }
+
+    // 背景颜色：深色模式使用深色背景渐变，浅色模式使用橙色渐变
+    val backgroundBrush = if (isDarkTheme) {
+        Brush.linearGradient(
+            colors = listOf(Color(0xFF1C1B1F), Color(0xFF2D2D30)),
+            start = Offset(0f, 0f),
+            end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+        )
+    } else {
+        Brush.linearGradient(
+            colors = listOf(PrimaryOrange, PrimaryOrangeLight),
+            start = Offset(0f, 0f),
+            end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+        )
+    }
+
+    // Roll 按钮颜色
+    val rollButtonColor = if (isDarkTheme) MaterialTheme.colorScheme.surface else Color.White
+    val rollButtonTextColor = PrimaryOrange
 
     fun executeRoll() {
         // 如果没有选择菜数，默认1个荤菜
@@ -108,13 +135,7 @@ fun RollScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(PrimaryOrange, PrimaryOrangeLight),
-                    start = Offset(0f, 0f),
-                    end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
-                )
-            )
+            .background(brush = backgroundBrush)
             .windowInsetsPadding(WindowInsets.statusBars)
             .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
@@ -151,7 +172,7 @@ fun RollScreen(navController: NavController) {
                     .size(180.dp)
                     .shadow(16.dp, CircleShape),
                 shape = CircleShape,
-                color = Color.White,
+                color = rollButtonColor,
                 onClick = { executeRoll() }
             ) {
                 Column(
@@ -166,7 +187,7 @@ fun RollScreen(navController: NavController) {
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
                         ),
-                        color = PrimaryOrange
+                        color = rollButtonTextColor
                     )
                 }
             }
