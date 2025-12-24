@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,7 +68,6 @@ import com.eatwhat.EatWhatApplication
 import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.ui.components.RecipeCard
-import com.eatwhat.ui.theme.PageBackground
 import com.eatwhat.ui.theme.PrimaryOrange
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.useState
@@ -85,10 +85,11 @@ fun RecipeListScreen(navController: NavController) {
 
     // 设置透明状态栏
     val view = LocalView.current
+    val darkTheme = isSystemInDarkTheme()
     SideEffect {
         val window = (view.context as Activity).window
         window.statusBarColor = android.graphics.Color.TRANSPARENT
-        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
     }
 
     // Tab配置 - 使用 emoji 和颜色
@@ -106,14 +107,14 @@ fun RecipeListScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(PageBackground)
+                .background(MaterialTheme.colorScheme.background)
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
             // TopAppBar
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = Color.White
+                color = MaterialTheme.colorScheme.surface
             ) {
                 Column {
                     Row(
@@ -127,6 +128,7 @@ fun RecipeListScreen(navController: NavController) {
                             text = "我的菜谱",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f)
                         )
                         // 搜索按钮
@@ -208,13 +210,13 @@ fun RecipeListScreen(navController: NavController) {
             // 类型选择器 - 卡片式设计
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = Color.White
+                color = MaterialTheme.colorScheme.surface
             ) {
                 ScrollableTabRow(
                     selectedTabIndex = pagerState.currentPage,
                     modifier = Modifier.fillMaxWidth(),
                     edgePadding = 16.dp,
-                    containerColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = PrimaryOrange,
                     indicator = { tabPositions ->
                         if (pagerState.currentPage < tabPositions.size) {

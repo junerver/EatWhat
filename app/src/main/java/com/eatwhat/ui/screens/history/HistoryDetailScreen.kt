@@ -73,7 +73,6 @@ import com.eatwhat.data.repository.RecipeSnapshot
 import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
 import com.eatwhat.ui.components.SimpleCircularProgressIndicator
-import com.eatwhat.ui.theme.PageBackground
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
@@ -135,12 +134,12 @@ fun HistoryDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
                 windowInsets = WindowInsets.statusBars
             )
         },
-        containerColor = PageBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         historyWithRecipes?.let { data ->
             LazyColumn(
@@ -161,7 +160,7 @@ fun HistoryDetailScreen(
                                 spotColor = Color.Black.copy(alpha = 0.1f)
                             ),
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         Column(
                             modifier = Modifier
@@ -180,7 +179,7 @@ fun HistoryDetailScreen(
                                 },
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1C1B1F)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             // 如果有自定义名称，显示配置摘要作为副标题
@@ -189,7 +188,7 @@ fun HistoryDetailScreen(
                                 Text(
                                     text = data.history.summary.ifEmpty { "${data.history.totalCount}个菜" },
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Gray
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
 
@@ -275,7 +274,7 @@ fun HistoryDetailScreen(
                                 spotColor = Color.Black.copy(alpha = 0.1f)
                             ),
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         Column(
                             modifier = Modifier.padding(20.dp)
@@ -345,7 +344,7 @@ fun HistoryDetailScreen(
                 Text(
                     text = "加载中...",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -369,7 +368,7 @@ fun HistoryDetailScreen(
                         Text(
                             text = "为这个菜肴搭配起个名字，方便管理收藏",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                         OutlinedTextField(
@@ -432,7 +431,7 @@ private fun SectionCard(
                 spotColor = Color.Black.copy(alpha = 0.1f)
             ),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(20.dp)
@@ -550,7 +549,7 @@ private fun PrepItemCheckRow(
                 text = item.name,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF1C1B1F).copy(alpha = textOpacity),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = textOpacity),
                 textDecoration = textDecoration,
                 modifier = Modifier.weight(1f)
             )
@@ -591,7 +590,7 @@ private fun RecipeSnapshotCard(
                     text = snapshot.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF1C1B1F)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))

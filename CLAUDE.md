@@ -64,14 +64,10 @@ This includes:
 ---
 
 ## Recent Changes
+- 002-dark-mode-adapt: Added Kotlin 1.9.21 + Jetpack Compose (Material 3), ComposeHooks
 
 - 2025-12-15: **Created unified `AGENTS.md` as single source of truth for all AI tools**
 - 2025-12-15: Simplified `CLAUDE.md` and `.kilocode/rules.md` to reference `AGENTS.md`
-- 2025-12-15: Enhanced database extensibility documentation with migration strategies
-- 001-eatwhat-android: Created comprehensive specification with 4 user stories
-- 001-eatwhat-android: Generated implementation plan with technical stack
-- 001-eatwhat-android: Defined 8 database entities with Room schema
-- 001-eatwhat-android: Generated 120 implementation tasks
 
 ---
 

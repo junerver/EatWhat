@@ -6,6 +6,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -43,9 +44,6 @@ import java.util.*
 // 定义主题色
 private val PrimaryOrange = Color(0xFFFF6B35)
 private val SoftPurple = Color(0xFF9C27B0)
-private val PageBackground = Color(0xFFF5F5F5)
-private val ZebraLight = Color.White
-private val ZebraDark = Color(0xFFFAFAFA)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,17 +60,22 @@ fun HistoryListScreen(
 
     // 确认清除对话框状态
     var showClearDialog by remember { mutableStateOf(false) }
-    
+
     // 高亮状态：存储需要闪烁的 historyId
     var currentHighlightId by remember { mutableStateOf<Long?>(null) }
-    
+
     // 设置透明状态栏
     val view = LocalView.current
+    val darkTheme = isSystemInDarkTheme()
     SideEffect {
         val window = (view.context as Activity).window
         window.statusBarColor = android.graphics.Color.TRANSPARENT
-        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
+        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
     }
+
+    // 斑马纹颜色：根据深色模式自适应
+    val zebraLight = MaterialTheme.colorScheme.surface
+    val zebraDark = MaterialTheme.colorScheme.surfaceVariant
     
     // 从全局状态读取高亮 ID 并启动闪烁效果
     LaunchedEffect(Unit) {
@@ -101,14 +104,14 @@ fun HistoryListScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(PageBackground)
+            .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.statusBars)
             .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
         // TopAppBar
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = Color.White
+            color = MaterialTheme.colorScheme.surface
         ) {
             Row(
                 modifier = Modifier
@@ -121,6 +124,7 @@ fun HistoryListScreen(
                     text = "历史记录",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f)
                 )
                 // 一键清除按钮（仅当有未锁定记录时显示）
@@ -153,12 +157,12 @@ fun HistoryListScreen(
                     Text(
                         text = "暂无历史记录",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "Roll 一些菜谱后这里会显示记录",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
             }
@@ -171,7 +175,7 @@ fun HistoryListScreen(
                 itemsIndexed(historyList, key = { _, history -> history.id }) { index, history ->
                     val isHighlighted = currentHighlightId == history.id
                     // 斑马纹效果：使用索引决定背景色
-                    val zebraBackground = if (index % 2 == 0) ZebraLight else ZebraDark
+                    val zebraBackground = if (index % 2 == 0) zebraLight else zebraDark
                     
                     if (history.isLocked) {
                         // 锁定的条目不能滑动删除
@@ -381,7 +385,7 @@ private fun HistoryCard(
                     },
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF1C1B1F)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 // 第二行：如果有自定义名称，显示配置摘要；否则显示菜名列表
@@ -389,13 +393,13 @@ private fun HistoryCard(
                     Text(
                         text = history.summary.ifEmpty { "${history.totalCount}个菜" },
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else if (history.recipes.isNotEmpty()) {
                     Text(
                         text = history.recipes.joinToString("、") { it.name },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )

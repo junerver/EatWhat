@@ -61,7 +61,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.domain.usecase.GeneratePrepListUseCase
 import com.eatwhat.domain.usecase.PrepListItem
-import com.eatwhat.ui.theme.PageBackground
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftGreen
 import kotlinx.coroutines.launch
@@ -125,7 +124,7 @@ fun PrepScreen(
     Scaffold(
         topBar = {
             Surface(
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 2.dp
             ) {
                 Column {
@@ -145,7 +144,7 @@ fun PrepScreen(
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Color.White
+                            containerColor = MaterialTheme.colorScheme.surface
                         ),
                         windowInsets = WindowInsets.statusBars
                     )
@@ -164,7 +163,7 @@ fun PrepScreen(
                             Text(
                                 text = "备菜进度",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
                                 text = "$checkedCount / $totalCount",
@@ -188,7 +187,7 @@ fun PrepScreen(
                 }
             }
         },
-        containerColor = PageBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -214,7 +213,7 @@ fun PrepScreen(
                                 spotColor = Color.Black.copy(alpha = 0.1f)
                             ),
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         Row(
                             modifier = Modifier
@@ -246,7 +245,7 @@ fun PrepScreen(
                                 Text(
                                     text = "共${totalCount}种食材",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -278,7 +277,7 @@ fun PrepScreen(
 
             // 底部按钮
             Surface(
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 8.dp
             ) {
                 Button(
@@ -370,7 +369,7 @@ private fun IngredientCheckCard(
                             "$index",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -381,7 +380,7 @@ private fun IngredientCheckCard(
                 text = item.name,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF1C1B1F).copy(alpha = textOpacity),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = textOpacity),
                 textDecoration = textDecoration,
                 modifier = Modifier.weight(1f)
             )
@@ -399,7 +398,7 @@ private fun IngredientCheckCard(
                     }
                 }",
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (item.isChecked) SoftGreen else Color.Gray,
+                color = if (item.isChecked) SoftGreen else MaterialTheme.colorScheme.onSurfaceVariant,
                 textDecoration = textDecoration
             )
         }

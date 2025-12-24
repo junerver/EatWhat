@@ -32,13 +32,13 @@ import com.eatwhat.ui.components.SimpleCircularProgressIndicator
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
 
-// 定义主题色
+// 定义品牌色（保持不变）
 private val PrimaryOrange = Color(0xFFFF6B35)
 private val SoftGreen = Color(0xFF4CAF50)
 private val SoftBlue = Color(0xFF2196F3)
 private val SoftPurple = Color(0xFF9C27B0)
 private val WarmYellow = Color(0xFFFFC107)
-private val PageBackground = Color(0xFFF5F5F5)
+private val ErrorRed = Color(0xFFE57373)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,17 +79,17 @@ fun RecipeDetailScreen(
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = "删除",
-                            tint = Color(0xFFE57373)
+                            tint = ErrorRed
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
                 windowInsets = WindowInsets.statusBars
             )
         },
-        containerColor = PageBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         recipe?.let { recipeData ->
             LazyColumn(
@@ -110,7 +110,7 @@ fun RecipeDetailScreen(
                                 spotColor = Color.Black.copy(alpha = 0.1f)
                             ),
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         Column(
                             modifier = Modifier.padding(24.dp),
@@ -130,7 +130,7 @@ fun RecipeDetailScreen(
                                 text = recipeData.name,
                                 style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1C1B1F)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             
                             Spacer(modifier = Modifier.height(16.dp))
@@ -297,7 +297,7 @@ fun RecipeDetailScreen(
                 Icon(
                     Icons.Default.Delete,
                     contentDescription = null,
-                    tint = Color(0xFFE57373)
+                    tint = ErrorRed
                 )
             },
             title = { Text("删除菜谱") },
@@ -312,7 +312,7 @@ fun RecipeDetailScreen(
                         }
                     },
                     colors = ButtonDefaults.textButtonColors(
-                        contentColor = Color(0xFFE57373)
+                        contentColor = ErrorRed
                     )
                 ) {
                     Text("删除")
@@ -347,7 +347,7 @@ private fun SectionCard(
                 spotColor = Color.Black.copy(alpha = 0.1f)
             ),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(20.dp)

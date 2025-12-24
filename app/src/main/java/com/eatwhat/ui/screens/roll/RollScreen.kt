@@ -357,7 +357,7 @@ private fun SelectorDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(24.dp),
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surface,
             modifier = Modifier.padding(16.dp)
         ) {
             Column(
@@ -369,7 +369,7 @@ private fun SelectorDialog(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = Color(0xFF1C1B1F)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -425,7 +425,7 @@ private fun TypeSelectorDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(24.dp),
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surface,
             modifier = Modifier.padding(16.dp)
         ) {
             Column(
@@ -437,7 +437,7 @@ private fun TypeSelectorDialog(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = Color(0xFF1C1B1F)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(24.dp))
 

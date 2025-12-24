@@ -41,7 +41,6 @@ private val PrimaryOrangeLight = Color(0xFFFF8C5A)
 private val SoftGreen = Color(0xFF4CAF50)
 private val SoftBlue = Color(0xFF2196F3)
 private val WarmYellow = Color(0xFFFFC107)
-private val PageBackground = Color(0xFFF5F5F5)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,7 +102,7 @@ fun RollResultScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = PageBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -230,7 +229,7 @@ private fun RollResultContent(
     ) {
         // 顶部返回栏
         Surface(
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surface,
             shadowElevation = 2.dp
         ) {
             Row(
@@ -243,13 +242,14 @@ private fun RollResultContent(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "返回",
-                        tint = Color(0xFF1C1B1F)
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Text(
                     text = "今日菜单",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -273,7 +273,7 @@ private fun RollResultContent(
                             spotColor = Color.Black.copy(alpha = 0.1f)
                         ),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Column(
                         modifier = Modifier
@@ -291,13 +291,13 @@ private fun RollResultContent(
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color(0xFF1C1B1F)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = buildSummary(config),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -315,7 +315,7 @@ private fun RollResultContent(
 
         // 底部操作按钮
         Surface(
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surface,
             shadowElevation = 8.dp
         ) {
             Row(
@@ -378,7 +378,7 @@ private fun DishCard(
                 spotColor = Color.Black.copy(alpha = 0.1f)
             ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier
@@ -408,7 +408,7 @@ private fun DishCard(
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold
                     ),
-                    color = Color(0xFF1C1B1F)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
