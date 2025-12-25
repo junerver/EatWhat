@@ -36,14 +36,13 @@ import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.repository.HistoryRepository
 import com.eatwhat.domain.model.HistoryRecord
+import com.eatwhat.ui.theme.ErrorRed
+import com.eatwhat.ui.theme.PrimaryOrange
+import com.eatwhat.ui.theme.SoftPurple
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
-
-// 定义主题色
-private val PrimaryOrange = Color(0xFFFF6B35)
-private val SoftPurple = Color(0xFF9C27B0)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,7 +132,7 @@ fun HistoryListScreen(
                         Icon(
                             imageVector = Icons.Default.DeleteSweep,
                             contentDescription = "清除未锁定记录",
-                            tint = Color(0xFFE57373)
+                            tint = ErrorRed
                         )
                     }
                 }
@@ -234,7 +233,7 @@ fun HistoryListScreen(
                 Icon(
                     imageVector = Icons.Default.DeleteSweep,
                     contentDescription = null,
-                    tint = Color(0xFFE57373)
+                    tint = ErrorRed
                 )
             },
             title = {
@@ -252,7 +251,7 @@ fun HistoryListScreen(
                         showClearDialog = false
                     },
                     colors = ButtonDefaults.textButtonColors(
-                        contentColor = Color(0xFFE57373)
+                        contentColor = ErrorRed
                     )
                 ) {
                     Text("确认删除")
@@ -291,7 +290,7 @@ private fun SwipeToDeleteItem(
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFFE57373))
+                    .background(ErrorRed)
                     .padding(horizontal = 20.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {

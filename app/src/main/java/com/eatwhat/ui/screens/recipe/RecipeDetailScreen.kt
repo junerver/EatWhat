@@ -30,16 +30,9 @@ import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
 import com.eatwhat.ui.components.SimpleCircularProgressIndicator
+import com.eatwhat.ui.theme.*
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
-
-// 定义品牌色（保持不变）
-private val PrimaryOrange = Color(0xFFFF6B35)
-private val SoftGreen = Color(0xFF4CAF50)
-private val SoftBlue = Color(0xFF2196F3)
-private val SoftPurple = Color(0xFF9C27B0)
-private val WarmYellow = Color(0xFFFFC107)
-private val ErrorRed = Color(0xFFE57373)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -143,10 +136,10 @@ fun RecipeDetailScreen(
                             ) {
                                 // Type chip
                                 val (typeEmoji, typeName, typeColor) = when (recipeData.type.name) {
-                                    "MEAT" -> Triple("🍗", "荤菜", Color(0xFFE57373))
-                                    "VEG" -> Triple("🥬", "素菜", Color(0xFF81C784))
-                                    "SOUP" -> Triple("🍲", "汤", Color(0xFF64B5F6))
-                                    "STAPLE" -> Triple("🍚", "主食", Color(0xFFFFB74D))
+                                    "MEAT" -> Triple("🍗", "荤菜", MeatRed)
+                                    "VEG" -> Triple("🥬", "素菜", VegGreen)
+                                    "SOUP" -> Triple("🍲", "汤", SoupBlue)
+                                    "STAPLE" -> Triple("🍚", "主食", StapleOrange)
                                     else -> Triple("🍽️", recipeData.type.name, Color.Gray)
                                 }
                                 InfoChip(
@@ -159,7 +152,7 @@ fun RecipeDetailScreen(
                                 val (diffEmoji, diffName, diffColor) = when (recipeData.difficulty.name) {
                                     "EASY" -> Triple("⭐", "简单", SoftGreen)
                                     "MEDIUM" -> Triple("⭐⭐", "中等", WarmYellow)
-                                    "HARD" -> Triple("⭐⭐⭐", "困难", Color(0xFFE57373))
+                                    "HARD" -> Triple("⭐⭐⭐", "困难", MeatRed)
                                     else -> Triple("⭐", recipeData.difficulty.name, Color.Gray)
                                 }
                                 InfoChip(
@@ -426,7 +419,7 @@ private fun IngredientRow(
     unit: String
 ) {
     val isDark = isSystemInDarkTheme()
-    val rowBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF8FBF8)
+    val rowBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else IngredientCardBackground
 
     Surface(
         shape = RoundedCornerShape(12.dp),
@@ -485,7 +478,7 @@ private fun StepRow(
     isLast: Boolean
 ) {
     val isDark = isSystemInDarkTheme()
-    val stepBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF5F9FF)
+    val stepBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else StepCardBackground
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -534,20 +527,8 @@ private fun StepRow(
  */
 @Composable
 private fun TagChip(text: String) {
-    val pastelColors = listOf(
-        Color(0xFFFFCDD2),
-        Color(0xFFF8BBD9),
-        Color(0xFFE1BEE7),
-        Color(0xFFD1C4E9),
-        Color(0xFFC5CAE9),
-        Color(0xFFBBDEFB),
-        Color(0xFFB2EBF2),
-        Color(0xFFC8E6C9),
-        Color(0xFFFFF9C4),
-        Color(0xFFFFE0B2)
-    )
-    val backgroundColor = pastelColors[text.hashCode().mod(pastelColors.size).let { if (it < 0) -it else it }]
-    
+    val backgroundColor = TagPastelColors[text.hashCode().mod(TagPastelColors.size).let { if (it < 0) -it else it }]
+
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = backgroundColor

@@ -55,10 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.database.entities.CookingStepEntity
-import com.eatwhat.ui.theme.PageBackground
-import com.eatwhat.ui.theme.PrimaryOrange
-import com.eatwhat.ui.theme.SoftBlue
-import com.eatwhat.ui.theme.SoftGreen
+import com.eatwhat.ui.theme.*
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -142,7 +139,7 @@ fun CookingScreen(
                                 .height(8.dp)
                                 .clip(RoundedCornerShape(4.dp)),
                             color = if (completedSteps.size == totalSteps) SoftGreen else PrimaryOrange,
-                            trackColor = Color(0xFFE0E0E0)
+                            trackColor = LightBorder
                         )
                     }
                 }
@@ -184,7 +181,7 @@ fun CookingScreen(
                                 color = when {
                                     isComplete -> SoftGreen.copy(alpha = 0.1f)
                                     isSelected -> PrimaryOrange.copy(alpha = 0.1f)
-                                    else -> Color(0xFFF5F5F5)
+                                    else -> UnselectedBackground
                                 },
                                 border = when {
                                     isComplete -> androidx.compose.foundation.BorderStroke(2.dp, SoftGreen)
@@ -273,7 +270,7 @@ fun CookingScreen(
                                         text = recipe.recipe.name,
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF1C1B1F)
+                                        color = DarkBackground
                                     )
                                     Text(
                                         text = "共${recipe.steps?.size ?: 0}个步骤",
@@ -416,7 +413,7 @@ private fun CookingStepCard(
                         when {
                             isCompleted -> SoftGreen
                             isCurrent -> PrimaryOrange
-                            else -> Color(0xFFE0E0E0)
+                            else -> LightBorder
                         }
                     ),
                 contentAlignment = Alignment.Center
@@ -445,7 +442,7 @@ private fun CookingStepCard(
                         .width(2.dp)
                         .height(12.dp)
                         .background(
-                            if (isCompleted) SoftGreen.copy(alpha = 0.5f) else Color(0xFFE0E0E0)
+                            if (isCompleted) SoftGreen.copy(alpha = 0.5f) else LightBorder
                         )
                 )
             }
@@ -465,7 +462,7 @@ private fun CookingStepCard(
                 containerColor = when {
                     isCompleted -> SoftGreen.copy(alpha = 0.1f)
                     isCurrent -> Color.White
-                    else -> Color(0xFFF8F8F8)
+                    else -> InputBackground
                 }
             ),
             border = when {
@@ -515,8 +512,8 @@ private fun CookingStepCard(
                     text = step.description,
                     style = MaterialTheme.typography.bodyMedium,
                     color = when {
-                        isCompleted -> Color(0xFF1C1B1F).copy(alpha = 0.6f)
-                        else -> Color(0xFF1C1B1F)
+                        isCompleted -> DarkBackground.copy(alpha = 0.6f)
+                        else -> DarkBackground
                     },
                     lineHeight = 22.sp
                 )

@@ -62,8 +62,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.domain.usecase.GeneratePrepListUseCase
 import com.eatwhat.domain.usecase.PrepListItem
-import com.eatwhat.ui.theme.PrimaryOrange
-import com.eatwhat.ui.theme.SoftGreen
+import com.eatwhat.ui.theme.*
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -175,7 +174,7 @@ fun PrepScreen(
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         val isDarkForProgress = isSystemInDarkTheme()
-                        val progressTrackColor = if (isDarkForProgress) Color(0xFF3C3C3F) else Color(0xFFE0E0E0)
+                        val progressTrackColor = if (isDarkForProgress) DarkProgressTrack else LightBorder
                         LinearProgressIndicator(
                             progress = progress,
                             modifier = Modifier
@@ -330,8 +329,8 @@ private fun IngredientCheckCard(
 ) {
     val isDark = isSystemInDarkTheme()
     val uncheckedBackground = if (isDark) MaterialTheme.colorScheme.surface else Color.White
-    val uncheckedBorderColor = if (isDark) Color(0xFF4A4A4A) else Color(0xFFE0E0E0)
-    val uncheckedCheckboxColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF5F5F5)
+    val uncheckedBorderColor = if (isDark) DarkBorder else LightBorder
+    val uncheckedCheckboxColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else UnselectedBackground
 
     val backgroundColor = if (item.isChecked) SoftGreen.copy(alpha = 0.1f) else uncheckedBackground
     val borderColor = if (item.isChecked) SoftGreen.copy(alpha = 0.3f) else uncheckedBorderColor

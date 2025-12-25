@@ -32,15 +32,9 @@ import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
 import com.eatwhat.ui.components.SimpleCircularProgressIndicator
+import com.eatwhat.ui.theme.*
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
-
-// 定义主题色
-private val PrimaryOrange = Color(0xFFFF6B35)
-private val PrimaryOrangeLight = Color(0xFFFF8C5A)
-private val SoftGreen = Color(0xFF4CAF50)
-private val SoftBlue = Color(0xFF2196F3)
-private val WarmYellow = Color(0xFFFFC107)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -146,7 +140,7 @@ fun RollResultScreen(
                         Text(
                             text = error,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = Color(0xFFE57373)
+                            color = MeatRed
                         )
                         Button(
                             onClick = { navController.popBackStack() },
@@ -418,7 +412,7 @@ private fun DishCard(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     val (typeColor, typeName) = when (recipe.type) {
-                        RecipeType.MEAT -> Color(0xFFE57373) to "荤菜"
+                        RecipeType.MEAT -> MeatRed to "荤菜"
                         RecipeType.VEG -> SoftGreen to "素菜"
                         RecipeType.SOUP -> SoftBlue to "汤"
                         RecipeType.STAPLE -> WarmYellow to "主食"

@@ -68,7 +68,7 @@ import com.eatwhat.EatWhatApplication
 import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.ui.components.RecipeCard
-import com.eatwhat.ui.theme.PrimaryOrange
+import com.eatwhat.ui.theme.*
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.useState
 
@@ -94,11 +94,11 @@ fun RecipeListScreen(navController: NavController) {
 
     // Tab配置 - 使用 emoji 和颜色
     val tabs = listOf(
-        null to TabInfo("全部", "📋", Color(0xFF6750A4)),
-        RecipeType.MEAT to TabInfo("荤菜", "🍗", Color(0xFFE57373)),
-        RecipeType.VEG to TabInfo("素菜", "🥬", Color(0xFF81C784)),
-        RecipeType.SOUP to TabInfo("汤", "🍲", Color(0xFF64B5F6)),
-        RecipeType.STAPLE to TabInfo("主食", "🍚", Color(0xFFFFB74D))
+        null to TabInfo("全部", "📋", Primary),
+        RecipeType.MEAT to TabInfo("荤菜", "🍗", MeatRed),
+        RecipeType.VEG to TabInfo("素菜", "🥬", VegGreen),
+        RecipeType.SOUP to TabInfo("汤", "🍲", SoupBlue),
+        RecipeType.STAPLE to TabInfo("主食", "🍚", StapleOrange)
     )
 
     val pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -152,7 +152,7 @@ fun RecipeListScreen(navController: NavController) {
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             shape = RoundedCornerShape(12.dp),
-                            color = Color(0xFFF8F8F8)
+                            color = InputBackground
                         ) {
                             Row(
                                 modifier = Modifier

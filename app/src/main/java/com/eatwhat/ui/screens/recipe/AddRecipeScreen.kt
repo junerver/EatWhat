@@ -37,10 +37,7 @@ import com.eatwhat.EatWhatApplication
 import com.eatwhat.domain.model.*
 import com.eatwhat.ui.components.FoodEmojis
 import com.eatwhat.ui.components.RecipeIconPicker
-import com.eatwhat.ui.theme.PrimaryOrange
-import com.eatwhat.ui.theme.SoftBlue
-import com.eatwhat.ui.theme.SoftGreen
-import com.eatwhat.ui.theme.WarmYellow
+import com.eatwhat.ui.theme.*
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.*
 import kotlin.random.Random
@@ -222,7 +219,7 @@ fun AddRecipeScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color(0xFFF5F5F5)
+        containerColor = PageBackground
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -595,7 +592,7 @@ private fun StyledTextField(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            color = Color(0xFFF8F8F8),
+            color = InputBackground,
             border = null
         ) {
             Row(
@@ -647,16 +644,16 @@ private fun RecipeTypeChip(
     modifier: Modifier = Modifier
 ) {
     val (emoji, label, color) = when (type) {
-        RecipeType.MEAT -> Triple("🥩", "荤菜", Color(0xFFE57373))
-        RecipeType.VEG -> Triple("🥬", "素菜", Color(0xFF81C784))
-        RecipeType.SOUP -> Triple("🍲", "汤", Color(0xFF64B5F6))
-        RecipeType.STAPLE -> Triple("🍚", "主食", Color(0xFFFFB74D))
+        RecipeType.MEAT -> Triple("🥩", "荤菜", MeatRed)
+        RecipeType.VEG -> Triple("🥬", "素菜", VegGreen)
+        RecipeType.SOUP -> Triple("🍲", "汤", SoupBlue)
+        RecipeType.STAPLE -> Triple("🍚", "主食", StapleOrange)
     }
     
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) color.copy(alpha = 0.15f) else Color(0xFFF5F5F5),
+        color = if (isSelected) color.copy(alpha = 0.15f) else PageBackground,
         border = if (isSelected) {
             androidx.compose.foundation.BorderStroke(2.dp, color)
         } else null,
@@ -692,13 +689,13 @@ private fun DifficultyChip(
     val (label, stars, color) = when (difficulty) {
         Difficulty.EASY -> Triple("简单", 1, SoftGreen)
         Difficulty.MEDIUM -> Triple("中等", 2, WarmYellow)
-        Difficulty.HARD -> Triple("困难", 3, Color(0xFFE57373))
+        Difficulty.HARD -> Triple("困难", 3, MeatRed)
     }
     
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) color.copy(alpha = 0.15f) else Color(0xFFF5F5F5),
+        color = if (isSelected) color.copy(alpha = 0.15f) else PageBackground,
         border = if (isSelected) {
             androidx.compose.foundation.BorderStroke(2.dp, color)
         } else null,
@@ -746,7 +743,7 @@ private fun IngredientInputCard(
     
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = Color(0xFFF8FBF8),
+        color = IngredientCardBackground,
         border = androidx.compose.foundation.BorderStroke(1.dp, SoftGreen.copy(alpha = 0.2f)),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -812,7 +809,7 @@ private fun IngredientInputCard(
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = Color.White,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, LightBorder),
                     modifier = Modifier.width(50.dp)
                 ) {
                     BasicTextField(
@@ -956,7 +953,7 @@ private fun StepInputCard(
         // Step content
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = Color(0xFFF5F9FF),
+            color = StepCardBackground,
             border = androidx.compose.foundation.BorderStroke(1.dp, SoftBlue.copy(alpha = 0.2f)),
             modifier = Modifier.weight(1f)
         ) {
@@ -1044,25 +1041,7 @@ private fun IngredientUnit.getDisplayName(): String {
  * Generate a random pastel (light) color for tags
  */
 private fun generatePastelColor(): Color {
-    val pastelColors = listOf(
-        Color(0xFFFFCDD2), // Light Red
-        Color(0xFFF8BBD9), // Light Pink
-        Color(0xFFE1BEE7), // Light Purple
-        Color(0xFFD1C4E9), // Light Deep Purple
-        Color(0xFFC5CAE9), // Light Indigo
-        Color(0xFFBBDEFB), // Light Blue
-        Color(0xFFB3E5FC), // Light Light Blue
-        Color(0xFFB2EBF2), // Light Cyan
-        Color(0xFFB2DFDB), // Light Teal
-        Color(0xFFC8E6C9), // Light Green
-        Color(0xFFDCEDC8), // Light Light Green
-        Color(0xFFF0F4C3), // Light Lime
-        Color(0xFFFFF9C4), // Light Yellow
-        Color(0xFFFFECB3), // Light Amber
-        Color(0xFFFFE0B2), // Light Orange
-        Color(0xFFFFCCBC), // Light Deep Orange
-    )
-    return pastelColors[Random.nextInt(pastelColors.size)]
+    return TagPastelColors[Random.nextInt(TagPastelColors.size)]
 }
 
 /**

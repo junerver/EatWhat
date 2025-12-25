@@ -2,7 +2,7 @@
 
 **Single Source of Truth for all AI development tools**
 
-Last updated: 2025-12-15
+Last updated: 2025-12-25
 
 ---
 
@@ -112,6 +112,136 @@ private val WarmYellow = Color(0xFFFFC107)  // 中等难度、警告
 private val CardBackground = Color(0xFFFFFBF8)  // 卡片背景
 private val PageBackground = Color(0xFFF5F5F5)  // 页面背景
 ```
+
+#### 深色模式适配规范
+
+项目支持系统深色模式自动切换，所有 UI 组件必须正确适配深色模式。
+
+**核心原则**：
+
+1. 使用 `isSystemInDarkTheme()` 检测深色模式
+2. 优先使用 `MaterialTheme.colorScheme` 语义化颜色
+3. 硬编码颜色必须提供深色模式变体
+4. 状态栏和导航栏需要同步适配
+
+**标准适配模式**：
+
+```kotlin
+import androidx.compose.foundation.isSystemInDarkTheme
+
+@Composable
+fun AdaptiveComponent() {
+    val isDark = isSystemInDarkTheme()
+
+    // 方式1：使用 MaterialTheme 语义化颜色（推荐）
+    val backgroundColor = MaterialTheme.colorScheme.surface
+    val textColor = MaterialTheme.colorScheme.onSurface
+
+    // 方式2：条件颜色选择（用于自定义颜色）
+    val cardBackground = if (isDark)
+        MaterialTheme.colorScheme.surfaceVariant
+    else
+        Color(0xFFF8FBF8)
+}
+```
+
+**常用颜色映射表**：
+
+| 浅色模式 | 深色模式 | 用途 |
+|---------|---------|-----|
+| `Color.White` | `MaterialTheme.colorScheme.surface` | 卡片背景 |
+| `Color(0xFFF8F8F8)` | `MaterialTheme.colorScheme.surfaceVariant` | 列表项背景 |
+| `Color(0xFFF8FBF8)` | `MaterialTheme.colorScheme.surfaceVariant` | 食材卡片背景 |
+| `Color(0xFFF5F9FF)` | `MaterialTheme.colorScheme.surfaceVariant` | 步骤卡片背景 |
+| `Color(0xFFE0E0E0)` | `Color(0xFF3C3C3F)` | 进度条轨道 |
+| `Color(0xFFE0E0E0)` | `Color(0xFF4A4A4A)` | 边框颜色 |
+| `Color.Gray` | `MaterialTheme.colorScheme.onSurfaceVariant` | 次要文字 |
+
+**进度条适配**：
+
+```kotlin
+val isDark = isSystemInDarkTheme()
+val trackColor = if (isDark) Color(0xFF3C3C3F) else Color(0xFFE0E0E0)
+
+LinearProgressIndicator(
+    progress = progress,
+    color = PrimaryOrange,
+    trackColor = trackColor
+)
+```
+
+**渐变背景适配**（如 RollScreen）：
+
+```kotlin
+val isDarkTheme = isSystemInDarkTheme()
+
+val backgroundBrush = if (isDarkTheme) {
+    Brush.linearGradient(
+        colors = listOf(Color(0xFF1C1B1F), Color(0xFF2D2D30))
+    )
+} else {
+    Brush.linearGradient(
+        colors = listOf(PrimaryOrange, PrimaryOrangeLight)
+    )
+}
+```
+
+**状态栏适配**：
+
+```kotlin
+val view = LocalView.current
+val darkTheme = isSystemInDarkTheme()
+
+SideEffect {
+    val window = (view.context as Activity).window
+    // 深色模式使用透明状态栏，浅色模式可使用主题色
+    window.statusBarColor = if (darkTheme) {
+        android.graphics.Color.TRANSPARENT
+    } else {
+        PrimaryOrange.toArgb()
+    }
+    // 根据背景亮度设置状态栏图标颜色
+    WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+}
+```
+
+**复选框/选择项适配**：
+
+```kotlin
+val isDark = isSystemInDarkTheme()
+val uncheckedBackground = if (isDark) MaterialTheme.colorScheme.surface else Color.White
+val uncheckedBorderColor = if (isDark) Color(0xFF4A4A4A) else Color(0xFFE0E0E0)
+val uncheckedCheckboxColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF5F5F5)
+
+// 选中状态保持功能色不变
+val checkedBackground = SoftGreen.copy(alpha = 0.1f)
+val checkedBorderColor = SoftGreen.copy(alpha = 0.3f)
+```
+
+**底部导航栏与列表**：
+
+当页面包含底部导航栏时，LazyColumn 需要预留底部内边距（约 88dp）：
+
+```kotlin
+LazyColumn(
+    modifier = Modifier.fillMaxSize(),
+    contentPadding = PaddingValues(
+        start = 16.dp,
+        end = 16.dp,
+        top = 16.dp,
+        bottom = 88.dp  // 为底部导航栏预留空间
+    )
+)
+```
+
+**深色模式适配检查清单**：
+
+- [ ] 所有硬编码背景色已提供深色变体
+- [ ] 文字颜色使用 `onSurface` / `onSurfaceVariant`
+- [ ] 边框颜色在深色模式下可见
+- [ ] 进度条轨道颜色已适配
+- [ ] 状态栏颜色和图标已适配
+- [ ] 功能色（绿/蓝/橙）保持不变，仅调整透明度
 
 #### 卡片设计规范
 
@@ -547,4 +677,5 @@ data class RecipeEntity(...)
 
 ### Recent Updates
 
+- 2025-12-25: Added comprehensive dark mode adaptation guidelines
 - 2025-12-15: Created unified AGENTS.md for all

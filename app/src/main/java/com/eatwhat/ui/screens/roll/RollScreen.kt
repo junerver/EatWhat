@@ -24,10 +24,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import com.eatwhat.navigation.Destinations
-import com.eatwhat.ui.theme.PrimaryOrange
-import com.eatwhat.ui.theme.PrimaryOrangeLight
-import com.eatwhat.ui.theme.SoftBlue
-import com.eatwhat.ui.theme.SoftGreen
+import com.eatwhat.ui.theme.*
 import xyz.junerver.compose.hooks.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +56,7 @@ fun RollScreen(navController: NavController) {
     // 背景颜色：深色模式使用深色背景渐变，浅色模式使用橙色渐变
     val backgroundBrush = if (isDarkTheme) {
         Brush.linearGradient(
-            colors = listOf(Color(0xFF1C1B1F), Color(0xFF2D2D30)),
+            colors = listOf(DarkGradientStart, DarkGradientEnd),
             start = Offset(0f, 0f),
             end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
         )
@@ -216,7 +213,7 @@ fun RollScreen(navController: NavController) {
                             emoji = "🍗",
                             label = "荤",
                             count = meatCount,
-                            color = Color(0xFFE57373),
+                            color = MeatRed,
                             onClick = {
                                 setCurrentType("meat")
                                 setShowTypeDialog(true)
@@ -287,7 +284,7 @@ fun RollScreen(navController: NavController) {
         val available = totalCount - used
 
         val (emoji, title, color) = when (currentType) {
-            "meat" -> Triple("🍗", "选择荤菜数量", Color(0xFFE57373))
+            "meat" -> Triple("🍗", "选择荤菜数量", MeatRed)
             "veg" -> Triple("🥬", "选择素菜数量", SoftGreen)
             "soup" -> Triple("🍲", "选择汤数量", SoftBlue)
             else -> Triple("", "", Color.Gray)

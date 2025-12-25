@@ -74,10 +74,7 @@ import com.eatwhat.data.repository.RecipeSnapshot
 import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
 import com.eatwhat.ui.components.SimpleCircularProgressIndicator
-import com.eatwhat.ui.theme.PrimaryOrange
-import com.eatwhat.ui.theme.SoftBlue
-import com.eatwhat.ui.theme.SoftGreen
-import com.eatwhat.ui.theme.WarmYellow
+import com.eatwhat.ui.theme.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -487,7 +484,7 @@ private fun SectionCard(
             // Progress bar
             Spacer(modifier = Modifier.height(12.dp))
             val isDark = isSystemInDarkTheme()
-            val trackColor = if (isDark) Color(0xFF3C3C3F) else Color(0xFFE0E0E0)
+            val trackColor = if (isDark) DarkProgressTrack else LightBorder
             LinearProgressIndicator(
                 progress = progress,
                 modifier = Modifier
@@ -512,10 +509,10 @@ private fun PrepItemCheckRow(
     onCheckedChange: (Boolean) -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
-    val uncheckedBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF8F8F8)
-    val uncheckedBorderColor = if (isDark) Color(0xFF4A4A4A) else Color(0xFFE0E0E0)
+    val uncheckedBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else InputBackground
+    val uncheckedBorderColor = if (isDark) DarkBorder else LightBorder
     val uncheckedCheckboxColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
-    val uncheckedCheckboxBorderColor = if (isDark) Color(0xFF5A5A5A) else Color(0xFFE0E0E0)
+    val uncheckedCheckboxBorderColor = if (isDark) DarkCheckboxBorder else LightBorder
 
     val backgroundColor = if (item.isChecked) SoftGreen.copy(alpha = 0.1f) else uncheckedBackground
     val borderColor = if (item.isChecked) SoftGreen.copy(alpha = 0.3f) else uncheckedBorderColor
@@ -572,7 +569,7 @@ private fun RecipeSnapshotCard(
     onClick: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
-    val cardBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF8F8F8)
+    val cardBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else InputBackground
 
     Card(
         onClick = onClick,
@@ -612,7 +609,7 @@ private fun RecipeSnapshotCard(
                 ) {
                     // 类型标签
                     val (typeText, typeColor) = when (snapshot.type) {
-                        "MEAT" -> "荤菜" to Color(0xFFE57373)
+                        "MEAT" -> "荤菜" to MeatRed
                         "VEG" -> "素菜" to SoftGreen
                         "SOUP" -> "汤" to SoftBlue
                         "STAPLE" -> "主食" to WarmYellow
