@@ -6,6 +6,7 @@ import at.bitfire.dav4jvm.exception.HttpException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.Credentials
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -22,22 +23,21 @@ class WebDAVClient(
     private val username: String,
     private val password: String
 ) {
+    private val credentials = Credentials.basic(username, password)
+
     private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .followRedirects(false)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
-            .authenticator { _, response ->
-                if (response.request.header("Authorization") != null) {
-                    // 已经尝试过认证，不再重试
-                    null
-                } else {
-                    response.request.newBuilder()
-                        .header("Authorization", Credentials.basic(username, password))
-                        .build()
-                }
-            }
+            // 使用预认证拦截器，每个请求都带上 Authorization 头
+            .addInterceptor(Interceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .header("Authorization", credentials)
+                    .build()
+                chain.proceed(request)
+            })
             .build()
     }
 
@@ -78,20 +78,47 @@ class WebDAVClient(
 
     /**
      * 确保远程目录存在
+     * 逐级创建目录路径
      */
     suspend fun ensureDirectory(remotePath: String): Boolean = withContext(Dispatchers.IO) {
         try {
-            val url = normalizeUrl(serverUrl + remotePath).toHttpUrl()
-            val davResource = DavResource(client, url)
+            // 分解路径，逐级创建
+            val pathParts = remotePath.trim('/').split('/')
+            var currentPath = ""
 
-            // 尝试创建目录
-            try {
-                davResource.mkCol(null) {}
-                true
-            } catch (e: HttpException) {
-                // 405 表示目录已存在
-                e.code == 405
+            for (part in pathParts) {
+                if (part.isEmpty()) continue
+                currentPath += "/$part"
+
+                val url = buildUrl(currentPath).toHttpUrl()
+                val davResource = DavResource(client, url)
+
+                // 先检查目录是否存在
+                var exists = false
+                try {
+                    davResource.propfind(depth = 0) { _, _ ->
+                        exists = true
+                    }
+                } catch (e: HttpException) {
+                    if (e.code != 404) {
+                        // 非 404 错误，可能是权限问题
+                        return@withContext false
+                    }
+                }
+
+                if (!exists) {
+                    // 目录不存在，创建它
+                    try {
+                        davResource.mkCol(null) {}
+                    } catch (e: HttpException) {
+                        // 405 表示目录已存在（并发创建时可能发生）
+                        if (e.code != 405) {
+                            return@withContext false
+                        }
+                    }
+                }
             }
+            true
         } catch (e: Exception) {
             false
         }
@@ -102,7 +129,7 @@ class WebDAVClient(
      */
     suspend fun upload(remotePath: String, data: ByteArray): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val url = normalizeUrl(serverUrl + remotePath).toHttpUrl()
+            val url = buildUrl(remotePath).toHttpUrl()
             val davResource = DavResource(client, url)
             val requestBody = data.toRequestBody("application/json".toMediaType())
 
@@ -124,7 +151,7 @@ class WebDAVClient(
      */
     suspend fun download(remotePath: String): Result<ByteArray> = withContext(Dispatchers.IO) {
         try {
-            val url = normalizeUrl(serverUrl + remotePath).toHttpUrl()
+            val url = buildUrl(remotePath).toHttpUrl()
             val davResource = DavResource(client, url)
             var result: ByteArray? = null
 
@@ -154,7 +181,7 @@ class WebDAVClient(
      */
     suspend fun exists(remotePath: String): Boolean = withContext(Dispatchers.IO) {
         try {
-            val url = normalizeUrl(serverUrl + remotePath).toHttpUrl()
+            val url = buildUrl(remotePath).toHttpUrl()
             val davResource = DavResource(client, url)
             var exists = false
 
@@ -173,7 +200,7 @@ class WebDAVClient(
      */
     suspend fun delete(remotePath: String): Result<Unit> = withContext(Dispatchers.IO) {
         try {
-            val url = normalizeUrl(serverUrl + remotePath).toHttpUrl()
+            val url = buildUrl(remotePath).toHttpUrl()
             val davResource = DavResource(client, url)
 
             davResource.delete {}
@@ -192,6 +219,15 @@ class WebDAVClient(
 
     private fun normalizeUrl(url: String): String {
         return url.trimEnd('/')
+    }
+
+    /**
+     * 拼接服务器地址和远程路径，避免双斜杠
+     */
+    private fun buildUrl(remotePath: String): String {
+        val base = serverUrl.trimEnd('/')
+        val path = remotePath.trimStart('/')
+        return "$base/$path".trimEnd('/')
     }
 }
 

@@ -121,37 +121,53 @@ fun SyncScreen(navController: NavController) {
                         cloudMetadata = cloudMetadata,
                         encryptionEnabled = config.encryptionEnabled,
                         onUpload = {
-                            if (config.encryptionEnabled) {
-                                pendingAction = SyncAction.UPLOAD
-                                showPasswordDialog = true
-                            } else {
-                                performSync(
-                                    scope = scope,
-                                    syncRepository = syncRepository,
-                                    action = SyncAction.UPLOAD,
-                                    password = null,
-                                    onStart = {
-                                        isSyncing = true
-                                        syncMessage = "正在上传..."
-                                    },
-                                    onComplete = { success, message ->
-                                        isSyncing = false
-                                        syncMessage = ""
-                                        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-                                        if (success) {
-                                            // 刷新元数据
-                                            scope.launch {
-                                                cloudMetadata = syncRepository.getCloudMetadata()
-                                            }
+                            // 直接使用配置中保存的加密密码
+                            performSync(
+                                scope = scope,
+                                syncRepository = syncRepository,
+                                action = SyncAction.UPLOAD,
+                                password = if (config.encryptionEnabled) config.encryptionPassword else null,
+                                onStart = {
+                                    isSyncing = true
+                                    syncMessage = "正在上传..."
+                                },
+                                onComplete = { success, message ->
+                                    isSyncing = false
+                                    syncMessage = ""
+                                    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                                    if (success) {
+                                        // 刷新元数据
+                                        scope.launch {
+                                            cloudMetadata = syncRepository.getCloudMetadata()
                                         }
                                     }
-                                )
-                            }
+                                }
+                            )
                         },
                         onDownload = {
                             if (cloudMetadata?.encrypted == true) {
-                                pendingAction = SyncAction.DOWNLOAD
-                                showPasswordDialog = true
+                                // 下载加密数据时，如果本地也配置了加密且密码一致，直接使用
+                                if (config.encryptionEnabled && config.encryptionPassword != null) {
+                                    performSync(
+                                        scope = scope,
+                                        syncRepository = syncRepository,
+                                        action = SyncAction.DOWNLOAD,
+                                        password = config.encryptionPassword,
+                                        onStart = {
+                                            isSyncing = true
+                                            syncMessage = "正在下载..."
+                                        },
+                                        onComplete = { success, message ->
+                                            isSyncing = false
+                                            syncMessage = ""
+                                            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                                        }
+                                    )
+                                } else {
+                                    // 云端加密但本地未配置密码，需要输入
+                                    pendingAction = SyncAction.DOWNLOAD
+                                    showPasswordDialog = true
+                                }
                             } else {
                                 performSync(
                                     scope = scope,
