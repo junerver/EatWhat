@@ -24,6 +24,7 @@ class WebDAVClient(
 ) {
     private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
+            .followRedirects(false)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
