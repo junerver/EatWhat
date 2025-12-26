@@ -106,4 +106,116 @@
     <string name="common_loading">加载中...</string>
     <string name="common_error">出错了</string>
     <string name="common_retry">重试</string>
+    <string name="common_save">保存</string>
+    <string name="common_delete">删除</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">设置</string>
+    <string name="settings_data_management">数据管理</string>
+    <string name="settings_export">导出数据</string>
+    <string name="settings_export_desc">导出菜谱和历史记录到文件</string>
+    <string name="settings_import">导入数据</string>
+    <string name="settings_import_desc">从备份文件恢复数据</string>
+    <string name="settings_sync">云同步</string>
+    <string name="settings_sync_desc">使用 WebDAV 同步数据</string>
+    <string name="settings_sync_not_configured">未配置</string>
+    <string name="settings_sync_configured">已配置</string>
+    <string name="settings_about">关于</string>
+    <string name="settings_version">版本</string>
+
+    <!-- Export Dialog -->
+    <string name="export_dialog_title">选择导出内容</string>
+    <string name="export_all">全部数据</string>
+    <string name="export_all_desc">导出菜谱和历史记录</string>
+    <string name="export_recipes_only">仅菜谱</string>
+    <string name="export_recipes_desc">导出 %d 个菜谱</string>
+    <string name="export_history_only">仅历史记录</string>
+    <string name="export_history_desc">导出 %d 条历史记录</string>
+    <string name="export_button">导出</string>
+    <string name="export_success">导出成功</string>
+    <string name="export_failed">导出失败</string>
+    <string name="export_no_data">没有数据可导出</string>
+    <string name="export_in_progress">正在导出...</string>
+
+    <!-- Import Dialog -->
+    <string name="import_dialog_title">导入数据</string>
+    <string name="import_preview_title">导入预览</string>
+    <string name="import_preview_recipes">菜谱: %1$d 条 (新增 %2$d, 更新 %3$d)</string>
+    <string name="import_preview_history">历史: %1$d 条 (新增 %2$d, 更新 %3$d)</string>
+    <string name="import_conflict_strategy">冲突处理策略</string>
+    <string name="import_strategy_skip">跳过已存在</string>
+    <string name="import_strategy_skip_desc">保留本地数据，跳过冲突项</string>
+    <string name="import_strategy_update">覆盖更新</string>
+    <string name="import_strategy_update_desc">用导入数据覆盖本地数据</string>
+    <string name="import_strategy_update_newer">保留较新</string>
+    <string name="import_strategy_update_newer_desc">保留修改时间较新的版本</string>
+    <string name="import_button">导入</string>
+    <string name="import_success">导入成功</string>
+    <string name="import_failed">导入失败</string>
+    <string name="import_in_progress">正在导入...</string>
+    <string name="import_file_corrupted">文件损坏或格式不正确</string>
+
+    <!-- WebDAV Config Screen -->
+    <string name="webdav_config_title">WebDAV 配置</string>
+    <string name="webdav_server_settings">服务器设置</string>
+    <string name="webdav_server_url">服务器地址</string>
+    <string name="webdav_server_url_hint">https://example.com/dav</string>
+    <string name="webdav_username">用户名</string>
+    <string name="webdav_password">密码</string>
+    <string name="webdav_remote_path">远程目录</string>
+    <string name="webdav_remote_path_hint">/EatWhat/</string>
+    <string name="webdav_test_connection">测试连接</string>
+    <string name="webdav_testing">正在测试...</string>
+    <string name="webdav_test_success">连接成功！</string>
+    <string name="webdav_test_failed">连接失败: %s</string>
+    <string name="webdav_encryption">数据加密</string>
+    <string name="webdav_encryption_enable">启用加密</string>
+    <string name="webdav_encryption_desc">使用密码加密云端数据</string>
+    <string name="webdav_encryption_password">加密密码</string>
+    <string name="webdav_encryption_warning">请牢记加密密码！忘记密码将无法恢复云端数据。</string>
+    <string name="webdav_danger_zone">危险操作</string>
+    <string name="webdav_clear_config">清除配置</string>
+    <string name="webdav_config_saved">配置已保存</string>
+    <string name="webdav_config_cleared">配置已清除</string>
+
+    <!-- Auto Sync -->
+    <string name="auto_sync_title">自动同步</string>
+    <string name="auto_sync_enable">启用自动同步</string>
+    <string name="auto_sync_desc">定期自动同步数据到云端</string>
+    <string name="auto_sync_interval">同步间隔</string>
+    <string name="auto_sync_15min">15分钟</string>
+    <string name="auto_sync_30min">30分钟</string>
+    <string name="auto_sync_1hour">1小时</string>
+    <string name="auto_sync_2hours">2小时</string>
+    <string name="auto_sync_6hours">6小时</string>
+    <string name="auto_sync_12hours">12小时</string>
+    <string name="auto_sync_smart_merge">自动同步采用智能合并策略，根据时间戳自动合并本地与云端数据。</string>
+
+    <!-- Sync Screen -->
+    <string name="sync_title">数据同步</string>
+    <string name="sync_not_configured">未配置 WebDAV</string>
+    <string name="sync_not_configured_desc">请先配置 WebDAV 服务器信息才能使用云同步功能</string>
+    <string name="sync_configure_button">配置 WebDAV</string>
+    <string name="sync_status">同步状态</string>
+    <string name="sync_last_sync">上次同步</string>
+    <string name="sync_never">从未同步</string>
+    <string name="sync_status_success">成功</string>
+    <string name="sync_status_failed">失败</string>
+    <string name="sync_cloud_backup">云端备份</string>
+    <string name="sync_cloud_upload_time">上传时间</string>
+    <string name="sync_cloud_encrypted">已加密</string>
+    <string name="sync_cloud_not_encrypted">未加密</string>
+    <string name="sync_cloud_no_backup">云端暂无备份</string>
+    <string name="sync_actions">同步操作</string>
+    <string name="sync_upload">上传到云端</string>
+    <string name="sync_download">从云端恢复</string>
+    <string name="sync_upload_in_progress">正在上传...</string>
+    <string name="sync_download_in_progress">正在下载...</string>
+    <string name="sync_upload_success">上传成功！</string>
+    <string name="sync_download_success">下载成功！</string>
+    <string name="sync_no_cloud_backup">云端暂无备份，无法恢复</string>
+    <string name="sync_modify_config">修改配置</string>
+    <string name="sync_password_required">输入加密密码</string>
+    <string name="sync_password_hint">密码</string>
+    <string name="sync_password_wrong">解密失败：密码错误或数据损坏</string>
 </resources>

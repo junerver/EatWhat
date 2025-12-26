@@ -64,10 +64,10 @@ This includes:
 ---
 
 ## Recent Changes
+- 003-settings-sync-export: Added Kotlin 1.9.21 + Jetpack Compose, ComposeHooks 3.0.0, Room 2.6.1, dav4jvm 2.2.1, kotlinx.serialization 1.6.2
 - 002-dark-mode-adapt: Added Kotlin 1.9.21 + Jetpack Compose (Material 3), ComposeHooks
 
 - 2025-12-15: **Created unified `AGENTS.md` as single source of truth for all AI tools**
-- 2025-12-15: Simplified `CLAUDE.md` and `.kilocode/rules.md` to reference `AGENTS.md`
 
 ---
 

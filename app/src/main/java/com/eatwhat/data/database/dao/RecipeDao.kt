@@ -87,4 +87,16 @@ interface RecipeDao {
 
     @Query("SELECT t.* FROM tags t INNER JOIN recipe_tag_cross_ref rt ON t.id = rt.tag_id WHERE rt.recipe_id = :recipeId")
     fun getTagsByRecipeId(recipeId: Long): Flow<List<TagEntity>>
+
+    // ========== Export/Import Operations ==========
+
+    @Transaction
+    @Query("SELECT * FROM recipes WHERE is_deleted = 0 ORDER BY name ASC")
+    suspend fun getAllRecipesWithDetailsSync(): List<RecipeWithDetails>
+
+    @Query("SELECT COUNT(*) FROM recipes WHERE is_deleted = 0")
+    suspend fun getRecipeCount(): Int
+
+    @Query("SELECT * FROM recipes WHERE sync_id = :syncId AND is_deleted = 0")
+    suspend fun getRecipeBySyncId(syncId: String): RecipeEntity?
 }

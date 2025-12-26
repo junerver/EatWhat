@@ -1,6 +1,7 @@
 package com.eatwhat.data.database
 
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -37,6 +38,23 @@ abstract class EatWhatDatabase : RoomDatabase() {
     abstract fun tagDao(): TagDao
 
     companion object {
+        @Volatile
+        private var INSTANCE: EatWhatDatabase? = null
+
+        fun getInstance(context: android.content.Context): EatWhatDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    EatWhatDatabase::class.java,
+                    "eatwhat.db"
+                )
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .build()
+                INSTANCE = instance
+                instance
+            }
+        }
+
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // Add is_locked column with default value 0 (false)

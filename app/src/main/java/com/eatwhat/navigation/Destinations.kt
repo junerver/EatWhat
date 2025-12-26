@@ -40,4 +40,9 @@ sealed class Destinations(val route: String) {
         fun createRoute(meatCount: Int, vegCount: Int, soupCount: Int, stapleCount: Int) =
             "roll/result/$meatCount/$vegCount/$soupCount/$stapleCount"
     }
+
+    // Settings destinations
+    object Settings : Destinations("settings")
+    object WebDAVConfig : Destinations("settings/webdav")
+    object Sync : Destinations("settings/sync")
 }

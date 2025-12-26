@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -36,6 +37,7 @@ import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.repository.HistoryRepository
 import com.eatwhat.domain.model.HistoryRecord
+import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.theme.ErrorRed
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftPurple
@@ -135,6 +137,14 @@ fun HistoryListScreen(
                             tint = ErrorRed
                         )
                     }
+                }
+                // 设置按钮
+                IconButton(onClick = { navController.navigate(Destinations.Settings.route) }) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "设置",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
         }
@@ -272,9 +282,9 @@ private fun SwipeToDeleteItem(
     onDelete: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    val dismissState = rememberDismissState(
+    val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { dismissValue ->
-            if (dismissValue == DismissValue.DismissedToStart) {
+            if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
                 onDelete()
                 true
             } else {
@@ -283,9 +293,9 @@ private fun SwipeToDeleteItem(
         }
     )
 
-    SwipeToDismiss(
+    SwipeToDismissBox(
         state = dismissState,
-        background = {
+        backgroundContent = {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -301,8 +311,9 @@ private fun SwipeToDeleteItem(
                 )
             }
         },
-        dismissContent = { content() },
-        directions = setOf(DismissDirection.EndToStart)
+        content = { content() },
+        enableDismissFromStartToEnd = false,
+        enableDismissFromEndToStart = true
     )
 }
 

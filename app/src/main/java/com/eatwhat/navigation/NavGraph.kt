@@ -36,7 +36,10 @@ fun EatWhatApp() {
         Destinations.RecipeDetail.route,
         Destinations.AddRecipe.route,
         Destinations.EditRecipe.route,
-        Destinations.Cooking.route
+        Destinations.Cooking.route,
+        Destinations.Settings.route,
+        Destinations.WebDAVConfig.route,
+        Destinations.Sync.route
     )
 
     // 判断当前路由是否应该隐藏底部栏（支持带参数的路由）
@@ -116,6 +119,19 @@ fun EatWhatApp() {
 
             composable(Destinations.Cooking.route) {
                 CookingScreen(navController)
+            }
+
+            // Settings routes
+            composable(Destinations.Settings.route) {
+                com.eatwhat.ui.screens.settings.SettingsScreen(navController)
+            }
+
+            composable(Destinations.WebDAVConfig.route) {
+                com.eatwhat.ui.screens.settings.WebDAVConfigScreen(navController)
+            }
+
+            composable(Destinations.Sync.route) {
+                com.eatwhat.ui.screens.settings.SyncScreen(navController)
             }
         }
     }

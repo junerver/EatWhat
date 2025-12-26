@@ -72,4 +72,16 @@ interface HistoryDao {
 
     @Query("UPDATE prep_items SET is_checked = :isChecked WHERE id = :prepItemId")
     suspend fun updatePrepItemChecked(prepItemId: Long, isChecked: Boolean)
+
+    // ========== Export/Import Operations ==========
+
+    @Transaction
+    @Query("SELECT * FROM history_records WHERE is_deleted = 0 ORDER BY timestamp DESC")
+    suspend fun getAllHistoryWithDetailsSync(): List<HistoryWithDetails>
+
+    @Query("SELECT COUNT(*) FROM history_records WHERE is_deleted = 0")
+    suspend fun getHistoryCount(): Int
+
+    @Query("SELECT * FROM history_records WHERE sync_id = :syncId AND is_deleted = 0")
+    suspend fun getHistoryBySyncId(syncId: String): HistoryRecordEntity?
 }

@@ -2,6 +2,7 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
   alias(libs.plugins.ksp)
+  alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -93,6 +94,14 @@ dependencies {
 
   // Coil for image loading in Compose
   implementation(libs.coil.compose)
+
+  // Sync & Export
+  implementation(libs.dav4jvm)
+  implementation(libs.okhttp)
+  implementation(libs.kotlinx.serialization.json)
+  implementation(libs.androidx.documentfile)
+  implementation(libs.androidx.security.crypto)
+  implementation(libs.androidx.work.runtime)
 
   // Testing
   testImplementation(libs.junit)
