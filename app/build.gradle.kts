@@ -24,13 +24,28 @@ android {
     }
   }
 
+  signingConfigs {
+    create("config") {
+      storeFile = file("../eatwhat.keystore")
+      storePassword = "eatwhat123"
+      keyAlias = "eatwhat"
+      keyPassword = "eatwhat123"
+      enableV1Signing = true
+      enableV2Signing = true
+    }
+  }
+
   buildTypes {
-    release {
+    getByName("debug") {
+      signingConfig = signingConfigs.getByName("config")
+    }
+    getByName("release") {
       isMinifyEnabled = true
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro"
       )
+      signingConfig = signingConfigs.getByName("config")
     }
   }
 
