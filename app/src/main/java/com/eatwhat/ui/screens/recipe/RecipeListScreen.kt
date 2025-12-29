@@ -305,7 +305,7 @@ fun RecipeListScreen(navController: NavController) {
             shape = CircleShape,
             modifier = Modifier
               .align(Alignment.BottomEnd)
-              .padding(16.dp)
+              .padding(end = 16.dp, bottom = 104.dp)
               .windowInsetsPadding(WindowInsets.navigationBars)
               .shadow(8.dp, CircleShape)
         ) {
@@ -329,8 +329,8 @@ private fun RecipeListContent(
     if (recipes.isEmpty()) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+              .fillMaxSize()
+              .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(
