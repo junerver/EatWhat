@@ -1,5 +1,6 @@
 package com.eatwhat.data.repository
 
+import android.util.Log
 import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.domain.model.RollConfig
@@ -16,46 +17,63 @@ class RollRepository(private val recipeRepository: RecipeRepository) {
      * Returns randomly selected recipes matching the config
      */
     suspend fun rollRecipes(config: RollConfig): RollResult {
+      Log.d("RollRepository", "开始 Roll，配置: $config")
         val effectiveConfig = if (config.autoBalance) config.withAutoBalance() else config
+      Log.d("RollRepository", "有效配置: $effectiveConfig")
 
         val selectedRecipes = mutableListOf<Recipe>()
 
         // Select meat recipes
         if (effectiveConfig.meatCount > 0) {
+          Log.d("RollRepository", "开始获取 ${effectiveConfig.meatCount} 个荤菜")
             val meatRecipes = recipeRepository.getRandomRecipesByType(
                 RecipeType.MEAT,
                 effectiveConfig.meatCount
             )
+          Log.d(
+            "RollRepository",
+            "获取到 ${meatRecipes.size} 个荤菜: ${meatRecipes.map { it.name }}"
+          )
             selectedRecipes.addAll(meatRecipes)
         }
 
         // Select veg recipes
         if (effectiveConfig.vegCount > 0) {
+          Log.d("RollRepository", "开始获取 ${effectiveConfig.vegCount} 个素菜")
             val vegRecipes = recipeRepository.getRandomRecipesByType(
                 RecipeType.VEG,
                 effectiveConfig.vegCount
             )
+          Log.d("RollRepository", "获取到 ${vegRecipes.size} 个素菜: ${vegRecipes.map { it.name }}")
             selectedRecipes.addAll(vegRecipes)
         }
 
         // Select soup recipes
         if (effectiveConfig.soupCount > 0) {
+          Log.d("RollRepository", "开始获取 ${effectiveConfig.soupCount} 个汤")
             val soupRecipes = recipeRepository.getRandomRecipesByType(
                 RecipeType.SOUP,
                 effectiveConfig.soupCount
             )
+          Log.d("RollRepository", "获取到 ${soupRecipes.size} 个汤: ${soupRecipes.map { it.name }}")
             selectedRecipes.addAll(soupRecipes)
         }
 
         // Select staple recipes
         if (effectiveConfig.stapleCount > 0) {
+          Log.d("RollRepository", "开始获取 ${effectiveConfig.stapleCount} 个主食")
             val stapleRecipes = recipeRepository.getRandomRecipesByType(
                 RecipeType.STAPLE,
                 effectiveConfig.stapleCount
             )
+          Log.d(
+            "RollRepository",
+            "获取到 ${stapleRecipes.size} 个主食: ${stapleRecipes.map { it.name }}"
+          )
             selectedRecipes.addAll(stapleRecipes)
         }
 
+      Log.d("RollRepository", "Roll 完成，共选中 ${selectedRecipes.size} 个菜谱")
         return RollResult(
             recipes = selectedRecipes,
             config = effectiveConfig

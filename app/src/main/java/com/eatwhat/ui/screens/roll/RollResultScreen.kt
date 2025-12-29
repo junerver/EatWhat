@@ -1,5 +1,6 @@
 package com.eatwhat.ui.screens.roll
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -107,16 +108,30 @@ fun RollResultScreen(
             setIsLoading(true)
           error = null
             try {
+              Log.d("RollResultScreen", "开始执行 Roll，配置: $config")
                 val result = useCase(config)
                 result.fold(
-                  onSuccess = { rollResult = it },
+                  onSuccess = {
+                    Log.d("RollResultScreen", "Roll 成功，获得 ${it.recipes.size} 个菜谱")
+                    rollResult = it
+                  },
                     onFailure = { e ->
+                      Log.e("RollResultScreen", "Roll 失败", e)
+                      Log.e("RollResultScreen", "错误类型: ${e.javaClass.name}")
+                      Log.e("RollResultScreen", "错误消息: ${e.message}")
+                      Log.e("RollResultScreen", "堆栈跟踪: ${e.stackTraceToString()}")
                         when (e) {
-                          is InsufficientRecipesException -> error = e.errors.joinToString("\n")
+                          is InsufficientRecipesException -> {
+                            Log.e("RollResultScreen", "菜谱不足错误: ${e.errors}")
+                            error = e.errors.joinToString("\n")
+                          }
                           else -> error = "Roll失败: ${e.message}"
                         }
                     }
                 )
+            } catch (e: Exception) {
+              Log.e("RollResultScreen", "executeRoll 捕获异常", e)
+              error = "执行失败: ${e.message}"
             } finally {
                 setIsLoading(false)
             }

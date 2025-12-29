@@ -1,14 +1,21 @@
 package com.eatwhat.data.repository
 
+import android.util.Log
 import com.eatwhat.data.database.EatWhatDatabase
-import com.eatwhat.data.database.entities.*
+import com.eatwhat.data.database.entities.CookingStepEntity
+import com.eatwhat.data.database.entities.IngredientEntity
+import com.eatwhat.data.database.entities.RecipeEntity
+import com.eatwhat.data.database.entities.RecipeTagCrossRef
+import com.eatwhat.data.database.entities.TagEntity
 import com.eatwhat.data.database.relations.RecipeWithDetails
-import com.eatwhat.domain.model.*
+import com.eatwhat.domain.model.CookingStep
+import com.eatwhat.domain.model.Difficulty
+import com.eatwhat.domain.model.Ingredient
+import com.eatwhat.domain.model.Recipe
+import com.eatwhat.domain.model.RecipeType
+import com.eatwhat.domain.model.Tag
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.util.UUID
-import com.eatwhat.domain.model.RecipeType
-import com.eatwhat.domain.model.Difficulty
 
 /**
  * Repository for Recipe operations
@@ -38,10 +45,20 @@ class RecipeRepository(private val database: EatWhatDatabase) {
     }
 
     suspend fun getRandomRecipesByType(type: RecipeType, count: Int): List<Recipe> {
-        return recipeDao.getRandomRecipesWithDetailsByType(type.name, count).map { it.toDomain() }
+      Log.d("RecipeRepository", "查询随机菜谱: type=${type.name}, count=$count")
+      // 使用简单查询避免 @Transaction 的 null 问题
+      val recipeEntities = recipeDao.getRandomRecipesByType(type.name, count)
+      Log.d("RecipeRepository", "从数据库获取到 ${recipeEntities.size} 个 RecipeEntity")
+
+      val recipes = recipeEntities.map { entity ->
+        entity.toSimpleDomain()
+      }
+
+      Log.d("RecipeRepository", "成功转换 ${recipes.size} 个菜谱")
+      return recipes
     }
 
-    fun searchRecipes(query: String): Flow<List<Recipe>> {
+  fun searchRecipes(query: String): Flow<List<Recipe>> {
         return recipeDao.searchRecipes("%$query%").map { list ->
             list.map { it.toSimpleDomain() }
         }
