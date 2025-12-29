@@ -45,4 +45,8 @@ sealed class Destinations(val route: String) {
     object Settings : Destinations("settings")
     object WebDAVConfig : Destinations("settings/webdav")
     object Sync : Destinations("settings/sync")
+
+  // AI destinations
+  object AIConfig : Destinations("settings/ai")
+  object AIAnalysis : Destinations("ai/analysis")
 }

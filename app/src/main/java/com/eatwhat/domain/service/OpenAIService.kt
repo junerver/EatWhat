@@ -1,0 +1,139 @@
+package com.eatwhat.domain.service
+
+import com.eatwhat.data.preferences.AIConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.util.concurrent.TimeUnit
+
+// Request/Response models
+@Serializable
+data class OpenAIMessage(val role: String, val content: String)
+
+@Serializable
+data class OpenAIRequest(
+  val model: String,
+  val messages: List<OpenAIMessage>,
+  val temperature: Double = 0.7,
+  val response_format: ResponseFormat = ResponseFormat(type = "json_object")
+)
+
+@Serializable
+data class ResponseFormat(val type: String)
+
+@Serializable
+data class OpenAIResponse(
+  val choices: List<Choice>
+)
+
+@Serializable
+data class Choice(
+  val message: OpenAIMessage
+)
+
+// Target Result
+@Serializable
+data class RecipeAIResult(
+  val name: String,
+  val type: String, // MEAT, VEG, SOUP, STAPLE
+  val difficulty: String, // EASY, MEDIUM, HARD
+  val estimatedTime: Int, // minutes
+  val ingredients: List<IngredientAI>,
+  val steps: List<String>,
+  val tags: List<String>,
+  val icon: String // Emoji
+)
+
+@Serializable
+data class IngredientAI(
+  val name: String,
+  val amount: String,
+  val unit: String
+)
+
+class OpenAIService {
+  private val client = OkHttpClient.Builder()
+    .connectTimeout(60, TimeUnit.SECONDS)
+    .readTimeout(60, TimeUnit.SECONDS)
+    .writeTimeout(60, TimeUnit.SECONDS)
+    .build()
+
+  private val json = Json { ignoreUnknownKeys = true; isLenient = true }
+
+  suspend fun analyzeRecipe(config: AIConfig, prompt: String): Result<RecipeAIResult> =
+    withContext(Dispatchers.IO) {
+      try {
+        val systemPrompt = """
+                你是一个专业的菜谱分析助手。请分析用户的输入（菜谱描述、做法等），并输出符合以下 JSON 格式的菜谱数据。
+
+                {
+                  "name": "菜名",
+                  "type": "MEAT|VEG|SOUP|STAPLE",
+                  "difficulty": "EASY|MEDIUM|HARD",
+                  "estimatedTime": 30,
+                  "ingredients": [
+                    { "name": "食材名", "amount": "数量", "unit": "G|ML|PIECE|SPOON|MODERATE" }
+                  ],
+                  "steps": ["步骤1", "步骤2"],
+                  "tags": ["标签1", "标签2"],
+                  "icon": "🍳"
+                }
+
+                注意：
+                1. type 必须是 MEAT(荤菜), VEG(素菜), SOUP(汤), STAPLE(主食) 之一。
+                2. unit 必须是 G(克), ML(毫升), PIECE(个), SPOON(勺), MODERATE(适量) 之一。
+                3. icon 请根据菜品内容选择一个最合适的 Emoji。
+                4. 如果输入信息不全，请根据经验合理补全。
+                5. 请只输出 JSON 内容，不要包含 markdown 标记。
+            """.trimIndent()
+
+        val messages = listOf(
+          OpenAIMessage("system", systemPrompt),
+          OpenAIMessage("user", prompt)
+        )
+
+        val requestBody = OpenAIRequest(
+          model = config.model,
+          messages = messages
+        )
+
+        val jsonBody = json.encodeToString(OpenAIRequest.serializer(), requestBody)
+
+        val request = Request.Builder()
+          .url("${config.baseUrl}/chat/completions")
+          .header("Authorization", "Bearer ${config.apiKey}")
+          .header("Content-Type", "application/json")
+          .post(jsonBody.toRequestBody("application/json".toMediaType()))
+          .build()
+
+        val response = client.newCall(request).execute()
+        val responseBody = response.body?.string()
+
+        if (!response.isSuccessful) {
+          return@withContext Result.failure(Exception("API Error: ${response.code} $responseBody"))
+        }
+
+        if (responseBody == null) {
+          return@withContext Result.failure(Exception("Empty response"))
+        }
+
+        val openAIResponse = json.decodeFromString(OpenAIResponse.serializer(), responseBody)
+        val content = openAIResponse.choices.firstOrNull()?.message?.content
+          ?: return@withContext Result.failure(Exception("No content generated"))
+
+        try {
+          val recipeResult = json.decodeFromString(RecipeAIResult.serializer(), content)
+          Result.success(recipeResult)
+        } catch (e: Exception) {
+          Result.failure(Exception("Failed to parse JSON: ${e.message}\nContent: $content"))
+        }
+      } catch (e: Exception) {
+        Result.failure(e)
+      }
+    }
+}

@@ -63,6 +63,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -168,6 +169,67 @@ fun AddRecipeScreen(
         }
     }
 
+  // Handle AI analysis result
+  val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+  val aiResultJson = savedStateHandle?.getStateFlow<String?>("ai_result", null)?.collectAsState()
+
+  useEffect(aiResultJson?.value) {
+    aiResultJson?.value?.let { jsonString ->
+      try {
+        val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+        val aiResult = json.decodeFromString(
+          com.eatwhat.domain.service.RecipeAIResult.serializer(),
+          jsonString
+        )
+
+        // Fill form with AI result
+        setName(aiResult.name)
+        setIcon(aiResult.icon)
+        setEstimatedTime(aiResult.estimatedTime.toString())
+        setTags(aiResult.tags)
+
+        // Parse type
+        try {
+          setType(RecipeType.valueOf(aiResult.type.uppercase()))
+        } catch (e: Exception) {
+          // Keep default if invalid
+        }
+
+        // Parse difficulty
+        try {
+          setDifficulty(Difficulty.valueOf(aiResult.difficulty.uppercase()))
+        } catch (e: Exception) {
+          // Keep default if invalid
+        }
+
+        // Parse ingredients
+        setIngredients(aiResult.ingredients.map { ing ->
+          val unit = try {
+            IngredientUnit.valueOf(ing.unit.uppercase())
+          } catch (e: Exception) {
+            IngredientUnit.MODERATE
+          }
+          IngredientInput(ing.name, ing.amount, unit)
+        })
+
+        // Parse steps
+        setSteps(aiResult.steps.map { StepInput(it) })
+
+        // Clear the saved state
+        savedStateHandle.remove<String>("ai_result")
+
+        // Show success message
+        scope.launch {
+          snackbarHostState.showSnackbar("AI 分析完成，已自动填充表单")
+        }
+      } catch (e: Exception) {
+        scope.launch {
+          snackbarHostState.showSnackbar("解析 AI 结果失败: ${e.message}")
+        }
+      }
+    }
+  }
+
     // Save function extracted for use in TopAppBar
     val onSave: () -> Unit = {
         // Validation
@@ -252,6 +314,17 @@ fun AddRecipeScreen(
                     }
                 },
                 actions = {
+                  // AI Analysis button
+                  IconButton(
+                    onClick = { navController.navigate(com.eatwhat.navigation.Destinations.AIAnalysis.route) }
+                  ) {
+                    Icon(
+                      Icons.Default.Star,
+                      contentDescription = "AI 分析",
+                      tint = PrimaryOrange
+                    )
+                  }
+
                     // Save button
                     FilledTonalButton(
                         onClick = onSave,

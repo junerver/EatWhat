@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SettingsBrightness
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Warning
@@ -298,6 +299,20 @@ fun SettingsScreen(navController: NavController) {
                         onClick = { navController.navigate(Destinations.Sync.route) }
                     )
                 }
+
+              // AI 助手卡片
+              SettingsCard(
+                title = "AI 助手",
+                icon = Icons.Default.Star,
+                iconColor = MaterialTheme.colorScheme.secondary
+              ) {
+                SettingsItem(
+                  icon = Icons.Default.Settings,
+                  title = "模型配置",
+                  subtitle = "配置 OpenAI 接口参数",
+                  onClick = { navController.navigate(Destinations.AIConfig.route) }
+                )
+              }
 
                 // 关于卡片
                 SettingsCard(

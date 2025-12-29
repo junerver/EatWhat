@@ -1,6 +1,5 @@
 package com.eatwhat.navigation
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -12,11 +11,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.eatwhat.ui.components.BottomNavBar
-import com.eatwhat.ui.screens.roll.RollScreen
-import com.eatwhat.ui.screens.roll.RollResultScreen
-import com.eatwhat.ui.screens.recipe.RecipeListScreen
-import com.eatwhat.ui.screens.history.HistoryListScreen
 import com.eatwhat.ui.screens.cooking.CookingScreen
+import com.eatwhat.ui.screens.history.HistoryListScreen
+import com.eatwhat.ui.screens.recipe.RecipeListScreen
+import com.eatwhat.ui.screens.roll.RollResultScreen
+import com.eatwhat.ui.screens.roll.RollScreen
 
 /**
  * Main navigation graph for the app
@@ -39,7 +38,9 @@ fun EatWhatApp() {
         Destinations.Cooking.route,
         Destinations.Settings.route,
         Destinations.WebDAVConfig.route,
-        Destinations.Sync.route
+      Destinations.Sync.route,
+      Destinations.AIConfig.route,
+      Destinations.AIAnalysis.route
     )
 
     // 判断当前路由是否应该隐藏底部栏（支持带参数的路由）
@@ -133,6 +134,15 @@ fun EatWhatApp() {
             composable(Destinations.Sync.route) {
                 com.eatwhat.ui.screens.settings.SyncScreen(navController)
             }
+
+          // AI routes
+          composable(Destinations.AIConfig.route) {
+            com.eatwhat.ui.screens.settings.AISettingsScreen(navController)
+          }
+
+          composable(Destinations.AIAnalysis.route) {
+            com.eatwhat.ui.screens.recipe.AIAnalysisScreen(navController)
+          }
         }
     }
 }
