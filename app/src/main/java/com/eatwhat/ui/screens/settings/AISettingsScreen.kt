@@ -31,6 +31,7 @@ import com.eatwhat.data.preferences.AIConfig
 import com.eatwhat.data.preferences.AIPreferences
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,9 +45,16 @@ fun AISettingsScreen(navController: NavController) {
   val aiConfig by aiPreferences.aiConfigFlow.collectAsState(initial = AIConfig())
 
   // Form state
-  val (baseUrl, setBaseUrl) = useGetState(default = aiConfig.baseUrl)
-  val (apiKey, setApiKey) = useGetState(default = aiConfig.apiKey)
-  val (model, setModel) = useGetState(default = aiConfig.model)
+  val (baseUrl, setBaseUrl) = useGetState(default = "")
+  val (apiKey, setApiKey) = useGetState(default = "")
+  val (model, setModel) = useGetState(default = "")
+
+  // Update form state when aiConfig loads
+  useEffect(aiConfig) {
+    setBaseUrl(aiConfig.baseUrl)
+    setApiKey(aiConfig.apiKey)
+    setModel(aiConfig.model)
+  }
 
   val onSave = {
     scope.launch {

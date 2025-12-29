@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SettingsBrightness
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Warning
@@ -66,9 +65,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.eatwhat.R
 import com.eatwhat.data.database.EatWhatDatabase
 import com.eatwhat.data.preferences.ThemeMode
 import com.eatwhat.data.preferences.ThemePreferences
@@ -78,6 +79,7 @@ import com.eatwhat.domain.usecase.ExportDataUseCase
 import com.eatwhat.domain.usecase.ImportDataUseCase
 import com.eatwhat.domain.usecase.ImportPreviewResult
 import com.eatwhat.navigation.Destinations
+import com.eatwhat.ui.theme.PrimaryOrange
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -303,8 +305,8 @@ fun SettingsScreen(navController: NavController) {
               // AI 助手卡片
               SettingsCard(
                 title = "AI 助手",
-                icon = Icons.Default.Star,
-                iconColor = MaterialTheme.colorScheme.secondary
+                iconDrawableRes = R.drawable.ic_ai_sparkles,
+                iconColor = PrimaryOrange
               ) {
                 SettingsItem(
                   icon = Icons.Default.Settings,
@@ -749,7 +751,8 @@ private fun ExportOptionItem(
 @Composable
 private fun SettingsCard(
     title: String,
-    icon: ImageVector,
+    icon: ImageVector? = null,
+    iconDrawableRes: Int? = null,
     iconColor: Color,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -765,12 +768,21 @@ private fun SettingsCard(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = iconColor,
-                modifier = Modifier.size(20.dp)
+          when {
+            icon != null -> Icon(
+              imageVector = icon,
+              contentDescription = null,
+              tint = iconColor,
+              modifier = Modifier.size(20.dp)
             )
+
+            iconDrawableRes != null -> Icon(
+              painter = painterResource(id = iconDrawableRes),
+              contentDescription = null,
+              tint = iconColor,
+              modifier = Modifier.size(20.dp)
+            )
+          }
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleSmall,

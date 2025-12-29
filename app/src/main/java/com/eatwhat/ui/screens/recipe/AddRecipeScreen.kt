@@ -78,6 +78,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -86,6 +87,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
+import com.eatwhat.R
 import com.eatwhat.domain.model.CookingStep
 import com.eatwhat.domain.model.Difficulty
 import com.eatwhat.domain.model.Ingredient
@@ -319,7 +321,7 @@ fun AddRecipeScreen(
                     onClick = { navController.navigate(com.eatwhat.navigation.Destinations.AIAnalysis.route) }
                   ) {
                     Icon(
-                      Icons.Default.Star,
+                      painter = painterResource(id = R.drawable.ic_ai_sparkles),
                       contentDescription = "AI 分析",
                       tint = PrimaryOrange
                     )
