@@ -1,10 +1,30 @@
 
 package com.eatwhat.ui.screens.recipe
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,10 +33,40 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.outlined.Restaurant
+import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,12 +84,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
-import com.eatwhat.domain.model.*
+import com.eatwhat.domain.model.CookingStep
+import com.eatwhat.domain.model.Difficulty
+import com.eatwhat.domain.model.Ingredient
+import com.eatwhat.domain.model.Recipe
+import com.eatwhat.domain.model.RecipeType
+import com.eatwhat.domain.model.Tag
 import com.eatwhat.ui.components.FoodEmojis
 import com.eatwhat.ui.components.RecipeIconPicker
-import com.eatwhat.ui.theme.*
+import com.eatwhat.ui.theme.IngredientCardBackground
+import com.eatwhat.ui.theme.InputBackground
+import com.eatwhat.ui.theme.LightBorder
+import com.eatwhat.ui.theme.MeatRed
+import com.eatwhat.ui.theme.PageBackground
+import com.eatwhat.ui.theme.PrimaryOrange
+import com.eatwhat.ui.theme.SoftBlue
+import com.eatwhat.ui.theme.SoftGreen
+import com.eatwhat.ui.theme.SoupBlue
+import com.eatwhat.ui.theme.StapleOrange
+import com.eatwhat.ui.theme.StepCardBackground
+import com.eatwhat.ui.theme.TagPastelColors
+import com.eatwhat.ui.theme.VegGreen
+import com.eatwhat.ui.theme.WarmYellow
 import kotlinx.coroutines.launch
-import xyz.junerver.compose.hooks.*
+import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useEffect
+import xyz.junerver.compose.hooks.useGetState
 import kotlin.random.Random
 import com.eatwhat.domain.model.Unit as IngredientUnit
 
@@ -58,22 +128,22 @@ fun AddRecipeScreen(
     val isEditMode = recipeId != null
 
     // Form state
-    val (name, setName) = useState("")
-    val (type, setType) = useState(RecipeType.MEAT)
-    val (icon, setIcon) = useState(FoodEmojis.DEFAULT_EMOJI)
-    val (imageBase64, setImageBase64) = useState<String?>(null)
-    val (difficulty, setDifficulty) = useState(Difficulty.EASY)
-    val (estimatedTime, setEstimatedTime) = useState("30")
-    val (ingredients, setIngredients) = useState<List<IngredientInput>>(listOf(IngredientInput()))
-    val (steps, setSteps) = useState<List<StepInput>>(listOf(StepInput()))
-    val (tags, setTags) = useState<List<String>>(emptyList())
-    val (newTag, setNewTag) = useState("")
-    val (isSaving, setIsSaving) = useState(false)
-    val (showTagInput, setShowTagInput) = useState(false)
+  val (name, setName) = useGetState(default = "")
+  val (type, setType) = useGetState(default = RecipeType.MEAT)
+  val (icon, setIcon) = useGetState(default = FoodEmojis.DEFAULT_EMOJI)
+  var imageBase64 by remember { mutableStateOf<String?>(null) }
+  val (difficulty, setDifficulty) = useGetState(default = Difficulty.EASY)
+  val (estimatedTime, setEstimatedTime) = useGetState(default = "30")
+  val (ingredients, setIngredients) = useGetState(default = listOf(IngredientInput()))
+  val (steps, setSteps) = useGetState(default = listOf(StepInput()))
+  val (tags, setTags) = useGetState(default = emptyList<String>())
+  val (newTag, setNewTag) = useGetState(default = "")
+  val (isSaving, setIsSaving) = useGetState(default = false)
+  val (showTagInput, setShowTagInput) = useGetState(default = false)
     
     // Generate stable random colors for tags
-    val tagColors = remember(tags) {
-        tags.associateWith { generatePastelColor() }
+  val tagColors = remember(tags.value) {
+    tags.value.associateWith { generatePastelColor() }
     }
 
     // Load existing recipe if editing
@@ -85,7 +155,7 @@ fun AddRecipeScreen(
                         setName(it.name)
                         setType(it.type)
                         setIcon(it.icon)
-                        setImageBase64(it.imageBase64)
+                      imageBase64 = it.imageBase64
                         setDifficulty(it.difficulty)
                         setEstimatedTime(it.estimatedTime.toString())
                         setIngredients(it.ingredients.map { ing ->
@@ -104,21 +174,21 @@ fun AddRecipeScreen(
     // Save function extracted for use in TopAppBar
     val onSave: () -> Unit = {
         // Validation
-        if (name.isBlank()) {
+      if (name.value.isBlank()) {
             scope.launch {
                 snackbarHostState.showSnackbar("请输入菜名")
             }
         } else {
-            val time = estimatedTime.toIntOrNull()
+        val time = estimatedTime.value.toIntOrNull()
             if (time == null || time < 1 || time > 300) {
                 scope.launch {
                     snackbarHostState.showSnackbar("预计时间必须在1-300分钟之间")
                 }
-            } else if (ingredients.any { it.name.isBlank() }) {
+            } else if (ingredients.value.any { it.name.isBlank() }) {
                 scope.launch {
                     snackbarHostState.showSnackbar("请填写所有食材名称")
                 }
-            } else if (steps.any { it.description.isBlank() }) {
+            } else if (steps.value.any { it.description.isBlank() }) {
                 scope.launch {
                     snackbarHostState.showSnackbar("请填写所有步骤描述")
                 }
@@ -130,13 +200,13 @@ fun AddRecipeScreen(
                         val recipe = Recipe(
                             id = recipeId ?: 0,
                             syncId = java.util.UUID.randomUUID().toString(),
-                            name = name,
-                            type = type,
-                            icon = icon,
+                          name = name.value,
+                          type = type.value,
+                          icon = icon.value,
                             imageBase64 = imageBase64,
-                            difficulty = difficulty,
+                          difficulty = difficulty.value,
                             estimatedTime = time,
-                            ingredients = ingredients.mapIndexed { index, ing ->
+                          ingredients = ingredients.value.mapIndexed { index, ing ->
                                 Ingredient(
                                     name = ing.name,
                                     amount = ing.amount,
@@ -144,13 +214,13 @@ fun AddRecipeScreen(
                                     orderIndex = index
                                 )
                             },
-                            steps = steps.mapIndexed { index, step ->
+                          steps = steps.value.mapIndexed { index, step ->
                                 CookingStep(
                                     stepNumber = index + 1,
                                     description = step.description
                                 )
                             },
-                            tags = tags.map { Tag(name = it) }
+                          tags = tags.value.map { Tag(name = it) }
                         )
 
                         if (isEditMode) {
@@ -188,14 +258,14 @@ fun AddRecipeScreen(
                     // Save button
                     FilledTonalButton(
                         onClick = onSave,
-                        enabled = !isSaving,
+                      enabled = !isSaving.value,
                         colors = ButtonDefaults.filledTonalButtonColors(
                             containerColor = PrimaryOrange,
                             contentColor = Color.White
                         ),
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
-                        if (isSaving) {
+                      if (isSaving.value) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(16.dp),
                                 color = Color.White,
@@ -223,8 +293,8 @@ fun AddRecipeScreen(
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+              .fillMaxSize()
+              .padding(paddingValues),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
@@ -238,8 +308,8 @@ fun AddRecipeScreen(
                 ) {
                     // Recipe name input with emoji decoration
                     StyledTextField(
-                        value = name,
-                        onValueChange = setName,
+                      value = name.value,
+                      onValueChange = { setName(it) },
                         label = "菜名",
                         placeholder = "给你的美食起个名字吧",
                         leadingIcon = {
@@ -263,7 +333,7 @@ fun AddRecipeScreen(
                         RecipeType.entries.forEach { recipeType ->
                             RecipeTypeChip(
                                 type = recipeType,
-                                isSelected = type == recipeType,
+                              isSelected = type.value == recipeType,
                                 onClick = { setType(recipeType) },
                                 modifier = Modifier.weight(1f)
                             )
@@ -280,19 +350,19 @@ fun AddRecipeScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     TagsFlowRow(
-                        tags = tags,
+                      tags = tags.value,
                         tagColors = tagColors,
-                        showTagInput = showTagInput,
-                        newTag = newTag,
-                        onNewTagChange = setNewTag,
+                      showTagInput = showTagInput.value,
+                      newTag = newTag.value,
+                      onNewTagChange = { setNewTag(it) },
                         onAddTag = {
-                            if (newTag.isNotBlank() && !tags.contains(newTag)) {
-                                setTags(tags + newTag)
+                          if (newTag.value.isNotBlank() && !tags.value.contains(newTag.value)) {
+                            setTags(tags.value + newTag.value)
                                 setNewTag("")
                             }
                             setShowTagInput(false)
                         },
-                        onRemoveTag = { tag -> setTags(tags.filter { it != tag }) },
+                      onRemoveTag = { tag -> setTags(tags.value.filter { it != tag }) },
                         onShowInput = { setShowTagInput(true) },
                         onHideInput = {
                             setShowTagInput(false)
@@ -304,12 +374,12 @@ fun AddRecipeScreen(
 
                     // Icon/Image picker
                     RecipeIconPicker(
-                        selectedEmoji = icon,
+                      selectedEmoji = icon.value,
                         selectedImageBase64 = imageBase64,
-                        recipeType = type.name,
+                      recipeType = type.value.name,
                         onEmojiSelected = { setIcon(it) },
-                        onImageSelected = { setImageBase64(it) },
-                        onImageCleared = { setImageBase64(null) },
+                      onImageSelected = { imageBase64 = it },
+                      onImageCleared = { imageBase64 = null },
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -329,7 +399,7 @@ fun AddRecipeScreen(
                         Difficulty.entries.forEach { diff ->
                             DifficultyChip(
                                 difficulty = diff,
-                                isSelected = difficulty == diff,
+                              isSelected = difficulty.value == diff,
                                 onClick = { setDifficulty(diff) },
                                 modifier = Modifier.weight(1f)
                             )
@@ -340,8 +410,8 @@ fun AddRecipeScreen(
 
                     // Time input
                     StyledTextField(
-                        value = estimatedTime,
-                        onValueChange = setEstimatedTime,
+                      value = estimatedTime.value,
+                      onValueChange = { setEstimatedTime(it) },
                         label = "预计时间",
                         placeholder = "30",
                         leadingIcon = {
@@ -373,12 +443,12 @@ fun AddRecipeScreen(
                     iconTint = SoftGreen,
                     action = {
                         AddButton(
-                            onClick = { setIngredients(ingredients + IngredientInput()) },
+                          onClick = { setIngredients(ingredients.value + IngredientInput()) },
                             color = SoftGreen
                         )
                     }
                 ) {
-                    ingredients.forEachIndexed { index, ingredient ->
+                  ingredients.value.forEachIndexed { index, ingredient ->
                         AnimatedVisibility(
                             visible = true,
                             enter = fadeIn() + expandVertically(),
@@ -388,21 +458,19 @@ fun AddRecipeScreen(
                                 index = index,
                                 ingredient = ingredient,
                                 onIngredientChange = { newIngredient ->
-                                    setIngredients(
-                                        ingredients.toMutableList().apply {
-                                            this[index] = newIngredient
-                                        }
-                                    )
+                                  setIngredients(ingredients.value.toMutableList().apply {
+                                    this[index] = newIngredient
+                                  })
                                 },
                                 onDelete = {
-                                    if (ingredients.size > 1) {
-                                        setIngredients(ingredients.filterIndexed { i, _ -> i != index })
+                                  if (ingredients.value.size > 1) {
+                                    setIngredients(ingredients.value.filterIndexed { i, _ -> i != index })
                                     }
                                 },
-                                canDelete = ingredients.size > 1
+                              canDelete = ingredients.value.size > 1
                             )
                         }
-                        if (index < ingredients.lastIndex) {
+                    if (index < ingredients.value.lastIndex) {
                             Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
@@ -418,12 +486,12 @@ fun AddRecipeScreen(
                     iconTint = SoftBlue,
                     action = {
                         AddButton(
-                            onClick = { setSteps(steps + StepInput()) },
+                          onClick = { setSteps(steps.value + StepInput()) },
                             color = SoftBlue
                         )
                     }
                 ) {
-                    steps.forEachIndexed { index, step ->
+                  steps.value.forEachIndexed { index, step ->
                         AnimatedVisibility(
                             visible = true,
                             enter = fadeIn() + expandVertically(),
@@ -433,34 +501,32 @@ fun AddRecipeScreen(
                                 stepNumber = index + 1,
                                 step = step,
                                 onStepChange = { newStep ->
-                                    setSteps(
-                                        steps.toMutableList().apply {
-                                            this[index] = newStep
-                                        }
-                                    )
+                                  setSteps(steps.value.toMutableList().apply {
+                                    this[index] = newStep
+                                  })
                                 },
                                 onDelete = {
-                                    if (steps.size > 1) {
-                                        setSteps(steps.filterIndexed { i, _ -> i != index })
+                                  if (steps.value.size > 1) {
+                                    setSteps(steps.value.filterIndexed { i, _ -> i != index })
                                     }
                                 },
-                                canDelete = steps.size > 1,
-                                isLast = index == steps.lastIndex
+                              canDelete = steps.value.size > 1,
+                              isLast = index == steps.value.lastIndex
                             )
                         }
-                        if (index < steps.lastIndex) {
+                    if (index < steps.value.lastIndex) {
                             // Timeline connector
                             Row(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 20.dp),
+                                  .fillMaxWidth()
+                                  .padding(start = 20.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .width(2.dp)
-                                        .height(16.dp)
-                                        .background(SoftBlue.copy(alpha = 0.3f))
+                                      .width(2.dp)
+                                      .height(16.dp)
+                                      .background(SoftBlue.copy(alpha = 0.3f))
                                 )
                             }
                         }
@@ -490,12 +556,12 @@ private fun SectionCard(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 4.dp,
-                shape = RoundedCornerShape(20.dp),
-                spotColor = Color.Black.copy(alpha = 0.1f)
-            ),
+          .fillMaxWidth()
+          .shadow(
+            elevation = 4.dp,
+            shape = RoundedCornerShape(20.dp),
+            spotColor = Color.Black.copy(alpha = 0.1f)
+          ),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -515,9 +581,9 @@ private fun SectionCard(
                     // Icon with background
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(iconBackgroundColor),
+                          .size(40.dp)
+                          .clip(RoundedCornerShape(12.dp))
+                          .background(iconBackgroundColor),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -597,8 +663,8 @@ private fun StyledTextField(
         ) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                  .fillMaxWidth()
+                  .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -749,17 +815,17 @@ private fun IngredientInputCard(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+              .fillMaxWidth()
+              .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // Index badge
             Box(
                 modifier = Modifier
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(SoftGreen.copy(alpha = 0.1f)),
+                  .size(28.dp)
+                  .clip(CircleShape)
+                  .background(SoftGreen.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -849,9 +915,9 @@ private fun IngredientInputCard(
                         shape = RoundedCornerShape(8.dp),
                         color = SoftGreen.copy(alpha = 0.1f),
                         modifier = Modifier
-                            .menuAnchor()
-                            .width(56.dp)
-                            .clickable { unitExpanded = true }
+                          .menuAnchor()
+                          .width(56.dp)
+                          .clickable { unitExpanded = true }
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
@@ -933,13 +999,13 @@ private fun StepInputCard(
         // Step number badge
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(SoftBlue, SoftBlue.copy(alpha = 0.7f))
-                    )
-                ),
+              .size(40.dp)
+              .clip(CircleShape)
+              .background(
+                brush = Brush.linearGradient(
+                  colors = listOf(SoftBlue, SoftBlue.copy(alpha = 0.7f))
+                )
+              ),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -1117,8 +1183,8 @@ private fun TagsFlowRow(
                         value = newTag,
                         onValueChange = onNewTagChange,
                         modifier = Modifier
-                            .width(80.dp)
-                            .padding(vertical = 6.dp),
+                          .width(80.dp)
+                          .padding(vertical = 6.dp),
                         textStyle = MaterialTheme.typography.labelMedium.copy(
                             color = MaterialTheme.colorScheme.onSurface
                         ),
@@ -1181,9 +1247,9 @@ private fun TagsFlowRow(
                 shape = RoundedCornerShape(20.dp),
                 color = PrimaryOrange.copy(alpha = 0.1f),
                 modifier = Modifier
-                    .height(32.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .clickable { onShowInput() }
+                  .height(32.dp)
+                  .clip(RoundedCornerShape(20.dp))
+                  .clickable { onShowInput() }
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp),

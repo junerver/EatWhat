@@ -1,7 +1,7 @@
 [versions]
-agp = "8.2.0"
-kotlin = "1.9.21"
-ksp = "1.9.21-1.0.15"
+agp = "8.7.3"
+kotlin = "2.1.0"
+ksp = "2.1.0-1.0.29"
 coreKtx = "1.12.0"
 junit = "4.13.2"
 junitVersion = "1.1.5"
@@ -9,7 +9,7 @@ espressoCore = "3.5.1"
 lifecycleRuntimeKtx = "2.7.0"
 activityCompose = "1.8.2"
 composeBom = "2024.06.00"
-composeHooks = "1.0.0"
+composeHooks = "2.2.1"
 room = "2.6.1"
 navigationCompose = "2.7.6"
 mockk = "1.13.8"
@@ -42,7 +42,7 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
 # ComposeHooks
-compose-hooks = { group = "xyz.junerver.compose", name = "hooks", version.ref = "composeHooks" }
+compose-hooks = { group = "xyz.junerver.compose", name = "hooks2", version.ref = "composeHooks" }
 
 # Room
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }

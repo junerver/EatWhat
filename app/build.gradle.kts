@@ -1,13 +1,14 @@
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.kotlin.compose)
   alias(libs.plugins.ksp)
   alias(libs.plugins.kotlin.serialization)
 }
 
 android {
   namespace = "com.eatwhat"
-  compileSdk = 34
+  compileSdk = 35
 
   defaultConfig {
     applicationId = "com.eatwhat"
@@ -49,9 +50,7 @@ android {
     compose = true
   }
 
-  composeOptions {
-    kotlinCompilerExtensionVersion = "1.5.7"
-  }
+  // Kotlin 2.0+ 不再需要 composeOptions，使用 Compose Compiler 插件替代
 
   packaging {
     resources {

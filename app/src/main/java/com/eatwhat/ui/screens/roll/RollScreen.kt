@@ -4,11 +4,28 @@ import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -24,19 +41,26 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import com.eatwhat.navigation.Destinations
-import com.eatwhat.ui.theme.*
-import xyz.junerver.compose.hooks.*
+import com.eatwhat.ui.theme.DarkGradientEnd
+import com.eatwhat.ui.theme.DarkGradientStart
+import com.eatwhat.ui.theme.MeatRed
+import com.eatwhat.ui.theme.PrimaryOrange
+import com.eatwhat.ui.theme.PrimaryOrangeLight
+import com.eatwhat.ui.theme.SoftBlue
+import com.eatwhat.ui.theme.SoftGreen
+import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useGetState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RollScreen(navController: NavController) {
-    val (totalCount, setTotalCount) = useState(0)
-    val (meatCount, setMeatCount) = useState(0)
-    val (vegCount, setVegCount) = useState(0)
-    val (soupCount, setSoupCount) = useState(0)
-    val (showDishCountDialog, setShowDishCountDialog) = useState(false)
-    val (showTypeDialog, setShowTypeDialog) = useState(false)
-    val (currentType, setCurrentType) = useState("")
+  val (totalCount, setTotalCount) = useGetState(default = 0)
+  val (meatCount, setMeatCount) = useGetState(default = 0)
+  val (vegCount, setVegCount) = useGetState(default = 0)
+  val (soupCount, setSoupCount) = useGetState(default = 0)
+  val (showDishCountDialog, setShowDishCountDialog) = useGetState(default = false)
+  val (showTypeDialog, setShowTypeDialog) = useGetState(default = false)
+  val (currentType, setCurrentType) = useGetState(default = "")
 
     // 检测深色模式
     val isDarkTheme = isSystemInDarkTheme()
@@ -74,7 +98,7 @@ fun RollScreen(navController: NavController) {
 
     fun executeRoll() {
         // 如果没有选择菜数，默认1个荤菜
-        if (totalCount == 0) {
+      if (totalCount.value == 0) {
             navController.navigate(
                 Destinations.RollResult.createRoute(
                     meatCount = 1,
@@ -87,13 +111,13 @@ fun RollScreen(navController: NavController) {
         }
 
         // 检查用户已分配的菜数
-        val allocated = meatCount + vegCount + soupCount
-        val remaining = totalCount - allocated
+      val allocated = meatCount.value + vegCount.value + soupCount.value
+      val remaining = totalCount.value - allocated
 
         // 如果用户没有分配任何类型，自动平均分配
         if (allocated == 0) {
-            val autoMeat = totalCount / 2
-            val autoVeg = totalCount - autoMeat
+          val autoMeat = totalCount.value / 2
+          val autoVeg = totalCount.value - autoMeat
             navController.navigate(
                 Destinations.RollResult.createRoute(
                     meatCount = autoMeat,
@@ -106,9 +130,9 @@ fun RollScreen(navController: NavController) {
         }
 
         // 如果有剩余未分配的菜数，自动分配给素菜和汤
-        var finalMeatCount = meatCount
-        var finalVegCount = vegCount
-        var finalSoupCount = soupCount
+      var finalMeatCount = meatCount.value
+      var finalVegCount = vegCount.value
+      var finalSoupCount = soupCount.value
 
         if (remaining > 0) {
             // 剩余的菜数平均分配给素菜和汤
@@ -131,15 +155,15 @@ fun RollScreen(navController: NavController) {
 
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(brush = backgroundBrush)
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .windowInsetsPadding(WindowInsets.navigationBars)
+          .fillMaxSize()
+          .background(brush = backgroundBrush)
+          .windowInsetsPadding(WindowInsets.statusBars)
+          .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
+              .fillMaxSize()
+              .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(20.dp))
@@ -166,8 +190,8 @@ fun RollScreen(navController: NavController) {
             // Main Roll Button
             Surface(
                 modifier = Modifier
-                    .size(180.dp)
-                    .shadow(16.dp, CircleShape),
+                  .size(180.dp)
+                  .shadow(16.dp, CircleShape),
                 shape = CircleShape,
                 color = rollButtonColor,
                 onClick = { executeRoll() }
@@ -199,12 +223,12 @@ fun RollScreen(navController: NavController) {
                 // Dish count button
                 ConfigButton(
                     emoji = "🍽️",
-                    label = if (totalCount == 0) "选择菜数" else "${totalCount}个菜",
+                  label = if (totalCount.value == 0) "选择菜数" else "${totalCount.value}个菜",
                     onClick = { setShowDishCountDialog(true) }
                 )
 
                 // Type distribution buttons
-                if (totalCount > 0) {
+              if (totalCount.value > 0) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -212,7 +236,7 @@ fun RollScreen(navController: NavController) {
                         TypeConfigChip(
                             emoji = "🍗",
                             label = "荤",
-                            count = meatCount,
+                          count = meatCount.value,
                             color = MeatRed,
                             onClick = {
                                 setCurrentType("meat")
@@ -222,7 +246,7 @@ fun RollScreen(navController: NavController) {
                         TypeConfigChip(
                             emoji = "🥬",
                             label = "素",
-                            count = vegCount,
+                          count = vegCount.value,
                             color = SoftGreen,
                             onClick = {
                                 setCurrentType("veg")
@@ -232,7 +256,7 @@ fun RollScreen(navController: NavController) {
                         TypeConfigChip(
                             emoji = "🍲",
                             label = "汤",
-                            count = soupCount,
+                          count = soupCount.value,
                             color = SoftBlue,
                             onClick = {
                                 setCurrentType("soup")
@@ -240,13 +264,13 @@ fun RollScreen(navController: NavController) {
                             }
                         )
                     }
-                    
+
                     // Show remaining allocation hint
-                    val allocated = meatCount + vegCount + soupCount
-                    val remaining = totalCount - allocated
+                val allocated = meatCount.value + vegCount.value + soupCount.value
+                val remaining = totalCount.value - allocated
                     if (remaining > 0) {
                         Text(
-                            text = "还有 $remaining 个菜未分配，将自动随机分配",
+                          text = "还有 $remaining 个菜未分配,将自动随机分配",
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.8f)
                         )
@@ -257,7 +281,7 @@ fun RollScreen(navController: NavController) {
     }
 
     // Dish count selector dialog
-    if (showDishCountDialog) {
+  if (showDishCountDialog.value) {
         SelectorDialog(
             title = "选择菜数",
             emoji = "🍽️",
@@ -274,16 +298,16 @@ fun RollScreen(navController: NavController) {
     }
 
     // Type count selector dialog
-    if (showTypeDialog) {
-        val used = meatCount + vegCount + soupCount - when (currentType) {
-            "meat" -> meatCount
-            "veg" -> vegCount
-            "soup" -> soupCount
+  if (showTypeDialog.value) {
+    val used = meatCount.value + vegCount.value + soupCount.value - when (currentType.value) {
+      "meat" -> meatCount.value
+      "veg" -> vegCount.value
+      "soup" -> soupCount.value
             else -> 0
         }
-        val available = totalCount - used
+    val available = totalCount.value - used
 
-        val (emoji, title, color) = when (currentType) {
+    val (emoji, title, color) = when (currentType.value) {
             "meat" -> Triple("🍗", "选择荤菜数量", MeatRed)
             "veg" -> Triple("🥬", "选择素菜数量", SoftGreen)
             "soup" -> Triple("🍲", "选择汤数量", SoftBlue)
@@ -296,7 +320,7 @@ fun RollScreen(navController: NavController) {
             color = color,
             maxCount = available,
             onSelect = { count ->
-                when (currentType) {
+              when (currentType.value) {
                     "meat" -> setMeatCount(count)
                     "veg" -> setVegCount(count)
                     "soup" -> setSoupCount(count)

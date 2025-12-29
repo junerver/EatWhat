@@ -7,8 +7,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -68,9 +68,16 @@ import com.eatwhat.EatWhatApplication
 import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.ui.components.RecipeCard
-import com.eatwhat.ui.theme.*
+import com.eatwhat.ui.theme.InputBackground
+import com.eatwhat.ui.theme.MeatRed
+import com.eatwhat.ui.theme.Primary
+import com.eatwhat.ui.theme.PrimaryOrange
+import com.eatwhat.ui.theme.SoupBlue
+import com.eatwhat.ui.theme.StapleOrange
+import com.eatwhat.ui.theme.VegGreen
 import kotlinx.coroutines.launch
-import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useGetState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -80,8 +87,8 @@ fun RecipeListScreen(navController: NavController) {
     val repository = remember { app.recipeRepository }
     val scope = rememberCoroutineScope()
 
-    val (searchQuery, setSearchQuery) = useState("")
-    val (isSearching, setIsSearching) = useState(false)
+  val (searchQuery, setSearchQuery) = useGetState(default = "")
+  val (isSearching, setIsSearching) = useGetState(default = false)
 
     // 设置透明状态栏
     val view = LocalView.current
@@ -106,10 +113,10 @@ fun RecipeListScreen(navController: NavController) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .windowInsetsPadding(WindowInsets.navigationBars)
+              .fillMaxSize()
+              .background(MaterialTheme.colorScheme.background)
+              .windowInsetsPadding(WindowInsets.statusBars)
+              .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
             // TopAppBar
             Surface(
@@ -119,9 +126,9 @@ fun RecipeListScreen(navController: NavController) {
                 Column {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(horizontal = 16.dp),
+                          .fillMaxWidth()
+                          .height(64.dp)
+                          .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
@@ -132,9 +139,9 @@ fun RecipeListScreen(navController: NavController) {
                             modifier = Modifier.weight(1f)
                         )
                         // 搜索按钮
-                        IconButton(onClick = { setIsSearching(!isSearching) }) {
+                      IconButton(onClick = { setIsSearching(!isSearching.value) }) {
                             Icon(
-                                if (isSearching) Icons.Default.Close else Icons.Default.Search,
+                              if (isSearching.value) Icons.Default.Close else Icons.Default.Search,
                                 contentDescription = "搜索",
                                 tint = PrimaryOrange
                             )
@@ -143,21 +150,21 @@ fun RecipeListScreen(navController: NavController) {
                     
                     // 搜索栏
                     AnimatedVisibility(
-                        visible = isSearching,
+                      visible = isSearching.value,
                         enter = fadeIn() + expandVertically(),
                         exit = fadeOut() + shrinkVertically()
                     ) {
                         Surface(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                              .fillMaxWidth()
+                              .padding(horizontal = 16.dp, vertical = 8.dp),
                             shape = RoundedCornerShape(12.dp),
                             color = InputBackground
                         ) {
                             Row(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                  .fillMaxWidth()
+                                  .padding(horizontal = 16.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
@@ -168,8 +175,8 @@ fun RecipeListScreen(navController: NavController) {
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 BasicTextField(
-                                    value = searchQuery,
-                                    onValueChange = setSearchQuery,
+                                  value = searchQuery.value,
+                                  onValueChange = { setSearchQuery(it) },
                                     modifier = Modifier.weight(1f),
                                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                                         color = MaterialTheme.colorScheme.onSurface
@@ -177,7 +184,7 @@ fun RecipeListScreen(navController: NavController) {
                                     singleLine = true,
                                     decorationBox = { innerTextField ->
                                         Box {
-                                            if (searchQuery.isEmpty()) {
+                                          if (searchQuery.value.isEmpty()) {
                                                 Text(
                                                     "搜索菜谱或标签",
                                                     style = MaterialTheme.typography.bodyLarge,
@@ -188,7 +195,7 @@ fun RecipeListScreen(navController: NavController) {
                                         }
                                     }
                                 )
-                                if (searchQuery.isNotEmpty()) {
+                              if (searchQuery.value.isNotEmpty()) {
                                     IconButton(
                                         onClick = { setSearchQuery("") },
                                         modifier = Modifier.size(24.dp)
@@ -270,9 +277,9 @@ fun RecipeListScreen(navController: NavController) {
                 val selectedType = tabs[page].first
 
                 // 根据当前tab获取菜谱
-                val recipesFlow = remember(selectedType, searchQuery) {
+              val recipesFlow = remember(selectedType, searchQuery.value) {
                     when {
-                        searchQuery.isNotEmpty() -> repository.searchRecipes(searchQuery)
+                      searchQuery.value.isNotEmpty() -> repository.searchRecipes(searchQuery.value)
                         selectedType != null -> repository.getRecipesByType(selectedType)
                         else -> repository.getAllRecipes()
                     }
@@ -282,7 +289,7 @@ fun RecipeListScreen(navController: NavController) {
 
                 RecipeListContent(
                     recipes = recipes,
-                    searchQuery = searchQuery,
+                  searchQuery = searchQuery.value,
                     onRecipeClick = { recipe ->
                         navController.navigate("recipe/${recipe.id}")
                     }
@@ -297,10 +304,10 @@ fun RecipeListScreen(navController: NavController) {
             contentColor = Color.White,
             shape = CircleShape,
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-                .windowInsetsPadding(WindowInsets.navigationBars)
-                .shadow(8.dp, CircleShape)
+              .align(Alignment.BottomEnd)
+              .padding(16.dp)
+              .windowInsetsPadding(WindowInsets.navigationBars)
+              .shadow(8.dp, CircleShape)
         ) {
             Icon(Icons.Default.Add, contentDescription = "添加菜谱")
         }

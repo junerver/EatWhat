@@ -2,7 +2,21 @@ package com.eatwhat.ui.screens.recipe
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,9 +24,28 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.outlined.Label
+import androidx.compose.material.icons.outlined.MenuBook
+import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,9 +63,22 @@ import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
 import com.eatwhat.ui.components.SimpleCircularProgressIndicator
-import com.eatwhat.ui.theme.*
+import com.eatwhat.ui.theme.ErrorRed
+import com.eatwhat.ui.theme.IngredientCardBackground
+import com.eatwhat.ui.theme.MeatRed
+import com.eatwhat.ui.theme.PrimaryOrange
+import com.eatwhat.ui.theme.SoftBlue
+import com.eatwhat.ui.theme.SoftGreen
+import com.eatwhat.ui.theme.SoftPurple
+import com.eatwhat.ui.theme.SoupBlue
+import com.eatwhat.ui.theme.StapleOrange
+import com.eatwhat.ui.theme.StepCardBackground
+import com.eatwhat.ui.theme.TagPastelColors
+import com.eatwhat.ui.theme.VegGreen
+import com.eatwhat.ui.theme.WarmYellow
 import kotlinx.coroutines.launch
-import xyz.junerver.compose.hooks.*
+import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useGetState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +92,7 @@ fun RecipeDetailScreen(
     val scope = rememberCoroutineScope()
 
     val recipe by repository.getRecipeById(recipeId).collectAsState(initial = null)
-    val (showDeleteDialog, setShowDeleteDialog) = useState(false)
+  val (showDeleteDialog, setShowDeleteDialog) = useGetState(default = false)
 
     Scaffold(
         topBar = {
@@ -88,8 +134,8 @@ fun RecipeDetailScreen(
         recipe?.let { recipeData ->
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                  .fillMaxSize()
+                  .padding(paddingValues),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -97,12 +143,12 @@ fun RecipeDetailScreen(
                 item {
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(
-                                elevation = 4.dp,
-                                shape = RoundedCornerShape(20.dp),
-                                spotColor = Color.Black.copy(alpha = 0.1f)
-                            ),
+                          .fillMaxWidth()
+                          .shadow(
+                            elevation = 4.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            spotColor = Color.Black.copy(alpha = 0.1f)
+                          ),
                         shape = RoundedCornerShape(20.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
@@ -219,14 +265,14 @@ fun RecipeDetailScreen(
                                 // Timeline connector
                                 Row(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(start = 20.dp)
+                                      .fillMaxWidth()
+                                      .padding(start = 20.dp)
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .width(2.dp)
-                                            .height(12.dp)
-                                            .background(SoftBlue.copy(alpha = 0.3f))
+                                          .width(2.dp)
+                                          .height(12.dp)
+                                          .background(SoftBlue.copy(alpha = 0.3f))
                                     )
                                 }
                             }
@@ -262,8 +308,8 @@ fun RecipeDetailScreen(
             }
         } ?: Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+              .fillMaxSize()
+              .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -284,7 +330,7 @@ fun RecipeDetailScreen(
     }
 
     // Delete confirmation dialog
-    if (showDeleteDialog) {
+  if (showDeleteDialog.value) {
         AlertDialog(
             onDismissRequest = { setShowDeleteDialog(false) },
             icon = {
@@ -334,12 +380,12 @@ private fun SectionCard(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 4.dp,
-                shape = RoundedCornerShape(20.dp),
-                spotColor = Color.Black.copy(alpha = 0.1f)
-            ),
+          .fillMaxWidth()
+          .shadow(
+            elevation = 4.dp,
+            shape = RoundedCornerShape(20.dp),
+            spotColor = Color.Black.copy(alpha = 0.1f)
+          ),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -353,9 +399,9 @@ private fun SectionCard(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(iconBackgroundColor),
+                      .size(40.dp)
+                      .clip(RoundedCornerShape(12.dp))
+                      .background(iconBackgroundColor),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -428,8 +474,8 @@ private fun IngredientRow(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+              .fillMaxWidth()
+              .padding(12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -440,9 +486,9 @@ private fun IngredientRow(
                 // Index badge
                 Box(
                     modifier = Modifier
-                        .size(28.dp)
-                        .clip(CircleShape)
-                        .background(SoftGreen.copy(alpha = 0.1f)),
+                      .size(28.dp)
+                      .clip(CircleShape)
+                      .background(SoftGreen.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -487,13 +533,13 @@ private fun StepRow(
         // Step number badge
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(SoftBlue, SoftBlue.copy(alpha = 0.7f))
-                    )
-                ),
+              .size(40.dp)
+              .clip(CircleShape)
+              .background(
+                brush = Brush.linearGradient(
+                  colors = listOf(SoftBlue, SoftBlue.copy(alpha = 0.7f))
+                )
+              ),
             contentAlignment = Alignment.Center
         ) {
             Text(
