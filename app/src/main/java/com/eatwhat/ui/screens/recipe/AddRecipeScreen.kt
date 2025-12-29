@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -92,11 +93,7 @@ import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.domain.model.Tag
 import com.eatwhat.ui.components.FoodEmojis
 import com.eatwhat.ui.components.RecipeIconPicker
-import com.eatwhat.ui.theme.IngredientCardBackground
-import com.eatwhat.ui.theme.InputBackground
-import com.eatwhat.ui.theme.LightBorder
 import com.eatwhat.ui.theme.MeatRed
-import com.eatwhat.ui.theme.PageBackground
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
@@ -261,14 +258,14 @@ fun AddRecipeScreen(
                       enabled = !isSaving.value,
                         colors = ButtonDefaults.filledTonalButtonColors(
                             containerColor = PrimaryOrange,
-                            contentColor = Color.White
+                          contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
                       if (isSaving.value) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(16.dp),
-                                color = Color.White,
+                              color = MaterialTheme.colorScheme.onPrimary,
                                 strokeWidth = 2.dp
                             )
                         } else {
@@ -289,7 +286,7 @@ fun AddRecipeScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = PageBackground
+      containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -563,7 +560,7 @@ private fun SectionCard(
             spotColor = Color.Black.copy(alpha = 0.1f)
           ),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(20.dp)
@@ -658,7 +655,7 @@ private fun StyledTextField(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            color = InputBackground,
+          color = MaterialTheme.colorScheme.surfaceVariant,
             border = null
         ) {
             Row(
@@ -719,7 +716,7 @@ private fun RecipeTypeChip(
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) color.copy(alpha = 0.15f) else PageBackground,
+      color = if (isSelected) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
         border = if (isSelected) {
             androidx.compose.foundation.BorderStroke(2.dp, color)
         } else null,
@@ -761,7 +758,7 @@ private fun DifficultyChip(
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) color.copy(alpha = 0.15f) else PageBackground,
+      color = if (isSelected) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
         border = if (isSelected) {
             androidx.compose.foundation.BorderStroke(2.dp, color)
         } else null,
@@ -809,7 +806,7 @@ private fun IngredientInputCard(
     
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = IngredientCardBackground,
+      color = MaterialTheme.colorScheme.surfaceVariant,
         border = androidx.compose.foundation.BorderStroke(1.dp, SoftGreen.copy(alpha = 0.2f)),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -874,8 +871,11 @@ private fun IngredientInputCard(
                 // Amount input
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Color.White,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, LightBorder),
+                  color = MaterialTheme.colorScheme.surface,
+                  border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                  ),
                     modifier = Modifier.width(50.dp)
                 ) {
                     BasicTextField(
@@ -992,6 +992,9 @@ private fun StepInputCard(
     canDelete: Boolean,
     isLast: Boolean
 ) {
+  val isDark = isSystemInDarkTheme()
+  val stepBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else StepCardBackground
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -1019,7 +1022,7 @@ private fun StepInputCard(
         // Step content
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = StepCardBackground,
+          color = stepBackground,
             border = androidx.compose.foundation.BorderStroke(1.dp, SoftBlue.copy(alpha = 0.2f)),
             modifier = Modifier.weight(1f)
         ) {
