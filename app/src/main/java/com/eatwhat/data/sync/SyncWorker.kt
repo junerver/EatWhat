@@ -3,8 +3,8 @@ package com.eatwhat.data.sync
 import android.content.Context
 import android.util.Log
 import androidx.work.*
+import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.database.EatWhatDatabase
-import com.eatwhat.data.repository.ExportRepositoryImpl
 import com.eatwhat.data.repository.SyncRepositoryImpl
 import java.util.concurrent.TimeUnit
 
@@ -85,7 +85,8 @@ class SyncWorker(
 
         return try {
             val database = EatWhatDatabase.getInstance(applicationContext)
-            val exportRepository = ExportRepositoryImpl(applicationContext, database)
+          val app = applicationContext as EatWhatApplication
+          val exportRepository = app.exportRepository
             val syncRepository = SyncRepositoryImpl(applicationContext, exportRepository)
 
             val config = syncRepository.getConfig()

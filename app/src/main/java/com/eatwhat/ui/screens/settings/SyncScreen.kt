@@ -15,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -23,8 +22,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.database.EatWhatDatabase
-import com.eatwhat.data.repository.ExportRepositoryImpl
 import com.eatwhat.data.repository.SyncRepositoryImpl
 import com.eatwhat.data.sync.SyncMetadata
 import com.eatwhat.data.sync.SyncResult
@@ -45,7 +44,8 @@ fun SyncScreen(navController: NavController) {
 
     // 创建 Repository
     val database = remember { EatWhatDatabase.getInstance(context) }
-    val exportRepository = remember { ExportRepositoryImpl(context, database) }
+  val app = context.applicationContext as EatWhatApplication
+  val exportRepository = remember { app.exportRepository }
     val syncRepository = remember { SyncRepositoryImpl(context, exportRepository) }
 
     // 配置状态
@@ -93,10 +93,10 @@ fun SyncScreen(navController: NavController) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
+                  .fillMaxSize()
+                  .padding(paddingValues)
+                  .verticalScroll(rememberScrollState())
+                  .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 if (!isConfigured) {
@@ -191,12 +191,12 @@ fun SyncScreen(navController: NavController) {
                     // 配置入口
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(
-                                elevation = 2.dp,
-                                shape = RoundedCornerShape(16.dp),
-                                spotColor = Color.Black.copy(alpha = 0.08f)
-                            ),
+                          .fillMaxWidth()
+                          .shadow(
+                            elevation = 2.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            spotColor = Color.Black.copy(alpha = 0.08f)
+                          ),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
@@ -205,8 +205,8 @@ fun SyncScreen(navController: NavController) {
                     ) {
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
+                              .fillMaxWidth()
+                              .padding(16.dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -234,8 +234,8 @@ fun SyncScreen(navController: NavController) {
             if (isSyncing) {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.3f)),
+                      .fillMaxSize()
+                      .background(Color.Black.copy(alpha = 0.3f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Card(
@@ -339,12 +339,12 @@ private fun NotConfiguredCard(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 2.dp,
-                shape = RoundedCornerShape(16.dp),
-                spotColor = Color.Black.copy(alpha = 0.08f)
-            ),
+          .fillMaxWidth()
+          .shadow(
+            elevation = 2.dp,
+            shape = RoundedCornerShape(16.dp),
+            spotColor = Color.Black.copy(alpha = 0.08f)
+          ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
@@ -352,8 +352,8 @@ private fun NotConfiguredCard(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
+              .fillMaxWidth()
+              .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -398,12 +398,12 @@ private fun SyncStatusCard(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 2.dp,
-                shape = RoundedCornerShape(16.dp),
-                spotColor = Color.Black.copy(alpha = 0.08f)
-            ),
+          .fillMaxWidth()
+          .shadow(
+            elevation = 2.dp,
+            shape = RoundedCornerShape(16.dp),
+            spotColor = Color.Black.copy(alpha = 0.08f)
+          ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
@@ -411,8 +411,8 @@ private fun SyncStatusCard(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+              .fillMaxWidth()
+              .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
@@ -541,12 +541,12 @@ private fun SyncActionsCard(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 2.dp,
-                shape = RoundedCornerShape(16.dp),
-                spotColor = Color.Black.copy(alpha = 0.08f)
-            ),
+          .fillMaxWidth()
+          .shadow(
+            elevation = 2.dp,
+            shape = RoundedCornerShape(16.dp),
+            spotColor = Color.Black.copy(alpha = 0.08f)
+          ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
@@ -554,8 +554,8 @@ private fun SyncActionsCard(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+              .fillMaxWidth()
+              .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(

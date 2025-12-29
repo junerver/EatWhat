@@ -5,13 +5,11 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.eatwhat.data.database.EatWhatDatabase
-import com.eatwhat.data.database.entities.*
-import com.eatwhat.data.database.relations.RecipeWithDetails
+import com.eatwhat.data.preferences.AIPreferences
+import com.eatwhat.data.repository.ExportRepository
+import com.eatwhat.data.repository.ExportRepositoryImpl
 import com.eatwhat.data.repository.RecipeRepository
 import com.eatwhat.data.repository.RollRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.UUID
 
 /**
@@ -31,6 +29,12 @@ class EatWhatApplication : Application() {
 
     lateinit var historyRepository: com.eatwhat.data.repository.HistoryRepository
         private set
+
+  lateinit var aiPreferences: AIPreferences
+    private set
+
+  lateinit var exportRepository: ExportRepository
+    private set
 
     // Temporary storage for current roll result (for navigation)
     var currentRollResult: com.eatwhat.domain.model.RollResult? = null
@@ -67,6 +71,8 @@ class EatWhatApplication : Application() {
         recipeRepository = RecipeRepository(database)
         rollRepository = RollRepository(recipeRepository)
         historyRepository = com.eatwhat.data.repository.HistoryRepository(database)
+      aiPreferences = AIPreferences(applicationContext)
+      exportRepository = ExportRepositoryImpl(applicationContext, database, aiPreferences)
     }
 
     private class DatabaseCallback : RoomDatabase.Callback() {

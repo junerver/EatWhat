@@ -12,6 +12,9 @@ import com.eatwhat.data.database.entities.RecipeEntity
 import com.eatwhat.data.database.entities.RecipeTagCrossRef
 import com.eatwhat.data.database.relations.HistoryWithDetails
 import com.eatwhat.data.database.relations.RecipeWithDetails
+import com.eatwhat.data.preferences.AIConfig
+import com.eatwhat.data.preferences.AIPreferences
+import com.eatwhat.data.sync.AIConfigExport
 import com.eatwhat.data.sync.ConflictStrategy
 import com.eatwhat.data.sync.CookingStepExport
 import com.eatwhat.data.sync.ExportData
@@ -21,13 +24,15 @@ import com.eatwhat.data.sync.ImportPreview
 import com.eatwhat.data.sync.ImportResult
 import com.eatwhat.data.sync.IngredientExport
 import com.eatwhat.data.sync.RecipeExport
+import kotlinx.coroutines.flow.first
 
 /**
  * 导入导出仓库实现
  */
 class ExportRepositoryImpl(
     private val context: Context,
-    private val database: EatWhatDatabase
+    private val database: EatWhatDatabase,
+    private val aiPreferences: AIPreferences
 ) : ExportRepository {
 
     private val recipeDao = database.recipeDao()
@@ -37,7 +42,8 @@ class ExportRepositoryImpl(
     override suspend fun exportAll(): ExportData {
         val recipes = exportRecipeEntities()
         val history = exportHistoryEntities()
-        return createExportData(recipes, history)
+      val aiConfig = aiPreferences.aiConfigFlow.first()
+      return createExportData(recipes, history, aiConfig)
     }
 
     override suspend fun exportRecipes(): ExportData {
@@ -123,6 +129,16 @@ class ExportRepositoryImpl(
             }
         }
 
+      // 导入 AI 配置
+      data.aiConfig?.let { aiConfigExport ->
+        try {
+          val aiConfig = aiConfigExport.toAIConfig()
+          aiPreferences.saveConfig(aiConfig)
+        } catch (e: Exception) {
+          errors.add("AI配置: ${e.message}")
+        }
+      }
+
         return ImportResult(
             success = errors.isEmpty(),
             recipesImported = recipesImported,
@@ -153,7 +169,8 @@ class ExportRepositoryImpl(
 
     private fun createExportData(
         recipes: List<RecipeExport>,
-        history: List<HistoryExport>
+        history: List<HistoryExport>,
+        aiConfig: AIConfig? = null
     ): ExportData {
         return ExportData(
             version = "1.0.0",
@@ -162,7 +179,8 @@ class ExportRepositoryImpl(
             deviceId = getDeviceId(),
             encrypted = false,
             recipes = recipes,
-            historyRecords = history
+          historyRecords = history,
+          aiConfig = aiConfig?.toExport()
         )
     }
 
@@ -439,6 +457,22 @@ class ExportRepositoryImpl(
             estimatedTime = recipeTime
         )
     }
+
+  private fun AIConfig.toExport(): AIConfigExport {
+    return AIConfigExport(
+      baseUrl = baseUrl,
+      apiKey = apiKey,
+      model = model
+    )
+  }
+
+  private fun AIConfigExport.toAIConfig(): AIConfig {
+    return AIConfig(
+      baseUrl = baseUrl,
+      apiKey = apiKey,
+      model = model
+    )
+  }
 
     private enum class ImportAction {
         INSERTED, UPDATED, SKIPPED

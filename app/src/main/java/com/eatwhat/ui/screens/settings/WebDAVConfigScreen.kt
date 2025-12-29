@@ -65,8 +65,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.database.EatWhatDatabase
-import com.eatwhat.data.repository.ExportRepositoryImpl
 import com.eatwhat.data.repository.SyncRepositoryImpl
 import com.eatwhat.data.sync.ConnectionResult
 import com.eatwhat.data.sync.SyncWorker
@@ -86,7 +86,8 @@ fun WebDAVConfigScreen(navController: NavController) {
 
   // 创建 Repository
   val database = remember { EatWhatDatabase.getInstance(context) }
-  val exportRepository = remember { ExportRepositoryImpl(context, database) }
+  val app = context.applicationContext as EatWhatApplication
+  val exportRepository = remember { app.exportRepository }
   val syncRepository = remember { SyncRepositoryImpl(context, exportRepository) }
 
   // 加载现有配置

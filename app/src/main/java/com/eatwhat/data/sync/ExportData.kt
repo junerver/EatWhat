@@ -13,7 +13,18 @@ data class ExportData(
     val deviceId: String = "",
     val encrypted: Boolean = false,
     val recipes: List<RecipeExport> = emptyList(),
-    val historyRecords: List<HistoryExport> = emptyList()
+    val historyRecords: List<HistoryExport> = emptyList(),
+    val aiConfig: AIConfigExport? = null
+)
+
+/**
+ * AI配置导出结构
+ */
+@Serializable
+data class AIConfigExport(
+  val baseUrl: String,
+  val apiKey: String,
+  val model: String
 )
 
 /**
