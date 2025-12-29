@@ -79,7 +79,6 @@ import com.eatwhat.domain.usecase.ExportDataUseCase
 import com.eatwhat.domain.usecase.ImportDataUseCase
 import com.eatwhat.domain.usecase.ImportPreviewResult
 import com.eatwhat.navigation.Destinations
-import com.eatwhat.ui.theme.PrimaryOrange
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -306,7 +305,7 @@ fun SettingsScreen(navController: NavController) {
               SettingsCard(
                 title = "AI 助手",
                 iconDrawableRes = R.drawable.ic_ai_sparkles,
-                iconColor = PrimaryOrange
+                iconColor = MaterialTheme.colorScheme.secondary
               ) {
                 SettingsItem(
                   icon = Icons.Default.Settings,

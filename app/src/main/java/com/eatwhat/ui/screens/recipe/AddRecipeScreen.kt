@@ -323,7 +323,8 @@ fun AddRecipeScreen(
                     Icon(
                       painter = painterResource(id = R.drawable.ic_ai_sparkles),
                       contentDescription = "AI 分析",
-                      tint = PrimaryOrange
+                      tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                      modifier = Modifier.size(22.dp)
                     )
                   }
 

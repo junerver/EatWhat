@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.AlertDialog
@@ -69,7 +70,6 @@ import com.eatwhat.ui.theme.MeatRed
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
-import com.eatwhat.ui.theme.SoftPurple
 import com.eatwhat.ui.theme.SoupBlue
 import com.eatwhat.ui.theme.StapleOrange
 import com.eatwhat.ui.theme.StepCardBackground
@@ -80,7 +80,7 @@ import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useGetState
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun RecipeDetailScreen(
     navController: NavController,
@@ -193,7 +193,7 @@ fun RecipeDetailScreen(
                                     text = typeName,
                                     color = typeColor
                                 )
-                                
+
                                 // Difficulty chip
                                 val (diffEmoji, diffName, diffColor) = when (recipeData.difficulty.name) {
                                     "EASY" -> Triple("⭐", "简单", SoftGreen)
@@ -206,13 +206,28 @@ fun RecipeDetailScreen(
                                     text = diffName,
                                     color = diffColor
                                 )
-                                
-                                // Time chip
+
+                              // Time chip
                                 InfoChip(
                                     emoji = "⏱️",
                                     text = "${recipeData.estimatedTime}分钟",
                                     color = SoftBlue
                                 )
+                            }
+
+                          // Tags section
+                          if (recipeData.tags.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            FlowRow(
+                              modifier = Modifier.fillMaxWidth(),
+                              horizontalArrangement = Arrangement.spacedBy(8.dp),
+                              verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                              recipeData.tags.forEach { tag ->
+                                TagChip(tag.name)
+                              }
+                            }
                             }
                         }
                     }
@@ -274,27 +289,6 @@ fun RecipeDetailScreen(
                                           .height(12.dp)
                                           .background(SoftBlue.copy(alpha = 0.3f))
                                     )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Tags Section
-                if (recipeData.tags.isNotEmpty()) {
-                    item {
-                        SectionCard(
-                            title = "标签",
-                            icon = Icons.Outlined.Label,
-                            iconBackgroundColor = SoftPurple.copy(alpha = 0.1f),
-                            iconTint = SoftPurple
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                recipeData.tags.forEach { tag ->
-                                    TagChip(tag.name)
                                 }
                             }
                         }
