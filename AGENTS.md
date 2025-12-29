@@ -22,21 +22,22 @@ This file serves as the **unified rule set** for all AI development tools workin
 
 ### Core Technologies
 
-- **Language**: Kotlin 1.9.21
-- **UI Framework**: Jetpack Compose (BOM 2024.01.00) - Pure Compose, no XML layouts
-- **State Management**: [ComposeHooks](https://github.com/junerver/ComposeHooks)
+- **Language**: Kotlin 2.1.0
+- **UI Framework**: Jetpack Compose (BOM 2024.06.00) - Pure Compose, no XML layouts
+- **State Management**: [ComposeHooks 2.2.1](https://github.com/junerver/ComposeHooks) (hooks2
+  package)
 - **Database**: Room 2.6.1 (SQLite)
 - **Navigation**: Navigation Compose 2.7.6
 - **Design System**: Material Design 3 (Material You)
-- **Build Tool**: Gradle 8.0+ with KSP 1.9.21-1.0.15
+- **Build Tool**: Gradle 8.7.3 with KSP 2.1.0-1.0.29
 
 ### Dependencies
 
 ```gradle
 // See app/build.gradle.kts for complete dependency list
-implementation(platform("androidx.compose:compose-bom:2024.01.00"))
+implementation(platform("androidx.compose:compose-bom:2024.06.00"))
 implementation("androidx.room:room-runtime:2.6.1")
-implementation("xyz.junerver.compose:hooks:3.0.0")
+implementation("xyz.junerver.compose:hooks2:2.2.1")
 ```
 
 ## 📁 Project Structure
@@ -370,32 +371,63 @@ Surface(
 - 进入动画：`fadeIn() + expandVertically()`
 - 退出动画：`fadeOut() + shrinkVertically()`
 
-### ComposeHooks Usage Pattern
+### ComposeHooks 使用规范
+
+**版本**: ComposeHooks 2.2.1 (hooks2 package)
+
+**导入方式**:
 
 ```kotlin
+import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.hooks.useEffect
+import xyz.junerver.compose.hooks.invoke  // 必须导入此依赖才能直接使用 useGetState 解构出的 setState 函数
+```
+
+**核心 Hooks API**:
+
+1. **useGetState** - 状态管理（推荐使用）
+    - 返回 `Triple<State<T>, (T) -> Unit, () -> T>`
+    - 提供 getter/setter 和即时获取当前值的能力
+    - 适用于需要在回调中获取最新状态的场景
+
+2. **useState** - 基础状态管理
+    - 返回 `MutableState<T>`
+    - 是 `remember { mutableStateOf() }` 的简单封装
+
+3. **useEffect** - 副作用处理
+    - 监听依赖变化执行副作用
+    - 支持清理函数
+
+**标准使用模式**:
+
+```kotlin
+import xyz.junerver.compose.hooks.invoke  // 必须导入此依赖才能直接使用 useGetState 解构出的 setState 函数
+
 @Composable
 fun FeatureScreen(navController: NavController) {
-    // State management with hooks
-    val (state, setState) = useState(initialValue)
-    val (loading, setLoading) = useState(false)
+  val context = LocalContext.current
+  val scope = rememberCoroutineScope()
 
-    // Side effects
-    useEffect(Unit) {
-        // Initial load
+  // 使用 useGetState 管理状态（推荐）
+  val (state, setState) = useGetState(default = initialValue)
+  val (loading, setLoading) = useGetState(default = false)
+
+  // 使用 useEffect 处理副作用
+  useEffect(dependency) {
+    // 副作用逻辑
+    setLoading(true)
+    scope.launch {
+      // 异步操作
+      setLoading(false)
+    }
     }
 
-    // Async operations with useRequest
-    val request = useRequest(
-        requestFn = { repository.fetchData() },
-        manual = true,
-        onSuccess = { data ->
-            setState(data)
-        }
-    )
+  // 访问状态值
+  val currentValue = state.value
 
-    // UI implementation
+  // UI 实现
     Scaffold(
-        containerColor = Color(0xFFF5F5F5) // 使用统一页面背景色
+      containerColor = Color(0xFFF5F5F5)
     ) { paddingValues ->
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
@@ -407,11 +439,49 @@ fun FeatureScreen(navController: NavController) {
 }
 ```
 
+**实际应用示例**:
+
+```kotlin
+// 示例 1: 表单状态管理
+val (baseUrl, setBaseUrl) = useGetState(default = "")
+val (apiKey, setApiKey) = useGetState(default = "")
+
+// 从 Flow 加载初始数据
+val config by preferences.configFlow.collectAsState(initial = Config())
+
+useEffect(config) {
+  setBaseUrl(config.baseUrl)
+  setApiKey(config.apiKey)
+}
+
+// 示例 2: 列表状态管理
+val (items, setItems) = useGetState(default = emptyList<Item>())
+
+useEffect(Unit) {
+  scope.launch {
+    val data = repository.fetchItems()
+    setItems(data)
+  }
+}
+```
+
+**最佳实践**:
+
+1. **优先使用 useGetState**: 当需要在回调中访问最新状态时
+2. **配合 rememberCoroutineScope**: 处理异步操作
+3. **使用 collectAsState**: 从 Flow 收集数据
+4. **避免过度使用**: 简单状态可以用 `remember { mutableStateOf() }`
+5. **状态提升**: 将共享状态提升到父组件
+
 ### Compose Best Practices
 
 - Use Material 3 components exclusively
 - Implement proper state hoisting
-- Use ComposeHooks for state management (not ViewModel)
+- **Use ComposeHooks for state management (not ViewModel)**
+    - 优先使用 `useGetState`/`_useGetState` 管理复杂状态
+    - 使用 `useEffect` 处理副作用和依赖更新
+    - 配合 `rememberCoroutineScope` 处理异步操作
+    - 简单状态可使用 `useState`/`_useState`
 - Follow single source of truth principle
 - Implement proper error states and loading states
 - Use `remember` and `rememberSaveable` appropriately
@@ -623,8 +693,13 @@ fun DomainClass.toEntity(): EntityClass {
 - ❌ Using XML layouts
 - ❌ Using Android View classes
 - ❌ Using ViewModel (use ComposeHooks instead)
+    - ❌ 创建 ViewModel 类来管理状态
+    - ❌ 使用 `viewModel()` 或 `hiltViewModel()`
+    - ✅ 使用 `useGetState` 和 `useEffect` 管理状态
 - ❌ Direct database access from UI
 - ❌ Business logic in Composables
+- ❌ 在 Composable 中直接使用 `mutableStateOf` 而不使用 `remember`
+- ❌ 过度使用 ComposeHooks（简单状态用 `remember { mutableStateOf() }`）
 
 ### Data Layer
 
@@ -677,5 +752,7 @@ data class RecipeEntity(...)
 
 ### Recent Updates
 
+- 2025-12-29: Updated ComposeHooks usage guidelines (v2.2.1, hooks2 package)
+- 2025-12-29: Updated technology stack versions (Kotlin 2.1.0, Compose BOM 2024.06.00)
 - 2025-12-25: Added comprehensive dark mode adaptation guidelines
-- 2025-12-15: Created unified AGENTS.md for all
+- 2025-12-15: Created unified AGENTS.md for all AI tools

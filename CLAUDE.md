@@ -1,6 +1,6 @@
 # EatWhat Development Guidelines
 
-Last updated: 2025-12-15
+Last updated: 2025-12-29
 
 > **⚠️ IMPORTANT**: This file is maintained for backwards compatibility.
 >
@@ -55,8 +55,8 @@ This includes:
 
 ### Technology Stack Summary
 
-- **Language**: Kotlin 1.9.21
-- **UI**: Jetpack Compose with ComposeHooks
+- **Language**: Kotlin 2.1.0
+- **UI**: Jetpack Compose with ComposeHooks 2.2.1 (hooks2)
 - **Database**: Room 2.6.1
 - **Navigation**: Navigation Compose 2.7.6
 - **Design**: Material Design 3
@@ -64,9 +64,10 @@ This includes:
 ---
 
 ## Recent Changes
+
+- 2025-12-29: Updated to Kotlin 2.1.0, Compose BOM 2024.06.00, ComposeHooks 2.2.1 (hooks2 package)
 - 003-settings-sync-export: Added Kotlin 1.9.21 + Jetpack Compose, ComposeHooks 3.0.0, Room 2.6.1, dav4jvm 2.2.1, kotlinx.serialization 1.6.2
 - 002-dark-mode-adapt: Added Kotlin 1.9.21 + Jetpack Compose (Material 3), ComposeHooks
-
 - 2025-12-15: **Created unified `AGENTS.md` as single source of truth for all AI tools**
 
 ---
