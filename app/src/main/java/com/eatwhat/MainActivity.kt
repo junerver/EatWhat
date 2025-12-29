@@ -4,6 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.eatwhat.data.preferences.ThemeMode
+import com.eatwhat.data.preferences.ThemePreferences
 import com.eatwhat.navigation.EatWhatApp
 import com.eatwhat.ui.theme.EatWhatTheme
 
@@ -15,8 +19,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+      val themePreferences = ThemePreferences(this)
+
         setContent {
-            EatWhatTheme {
+          val themeMode by themePreferences.themeModeFlow.collectAsState(initial = ThemeMode.SYSTEM)
+
+          EatWhatTheme(themeMode = themeMode) {
                 EatWhatApp()
             }
         }

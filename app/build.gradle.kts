@@ -102,6 +102,9 @@ dependencies {
   implementation(libs.androidx.security.crypto)
   implementation(libs.androidx.work.runtime)
 
+  // DataStore for preferences
+  implementation(libs.androidx.datastore.preferences)
+
   // Testing
   testImplementation(libs.junit)
   testImplementation(libs.mockk)

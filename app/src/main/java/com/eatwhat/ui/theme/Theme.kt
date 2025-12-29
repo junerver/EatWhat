@@ -10,7 +10,6 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -71,11 +70,17 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun EatWhatTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+  themeMode: com.eatwhat.data.preferences.ThemeMode = com.eatwhat.data.preferences.ThemeMode.SYSTEM,
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+  val darkTheme = when (themeMode) {
+    com.eatwhat.data.preferences.ThemeMode.SYSTEM -> isSystemInDarkTheme()
+    com.eatwhat.data.preferences.ThemeMode.LIGHT -> false
+    com.eatwhat.data.preferences.ThemeMode.DARK -> true
+  }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current

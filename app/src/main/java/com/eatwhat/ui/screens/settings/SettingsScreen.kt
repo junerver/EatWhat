@@ -1,17 +1,64 @@
 package com.eatwhat.ui.screens.settings
 
-import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SettingsBrightness
+import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -19,21 +66,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.eatwhat.data.database.EatWhatDatabase
+import com.eatwhat.data.preferences.ThemeMode
+import com.eatwhat.data.preferences.ThemePreferences
 import com.eatwhat.data.repository.ExportRepositoryImpl
 import com.eatwhat.data.sync.ConflictStrategy
-import com.eatwhat.data.sync.ExportData
-import com.eatwhat.data.sync.ImportPreview
 import com.eatwhat.domain.usecase.ExportDataUseCase
 import com.eatwhat.domain.usecase.ImportDataUseCase
 import com.eatwhat.domain.usecase.ImportPreviewResult
 import com.eatwhat.navigation.Destinations
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 /**
  * 导出类型
@@ -56,6 +103,10 @@ fun SettingsScreen(navController: NavController) {
     val exportRepository = remember { ExportRepositoryImpl(context, database) }
     val exportUseCase = remember { ExportDataUseCase(context, exportRepository) }
     val importUseCase = remember { ImportDataUseCase(context, exportRepository) }
+
+  // 主题偏好设置
+  val themePreferences = remember { ThemePreferences(context) }
+  val currentThemeMode by themePreferences.themeModeFlow.collectAsState(initial = ThemeMode.SYSTEM)
 
     // 导出状态
     var showExportDialog by remember { mutableStateOf(false) }
@@ -184,11 +235,27 @@ fun SettingsScreen(navController: NavController) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp),
+                  .fillMaxSize()
+                  .padding(paddingValues)
+                  .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+              // 外观设置卡片
+              SettingsCard(
+                title = "外观",
+                icon = Icons.Default.Palette,
+                iconColor = MaterialTheme.colorScheme.tertiary
+              ) {
+                ThemeSettingItem(
+                  currentThemeMode = currentThemeMode,
+                  onThemeModeChange = { mode ->
+                    scope.launch {
+                      themePreferences.setThemeMode(mode)
+                    }
+                  }
+                )
+              }
+
                 // 数据管理卡片
                 SettingsCard(
                     title = "数据管理",
@@ -251,8 +318,8 @@ fun SettingsScreen(navController: NavController) {
             if (isExporting || isImporting) {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.3f)),
+                      .fillMaxSize()
+                      .background(Color.Black.copy(alpha = 0.3f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Card(
@@ -457,8 +524,8 @@ private fun ImportPreviewDialog(
                 ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                          .fillMaxWidth()
+                          .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
@@ -580,8 +647,8 @@ private fun ConflictStrategyOption(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
+              .fillMaxWidth()
+              .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -625,8 +692,8 @@ private fun ExportOptionItem(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+              .fillMaxWidth()
+              .padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -700,12 +767,12 @@ private fun SettingsCard(
         // 卡片内容
         Card(
             modifier = Modifier
-                .fillMaxWidth()
-                .shadow(
-                    elevation = 2.dp,
-                    shape = RoundedCornerShape(16.dp),
-                    spotColor = Color.Black.copy(alpha = 0.08f)
-                ),
+              .fillMaxWidth()
+              .shadow(
+                elevation = 2.dp,
+                shape = RoundedCornerShape(16.dp),
+                spotColor = Color.Black.copy(alpha = 0.08f)
+              ),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
@@ -736,19 +803,19 @@ private fun SettingsItem(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+              .fillMaxWidth()
+              .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 图标
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(10.dp)
-                    ),
+                  .size(40.dp)
+                  .background(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(10.dp)
+                  ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -787,3 +854,201 @@ private fun SettingsItem(
         }
     }
 }
+
+/**
+ * 主题设置项
+ */
+@Composable
+private fun ThemeSettingItem(
+  currentThemeMode: ThemeMode,
+  onThemeModeChange: (ThemeMode) -> Unit
+) {
+  var showThemeDialog by remember { mutableStateOf(false) }
+
+  Surface(
+    onClick = { showThemeDialog = true },
+    color = Color.Transparent
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp),
+      horizontalArrangement = Arrangement.spacedBy(16.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      // 图标
+      Box(
+        modifier = Modifier
+          .size(40.dp)
+          .background(
+            color = MaterialTheme.colorScheme.primaryContainer,
+            shape = RoundedCornerShape(10.dp)
+          ),
+        contentAlignment = Alignment.Center
+      ) {
+        Icon(
+          imageVector = Icons.Default.DarkMode,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.onPrimaryContainer,
+          modifier = Modifier.size(20.dp)
+        )
+      }
+
+      // 文字
+      Column(
+        modifier = Modifier.weight(1f),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+      ) {
+        Text(
+          text = "主题模式",
+          style = MaterialTheme.typography.bodyLarge,
+          fontWeight = FontWeight.Medium,
+          color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+          text = when (currentThemeMode) {
+            ThemeMode.SYSTEM -> "跟随系统"
+            ThemeMode.LIGHT -> "浅色"
+            ThemeMode.DARK -> "深色"
+          },
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      }
+
+      // 箭头
+      Icon(
+        imageVector = Icons.Default.ChevronRight,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+        modifier = Modifier.size(20.dp)
+      )
+    }
+  }
+
+  // 主题选择对话框
+  if (showThemeDialog) {
+    ThemeSelectionDialog(
+      currentThemeMode = currentThemeMode,
+      onDismiss = { showThemeDialog = false },
+      onThemeModeSelect = { mode ->
+        onThemeModeChange(mode)
+        showThemeDialog = false
+      }
+    )
+  }
+}
+
+/**
+ * 主题选择对话框
+ */
+@Composable
+private fun ThemeSelectionDialog(
+  currentThemeMode: ThemeMode,
+  onDismiss: () -> Unit,
+  onThemeModeSelect: (ThemeMode) -> Unit
+) {
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = {
+      Text(
+        text = "选择主题模式",
+        fontWeight = FontWeight.Bold
+      )
+    },
+    text = {
+      Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        ThemeModeOption(
+          icon = Icons.Default.SettingsBrightness,
+          title = "跟随系统",
+          description = "跟随系统设置自动切换",
+          selected = currentThemeMode == ThemeMode.SYSTEM,
+          onClick = { onThemeModeSelect(ThemeMode.SYSTEM) }
+        )
+        ThemeModeOption(
+          icon = Icons.Default.LightMode,
+          title = "浅色",
+          description = "始终使用浅色主题",
+          selected = currentThemeMode == ThemeMode.LIGHT,
+          onClick = { onThemeModeSelect(ThemeMode.LIGHT) }
+        )
+        ThemeModeOption(
+          icon = Icons.Default.DarkMode,
+          title = "深色",
+          description = "始终使用深色主题",
+          selected = currentThemeMode == ThemeMode.DARK,
+          onClick = { onThemeModeSelect(ThemeMode.DARK) }
+        )
+      }
+    },
+    confirmButton = {},
+    dismissButton = {
+      TextButton(onClick = onDismiss) {
+        Text("取消")
+      }
+    }
+  )
+}
+
+/**
+ * 主题模式选项
+ */
+@Composable
+private fun ThemeModeOption(
+  icon: ImageVector,
+  title: String,
+  description: String,
+  selected: Boolean,
+  onClick: () -> Unit
+) {
+  Surface(
+    onClick = onClick,
+    shape = RoundedCornerShape(12.dp),
+    color = if (selected)
+      MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+    else
+      MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(12.dp),
+      horizontalArrangement = Arrangement.spacedBy(12.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Icon(
+        imageVector = icon,
+        contentDescription = null,
+        tint = if (selected)
+          MaterialTheme.colorScheme.primary
+        else
+          MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.size(24.dp)
+      )
+      Column(modifier = Modifier.weight(1f)) {
+        Text(
+          text = title,
+          style = MaterialTheme.typography.bodyLarge,
+          fontWeight = FontWeight.Medium,
+          color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+          text = description,
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      }
+      if (selected) {
+        Icon(
+          imageVector = Icons.Default.Check,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.primary,
+          modifier = Modifier.size(20.dp)
+        )
+      }
+    }
+  }
+}
+
