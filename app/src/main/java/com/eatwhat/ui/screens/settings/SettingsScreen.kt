@@ -69,11 +69,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.eatwhat.EatWhatApplication
 import com.eatwhat.R
 import com.eatwhat.data.database.EatWhatDatabase
 import com.eatwhat.data.preferences.ThemeMode
 import com.eatwhat.data.preferences.ThemePreferences
-import com.eatwhat.data.repository.ExportRepositoryImpl
 import com.eatwhat.data.sync.ConflictStrategy
 import com.eatwhat.domain.usecase.ExportDataUseCase
 import com.eatwhat.domain.usecase.ImportDataUseCase
@@ -102,7 +102,8 @@ fun SettingsScreen(navController: NavController) {
 
     // 创建 Repository 和 UseCase
     val database = remember { EatWhatDatabase.getInstance(context) }
-    val exportRepository = remember { ExportRepositoryImpl(context, database) }
+  val app = context.applicationContext as EatWhatApplication
+  val exportRepository = remember { app.exportRepository }
     val exportUseCase = remember { ExportDataUseCase(context, exportRepository) }
     val importUseCase = remember { ImportDataUseCase(context, exportRepository) }
 
