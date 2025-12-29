@@ -2,6 +2,7 @@ package com.eatwhat.navigation
 
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
@@ -22,10 +23,21 @@ import com.eatwhat.ui.screens.roll.RollScreen
  * Sets up NavHost with all destinations
  */
 @Composable
-fun EatWhatApp() {
+fun EatWhatApp(
+  initialPrompt: String? = null,
+  onPromptConsumed: () -> Unit = {}
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+  // 监听 initialPrompt 变化，自动跳转到 AI 分析页面
+  LaunchedEffect(initialPrompt) {
+    if (initialPrompt != null) {
+      navController.navigate(Destinations.AIAnalysis.createRoute(initialPrompt))
+      onPromptConsumed()
+    }
+  }
 
     // 定义应该隐藏底部导航栏的页面
     val hideBottomBarRoutes = setOf(
@@ -57,7 +69,7 @@ fun EatWhatApp() {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = Destinations.Roll.route,
+          startDestination = Destinations.Roll.route,
             // 不应用 paddingValues，让各 Screen 自行处理 insets
             modifier = Modifier
         ) {
@@ -140,8 +152,18 @@ fun EatWhatApp() {
             com.eatwhat.ui.screens.settings.AISettingsScreen(navController)
           }
 
-          composable(Destinations.AIAnalysis.route) {
-            com.eatwhat.ui.screens.recipe.AIAnalysisScreen(navController)
+          composable(
+            route = Destinations.AIAnalysis.route,
+            arguments = listOf(
+              navArgument("initialPrompt") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+              }
+            )
+          ) { backStackEntry ->
+            val prompt = backStackEntry.arguments?.getString("initialPrompt")
+            com.eatwhat.ui.screens.recipe.AIAnalysisScreen(navController, prompt)
           }
         }
     }

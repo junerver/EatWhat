@@ -41,7 +41,7 @@ import xyz.junerver.compose.hooks.useGetState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AIAnalysisScreen(navController: NavController) {
+fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
   val aiPreferences = remember { AIPreferences(context) }
@@ -49,7 +49,7 @@ fun AIAnalysisScreen(navController: NavController) {
 
   val aiConfig by aiPreferences.aiConfigFlow.collectAsState(initial = AIConfig())
 
-  val (prompt, setPrompt) = useGetState("")
+  val (prompt, setPrompt) = useGetState(initialPrompt ?: "")
   val (isLoading, setIsLoading) = useGetState(false)
   val (error, setError) = _useGetState<String?>(null)
 
@@ -66,8 +66,17 @@ fun AIAnalysisScreen(navController: NavController) {
           result.fold(
             onSuccess = { recipeResult ->
               val jsonString = Json.encodeToString(RecipeAIResult.serializer(), recipeResult)
-              navController.previousBackStackEntry?.savedStateHandle?.set("ai_result", jsonString)
-              navController.popBackStack()
+              if (initialPrompt != null) {
+                // 来自分享，导航到 AddRecipe
+                navController.navigate(com.eatwhat.navigation.Destinations.AddRecipe.route) {
+                  popUpTo(com.eatwhat.navigation.Destinations.Roll.route)
+                }
+                navController.currentBackStackEntry?.savedStateHandle?.set("ai_result", jsonString)
+              } else {
+                // 来自 AddRecipe，返回并传递结果
+                navController.previousBackStackEntry?.savedStateHandle?.set("ai_result", jsonString)
+                navController.popBackStack()
+              }
             },
             onFailure = { e ->
               setError(e.message ?: "分析失败")
