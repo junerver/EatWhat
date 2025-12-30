@@ -2,7 +2,6 @@ package com.eatwhat.ui.screens.settings
 
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -82,7 +81,7 @@ fun WebDAVConfigScreen(navController: NavController) {
   val TAG = "WebDAVConfigScreen"
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
-  val isDark = isSystemInDarkTheme()
+  val isDark = com.eatwhat.ui.theme.LocalDarkTheme.current
 
   // 创建 Repository
   val database = remember { EatWhatDatabase.getInstance(context) }

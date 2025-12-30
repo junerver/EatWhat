@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -85,7 +84,7 @@ fun AIProviderListScreen(navController: NavController) {
   val (testingProviderId, setTestingProviderId) = useGetState(default = -1L)
 
   // Dark mode support
-  val isDark = isSystemInDarkTheme()
+  val isDark = com.eatwhat.ui.theme.LocalDarkTheme.current
   val pageBackground = if (isDark) MaterialTheme.colorScheme.background else Color(0xFFF5F5F5)
   val cardBackground = if (isDark) MaterialTheme.colorScheme.surface else Color.White
   val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else Color.Black

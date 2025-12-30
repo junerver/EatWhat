@@ -3,7 +3,6 @@ package com.eatwhat.ui.screens.roll
 import android.app.Activity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +42,7 @@ import androidx.navigation.NavController
 import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.theme.DarkGradientEnd
 import com.eatwhat.ui.theme.DarkGradientStart
+import com.eatwhat.ui.theme.LocalDarkTheme
 import com.eatwhat.ui.theme.MeatRed
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.PrimaryOrangeLight
@@ -63,7 +63,7 @@ fun RollScreen(navController: NavController) {
   val (currentType, setCurrentType) = useGetState(default = "")
 
     // 检测深色模式
-    val isDarkTheme = isSystemInDarkTheme()
+  val isDarkTheme = LocalDarkTheme.current
 
     // 设置状态栏颜色：深色模式使用透明，浅色模式使用橙色
     val view = LocalView.current

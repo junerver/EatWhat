@@ -2,14 +2,31 @@ package com.eatwhat.ui.screens.history
 
 import android.app.Activity
 import android.util.Log
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,9 +35,29 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,12 +76,14 @@ import com.eatwhat.data.repository.HistoryRepository
 import com.eatwhat.domain.model.HistoryRecord
 import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.theme.ErrorRed
+import com.eatwhat.ui.theme.LocalDarkTheme
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftPurple
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +106,7 @@ fun HistoryListScreen(
 
     // 设置透明状态栏
     val view = LocalView.current
-    val darkTheme = isSystemInDarkTheme()
+  val darkTheme = LocalDarkTheme.current
     SideEffect {
         val window = (view.context as Activity).window
         window.statusBarColor = android.graphics.Color.TRANSPARENT
@@ -104,10 +143,10 @@ fun HistoryListScreen(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .windowInsetsPadding(WindowInsets.navigationBars)
+          .fillMaxSize()
+          .background(MaterialTheme.colorScheme.background)
+          .windowInsetsPadding(WindowInsets.statusBars)
+          .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
         // TopAppBar
         Surface(
@@ -116,9 +155,9 @@ fun HistoryListScreen(
         ) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-                    .padding(horizontal = 16.dp),
+                  .fillMaxWidth()
+                  .height(64.dp)
+                  .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -298,10 +337,10 @@ private fun SwipeToDeleteItem(
         backgroundContent = {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(ErrorRed)
-                    .padding(horizontal = 20.dp),
+                  .fillMaxSize()
+                  .clip(RoundedCornerShape(16.dp))
+                  .background(ErrorRed)
+                  .padding(horizontal = 20.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Icon(
@@ -349,16 +388,16 @@ private fun HistoryCard(
     
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = if (isHighlighted) 8.dp else 2.dp,
-                shape = RoundedCornerShape(16.dp),
-                spotColor = Color.Black.copy(alpha = 0.08f)
-            )
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick
-            ),
+          .fillMaxWidth()
+          .shadow(
+            elevation = if (isHighlighted) 8.dp else 2.dp,
+            shape = RoundedCornerShape(16.dp),
+            spotColor = Color.Black.copy(alpha = 0.08f)
+          )
+          .combinedClickable(
+            onClick = onClick,
+            onLongClick = onLongClick
+          ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = zebraBackground

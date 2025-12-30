@@ -8,7 +8,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -69,6 +68,7 @@ import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.ui.components.RecipeCard
 import com.eatwhat.ui.theme.InputBackground
+import com.eatwhat.ui.theme.LocalDarkTheme
 import com.eatwhat.ui.theme.MeatRed
 import com.eatwhat.ui.theme.OtherPurple
 import com.eatwhat.ui.theme.Primary
@@ -93,7 +93,7 @@ fun RecipeListScreen(navController: NavController) {
 
     // 设置透明状态栏
     val view = LocalView.current
-    val darkTheme = isSystemInDarkTheme()
+  val darkTheme = LocalDarkTheme.current
     SideEffect {
         val window = (view.context as Activity).window
         window.statusBarColor = android.graphics.Color.TRANSPARENT

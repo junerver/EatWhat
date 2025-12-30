@@ -5,7 +5,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -74,7 +73,17 @@ import com.eatwhat.data.repository.RecipeSnapshot
 import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
 import com.eatwhat.ui.components.SimpleCircularProgressIndicator
-import com.eatwhat.ui.theme.*
+import com.eatwhat.ui.theme.DarkBorder
+import com.eatwhat.ui.theme.DarkCheckboxBorder
+import com.eatwhat.ui.theme.DarkProgressTrack
+import com.eatwhat.ui.theme.InputBackground
+import com.eatwhat.ui.theme.LightBorder
+import com.eatwhat.ui.theme.LocalDarkTheme
+import com.eatwhat.ui.theme.MeatRed
+import com.eatwhat.ui.theme.PrimaryOrange
+import com.eatwhat.ui.theme.SoftBlue
+import com.eatwhat.ui.theme.SoftGreen
+import com.eatwhat.ui.theme.WarmYellow
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -142,8 +151,8 @@ fun HistoryDetailScreen(
         historyWithRecipes?.let { data ->
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                  .fillMaxSize()
+                  .padding(paddingValues),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -151,19 +160,19 @@ fun HistoryDetailScreen(
                 item {
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(
-                                elevation = 4.dp,
-                                shape = RoundedCornerShape(20.dp),
-                                spotColor = Color.Black.copy(alpha = 0.1f)
-                            ),
+                          .fillMaxWidth()
+                          .shadow(
+                            elevation = 4.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            spotColor = Color.Black.copy(alpha = 0.1f)
+                          ),
                         shape = RoundedCornerShape(20.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         Column(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp),
+                              .fillMaxWidth()
+                              .padding(20.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
@@ -265,12 +274,12 @@ fun HistoryDetailScreen(
                 item {
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(
-                                elevation = 4.dp,
-                                shape = RoundedCornerShape(20.dp),
-                                spotColor = Color.Black.copy(alpha = 0.1f)
-                            ),
+                          .fillMaxWidth()
+                          .shadow(
+                            elevation = 4.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            spotColor = Color.Black.copy(alpha = 0.1f)
+                          ),
                         shape = RoundedCornerShape(20.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
@@ -284,9 +293,9 @@ fun HistoryDetailScreen(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(SoftBlue.copy(alpha = 0.1f)),
+                                      .size(40.dp)
+                                      .clip(RoundedCornerShape(12.dp))
+                                      .background(SoftBlue.copy(alpha = 0.1f)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
@@ -327,8 +336,8 @@ fun HistoryDetailScreen(
             }
         } ?: Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+              .fillMaxSize()
+              .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -422,12 +431,12 @@ private fun SectionCard(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 4.dp,
-                shape = RoundedCornerShape(20.dp),
-                spotColor = Color.Black.copy(alpha = 0.1f)
-            ),
+          .fillMaxWidth()
+          .shadow(
+            elevation = 4.dp,
+            shape = RoundedCornerShape(20.dp),
+            spotColor = Color.Black.copy(alpha = 0.1f)
+          ),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -483,7 +492,7 @@ private fun SectionCard(
 
             // Progress bar
             Spacer(modifier = Modifier.height(12.dp))
-            val isDark = isSystemInDarkTheme()
+          val isDark = LocalDarkTheme.current
             val trackColor = if (isDark) DarkProgressTrack else LightBorder
             LinearProgressIndicator(
                 progress = progress,
@@ -508,7 +517,7 @@ private fun PrepItemCheckRow(
     item: PrepItemRecord,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+  val isDark = LocalDarkTheme.current
     val uncheckedBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else InputBackground
     val uncheckedBorderColor = if (isDark) DarkBorder else LightBorder
     val uncheckedCheckboxColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
@@ -568,7 +577,7 @@ private fun RecipeSnapshotCard(
     snapshot: RecipeSnapshot,
     onClick: () -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+  val isDark = LocalDarkTheme.current
     val cardBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else InputBackground
 
     Card(

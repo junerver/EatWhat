@@ -1,7 +1,6 @@
 package com.eatwhat.ui.screens.recipe
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,6 +65,7 @@ import com.eatwhat.ui.components.RecipeIcon
 import com.eatwhat.ui.components.SimpleCircularProgressIndicator
 import com.eatwhat.ui.theme.ErrorRed
 import com.eatwhat.ui.theme.IngredientCardBackground
+import com.eatwhat.ui.theme.LocalDarkTheme
 import com.eatwhat.ui.theme.MeatRed
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftBlue
@@ -458,7 +458,7 @@ private fun IngredientRow(
     amount: String,
     unit: String
 ) {
-    val isDark = isSystemInDarkTheme()
+  val isDark = LocalDarkTheme.current
     val rowBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else IngredientCardBackground
 
     Surface(
@@ -517,7 +517,7 @@ private fun StepRow(
     description: String,
     isLast: Boolean
 ) {
-    val isDark = isSystemInDarkTheme()
+  val isDark = LocalDarkTheme.current
     val stepBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else StepCardBackground
 
     Row(

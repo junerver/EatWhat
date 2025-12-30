@@ -8,7 +8,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -99,6 +98,7 @@ import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.domain.model.Tag
 import com.eatwhat.ui.components.FoodEmojis
 import com.eatwhat.ui.components.RecipeIconPicker
+import com.eatwhat.ui.theme.LocalDarkTheme
 import com.eatwhat.ui.theme.MeatRed
 import com.eatwhat.ui.theme.OtherPurple
 import com.eatwhat.ui.theme.PrimaryOrange
@@ -1087,7 +1087,7 @@ private fun StepInputCard(
     canDelete: Boolean,
     isLast: Boolean
 ) {
-  val isDark = isSystemInDarkTheme()
+  val isDark = LocalDarkTheme.current
   val stepBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else StepCardBackground
 
     Row(

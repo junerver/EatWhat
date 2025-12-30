@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,7 +61,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.domain.usecase.GeneratePrepListUseCase
 import com.eatwhat.domain.usecase.PrepListItem
-import com.eatwhat.ui.theme.*
+import com.eatwhat.ui.theme.DarkBorder
+import com.eatwhat.ui.theme.DarkProgressTrack
+import com.eatwhat.ui.theme.LightBorder
+import com.eatwhat.ui.theme.LocalDarkTheme
+import com.eatwhat.ui.theme.PrimaryOrange
+import com.eatwhat.ui.theme.SoftGreen
+import com.eatwhat.ui.theme.UnselectedBackground
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -152,8 +157,8 @@ fun PrepScreen(
                     // Progress bar
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                          .fillMaxWidth()
+                          .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -173,14 +178,14 @@ fun PrepScreen(
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        val isDarkForProgress = isSystemInDarkTheme()
+                      val isDarkForProgress = LocalDarkTheme.current
                         val progressTrackColor = if (isDarkForProgress) DarkProgressTrack else LightBorder
                         LinearProgressIndicator(
                             progress = progress,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(4.dp)),
+                              .fillMaxWidth()
+                              .height(8.dp)
+                              .clip(RoundedCornerShape(4.dp)),
                             color = if (checkedCount == totalCount) SoftGreen else PrimaryOrange,
                             trackColor = progressTrackColor
                         )
@@ -193,14 +198,14 @@ fun PrepScreen(
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+              .fillMaxSize()
+              .padding(paddingValues)
         ) {
             // 食材清单
             LazyColumn(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
+                  .weight(1f)
+                  .fillMaxWidth(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -208,27 +213,27 @@ fun PrepScreen(
                 item {
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .shadow(
-                                elevation = 4.dp,
-                                shape = RoundedCornerShape(20.dp),
-                                spotColor = Color.Black.copy(alpha = 0.1f)
-                            ),
+                          .fillMaxWidth()
+                          .shadow(
+                            elevation = 4.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            spotColor = Color.Black.copy(alpha = 0.1f)
+                          ),
                         shape = RoundedCornerShape(20.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp),
+                              .fillMaxWidth()
+                              .padding(20.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(SoftGreen.copy(alpha = 0.1f)),
+                                  .size(40.dp)
+                                  .clip(RoundedCornerShape(12.dp))
+                                  .background(SoftGreen.copy(alpha = 0.1f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -301,8 +306,8 @@ fun PrepScreen(
                         }
                     },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                      .fillMaxWidth()
+                      .padding(16.dp),
                     enabled = historyId != null,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryOrange
@@ -327,7 +332,7 @@ private fun IngredientCheckCard(
     item: PrepListItem,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+  val isDark = LocalDarkTheme.current
     val uncheckedBackground = if (isDark) MaterialTheme.colorScheme.surface else Color.White
     val uncheckedBorderColor = if (isDark) DarkBorder else LightBorder
     val uncheckedCheckboxColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else UnselectedBackground
@@ -339,12 +344,12 @@ private fun IngredientCheckCard(
 
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = if (item.isChecked) 0.dp else 2.dp,
-                shape = RoundedCornerShape(12.dp),
-                spotColor = Color.Black.copy(alpha = 0.05f)
-            ),
+          .fillMaxWidth()
+          .shadow(
+            elevation = if (item.isChecked) 0.dp else 2.dp,
+            shape = RoundedCornerShape(12.dp),
+            spotColor = Color.Black.copy(alpha = 0.05f)
+          ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         border = androidx.compose.foundation.BorderStroke(1.dp, borderColor),
@@ -352,8 +357,8 @@ private fun IngredientCheckCard(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+              .fillMaxWidth()
+              .padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
