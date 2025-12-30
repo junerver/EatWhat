@@ -46,15 +46,35 @@ class RecipeRepository(private val database: EatWhatDatabase) {
 
     suspend fun getRandomRecipesByType(type: RecipeType, count: Int): List<Recipe> {
       Log.d("RecipeRepository", "查询随机菜谱: type=${type.name}, count=$count")
-      // 使用简单查询避免 @Transaction 的 null 问题
+
+      // Get entities first (avoiding @Transaction issue)
       val recipeEntities = recipeDao.getRandomRecipesByType(type.name, count)
       Log.d("RecipeRepository", "从数据库获取到 ${recipeEntities.size} 个 RecipeEntity")
 
       val recipes = recipeEntities.map { entity ->
-        entity.toSimpleDomain()
+        // Manually fetch details for each recipe to avoid Room Transaction issues
+        val ingredients = recipeDao.getIngredientsByRecipeIdSync(entity.id)
+        val steps = recipeDao.getCookingStepsByRecipeIdSync(entity.id)
+        val tags = recipeDao.getTagsByRecipeIdSync(entity.id)
+
+        Recipe(
+          id = entity.id,
+          syncId = entity.syncId,
+          name = entity.name,
+          type = RecipeType.fromString(entity.type),
+          icon = entity.icon,
+          imageBase64 = entity.imageBase64,
+          difficulty = Difficulty.fromString(entity.difficulty),
+          estimatedTime = entity.estimatedTime,
+          ingredients = ingredients.map { it.toDomain() },
+          steps = steps.map { it.toDomain() },
+          tags = tags.map { it.toDomain() },
+          createdAt = entity.createdAt,
+          lastModified = entity.lastModified
+        )
       }
 
-      Log.d("RecipeRepository", "成功转换 ${recipes.size} 个菜谱")
+      Log.d("RecipeRepository", "成功构建 ${recipes.size} 个完整菜谱")
       return recipes
     }
 

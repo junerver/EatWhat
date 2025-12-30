@@ -1,7 +1,16 @@
 package com.eatwhat.data.database.dao
 
-import androidx.room.*
-import com.eatwhat.data.database.entities.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
+import com.eatwhat.data.database.entities.CookingStepEntity
+import com.eatwhat.data.database.entities.IngredientEntity
+import com.eatwhat.data.database.entities.RecipeEntity
+import com.eatwhat.data.database.entities.RecipeTagCrossRef
+import com.eatwhat.data.database.entities.TagEntity
 import com.eatwhat.data.database.relations.RecipeWithDetails
 import kotlinx.coroutines.flow.Flow
 
@@ -87,6 +96,17 @@ interface RecipeDao {
 
     @Query("SELECT t.* FROM tags t INNER JOIN recipe_tag_cross_ref rt ON t.id = rt.tag_id WHERE rt.recipe_id = :recipeId")
     fun getTagsByRecipeId(recipeId: Long): Flow<List<TagEntity>>
+
+  // ========== Sync Queries for Repository Manual Construction ==========
+
+  @Query("SELECT * FROM ingredients WHERE recipe_id = :recipeId ORDER BY order_index ASC")
+  suspend fun getIngredientsByRecipeIdSync(recipeId: Long): List<IngredientEntity>
+
+  @Query("SELECT * FROM cooking_steps WHERE recipe_id = :recipeId ORDER BY step_number ASC")
+  suspend fun getCookingStepsByRecipeIdSync(recipeId: Long): List<CookingStepEntity>
+
+  @Query("SELECT t.* FROM tags t INNER JOIN recipe_tag_cross_ref rt ON t.id = rt.tag_id WHERE rt.recipe_id = :recipeId")
+  suspend fun getTagsByRecipeIdSync(recipeId: Long): List<TagEntity>
 
     // ========== Export/Import Operations ==========
 
