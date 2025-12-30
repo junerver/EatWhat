@@ -186,7 +186,17 @@ fun EatWhatApp(
               }
             )
           ) { backStackEntry ->
-            val prompt = backStackEntry.arguments?.getString("initialPrompt")
+            val encodedPrompt = backStackEntry.arguments?.getString("initialPrompt")
+            // URL decode the prompt if it exists and is not the placeholder
+            val prompt = if (encodedPrompt != null && encodedPrompt != "{initialPrompt}") {
+              try {
+                java.net.URLDecoder.decode(encodedPrompt, "UTF-8")
+              } catch (e: Exception) {
+                null
+              }
+            } else {
+              null
+            }
             com.eatwhat.ui.screens.recipe.AIAnalysisScreen(navController, prompt)
           }
         }
