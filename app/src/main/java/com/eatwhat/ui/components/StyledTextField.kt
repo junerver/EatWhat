@@ -28,6 +28,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.eatwhat.ui.theme.InputBackground
+import com.eatwhat.ui.theme.LocalDarkTheme
 
 /**
  * 统一的文本输入框组件
@@ -44,32 +46,52 @@ fun StyledTextField(
   leadingIcon: @Composable (() -> Unit)? = null,
   trailingIcon: @Composable (() -> Unit)? = null,
   keyboardType: KeyboardType = KeyboardType.Text,
-  backgroundColor: Color = Color(0xFFF8F8F8),
-  textColor: Color = Color.Black,
-  placeholderColor: Color = Color.Gray,
+  backgroundColor: Color = Color.Unspecified,
+  textColor: Color = Color.Unspecified,
+  placeholderColor: Color = Color.Unspecified,
   minLines: Int = 1
 ) {
+  val isDark = LocalDarkTheme.current
+
+  val effectiveBackgroundColor = if (backgroundColor != Color.Unspecified) {
+    backgroundColor
+  } else {
+    if (isDark) MaterialTheme.colorScheme.surfaceVariant else InputBackground
+  }
+
+  val effectiveTextColor = if (textColor != Color.Unspecified) {
+    textColor
+  } else {
+    MaterialTheme.colorScheme.onSurface
+  }
+
+  val effectivePlaceholderColor = if (placeholderColor != Color.Unspecified) {
+    placeholderColor
+  } else {
+    if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
+  }
+
   Column(modifier = modifier) {
     Text(
       text = label,
       style = MaterialTheme.typography.labelMedium,
-      color = placeholderColor,
+      color = effectivePlaceholderColor,
       modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
     )
     Surface(
       shape = RoundedCornerShape(12.dp),
-      color = backgroundColor
+      color = effectiveBackgroundColor
     ) {
       BasicTextField(
         value = value,
         onValueChange = onValueChange,
         textStyle = TextStyle(
           fontSize = 16.sp,
-          color = textColor
+          color = effectiveTextColor
         ),
         singleLine = minLines == 1,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        cursorBrush = SolidColor(textColor),
+        cursorBrush = SolidColor(effectiveTextColor),
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
         decorationBox = { innerTextField ->
           Row(
@@ -87,7 +109,7 @@ fun StyledTextField(
               if (value.isEmpty()) {
                 Text(
                   text = placeholder,
-                  color = placeholderColor.copy(alpha = 0.5f),
+                  color = effectivePlaceholderColor.copy(alpha = 0.5f),
                   fontSize = 16.sp
                 )
               }
@@ -99,7 +121,7 @@ fun StyledTextField(
               Icon(
                 imageVector = Icons.Default.Clear,
                 contentDescription = "Clear",
-                tint = placeholderColor,
+                tint = effectivePlaceholderColor,
                 modifier = Modifier
                   .size(20.dp)
                   .clickable { onValueChange("") }

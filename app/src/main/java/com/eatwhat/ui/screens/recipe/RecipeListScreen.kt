@@ -156,12 +156,16 @@ fun RecipeListScreen(navController: NavController) {
                         enter = fadeIn() + expandVertically(),
                         exit = fadeOut() + shrinkVertically()
                     ) {
+                      val searchBackground =
+                        if (darkTheme) MaterialTheme.colorScheme.surfaceVariant else InputBackground
+                      val iconTint =
+                        if (darkTheme) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
                         Surface(
                             modifier = Modifier
                               .fillMaxWidth()
                               .padding(horizontal = 16.dp, vertical = 8.dp),
                             shape = RoundedCornerShape(12.dp),
-                            color = InputBackground
+                          color = searchBackground
                         ) {
                             Row(
                                 modifier = Modifier
@@ -172,7 +176,7 @@ fun RecipeListScreen(navController: NavController) {
                                 Icon(
                                     Icons.Default.Search,
                                     contentDescription = null,
-                                    tint = Color.Gray,
+                                  tint = iconTint,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
@@ -190,7 +194,7 @@ fun RecipeListScreen(navController: NavController) {
                                                 Text(
                                                     "搜索菜谱或标签",
                                                     style = MaterialTheme.typography.bodyLarge,
-                                                    color = Color.Gray
+                                                  color = if (darkTheme) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
                                                 )
                                             }
                                             innerTextField()
@@ -205,7 +209,7 @@ fun RecipeListScreen(navController: NavController) {
                                         Icon(
                                             Icons.Default.Close,
                                             contentDescription = "清除",
-                                            tint = Color.Gray,
+                                          tint = iconTint,
                                             modifier = Modifier.size(18.dp)
                                         )
                                     }
