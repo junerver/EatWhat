@@ -19,7 +19,13 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -273,7 +279,7 @@ fun RollScreen(navController: NavController) {
         SelectorDialog(
             title = "选择菜数",
             emoji = "🍽️",
-            options = listOf(2, 3, 4, 5, 6, 7),
+          initialValue = totalCount.value,
             onSelect = { count ->
                 setTotalCount(count)
                 setMeatCount(0)
@@ -380,10 +386,12 @@ private fun TypeConfigChip(
 private fun SelectorDialog(
     title: String,
     emoji: String,
-    options: List<Int>,
+    initialValue: Int,
     onSelect: (Int) -> Unit,
     onDismiss: () -> Unit
 ) {
+  val (count, setCount) = useGetState(default = if (initialValue > 0) initialValue else 2)
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(24.dp),
@@ -401,42 +409,109 @@ private fun SelectorDialog(
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
+              Spacer(modifier = Modifier.height(32.dp))
+
+              // Counter Row
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+              ) {
+                // Minus Button
+                Surface(
+                  onClick = { if (count.value > 1) setCount(count.value - 1) },
+                  shape = CircleShape,
+                  color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                  modifier = Modifier.size(48.dp)
+                ) {
+                  Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                      imageVector = Icons.Rounded.Remove,
+                      contentDescription = "Decrease",
+                      tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                  }
+                }
+
+                Text(
+                  text = "${count.value}",
+                  style = MaterialTheme.typography.displayMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 48.sp
+                  ),
+                  color = PrimaryOrange,
+                  modifier = Modifier.padding(horizontal = 32.dp)
+                )
+
+                // Plus Button
+                Surface(
+                  onClick = { setCount(count.value + 1) },
+                  shape = CircleShape,
+                  color = PrimaryOrange,
+                  modifier = Modifier.size(48.dp)
+                ) {
+                  Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                      imageVector = Icons.Rounded.Add,
+                      contentDescription = "Increase",
+                      tint = Color.White
+                    )
+                  }
+                }
+              }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Options grid - 2 columns
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    options.chunked(3).forEach { row ->
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            row.forEach { option ->
-                                Surface(
-                                    onClick = { onSelect(option) },
-                                    shape = RoundedCornerShape(16.dp),
-                                    color = PrimaryOrange.copy(alpha = 0.1f),
-                                    border = BorderStroke(1.dp, PrimaryOrange.copy(alpha = 0.3f)),
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text(
-                                        text = "${option}个菜",
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Medium
-                                        ),
-                                        color = PrimaryOrange,
-                                        modifier = Modifier.padding(vertical = 16.dp),
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                    )
-                                }
-                            }
-                            // Fill empty slots
-                            repeat(3 - row.size) {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
-                        }
+              // Shortcuts
+              Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+              ) {
+                listOf(3, 5, 7).forEach { option ->
+                  val isSelected = count.value == option
+                  Surface(
+                    onClick = { setCount(option) },
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (isSelected) PrimaryOrange else MaterialTheme.colorScheme.surfaceVariant.copy(
+                      alpha = 0.5f
+                    ),
+                    modifier = Modifier
+                      .weight(1f)
+                      .height(48.dp)
+                  ) {
+                    Box(contentAlignment = Alignment.Center) {
+                      Text(
+                        text = "$option",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                          fontWeight = FontWeight.Bold
+                        ),
+                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                      )
                     }
+                  }
+                }
+              }
+
+              Spacer(modifier = Modifier.height(32.dp))
+
+              // Confirm Button
+              Button(
+                onClick = { onSelect(count.value) },
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                  containerColor = PrimaryOrange
+                )
+              ) {
+                Text(
+                  text = "确定",
+                  style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold
+                  ),
+                  fontSize = 18.sp
+                )
                 }
             }
         }
