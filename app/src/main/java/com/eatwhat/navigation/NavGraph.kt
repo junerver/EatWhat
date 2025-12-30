@@ -52,6 +52,7 @@ fun EatWhatApp(
         Destinations.WebDAVConfig.route,
       Destinations.Sync.route,
       Destinations.AIConfig.route,
+      Destinations.AIProviderEdit.route,
       Destinations.AIAnalysis.route
     )
 
@@ -158,7 +159,21 @@ fun EatWhatApp(
 
           // AI routes
           composable(Destinations.AIConfig.route) {
-            com.eatwhat.ui.screens.settings.AISettingsScreen(navController)
+            com.eatwhat.ui.screens.settings.AIProviderListScreen(navController)
+          }
+
+          composable(
+            route = Destinations.AIProviderEdit.route,
+            arguments = listOf(
+              navArgument("providerId") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+              }
+            )
+          ) { backStackEntry ->
+            val providerId = backStackEntry.arguments?.getString("providerId")?.toLongOrNull()
+            com.eatwhat.ui.screens.settings.AIProviderEditScreen(navController, providerId)
           }
 
           composable(

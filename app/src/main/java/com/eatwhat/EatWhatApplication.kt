@@ -5,11 +5,17 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.eatwhat.data.database.EatWhatDatabase
+import com.eatwhat.data.database.entities.AIProviderEntity
 import com.eatwhat.data.preferences.AIPreferences
 import com.eatwhat.data.repository.ExportRepository
 import com.eatwhat.data.repository.ExportRepositoryImpl
 import com.eatwhat.data.repository.RecipeRepository
 import com.eatwhat.data.repository.RollRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 /**
@@ -35,6 +41,9 @@ class EatWhatApplication : Application() {
 
   lateinit var exportRepository: ExportRepository
     private set
+
+  // Application scope for background operations
+  private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     // Temporary storage for current roll result (for navigation)
     var currentRollResult: com.eatwhat.domain.model.RollResult? = null
@@ -63,7 +72,8 @@ class EatWhatApplication : Application() {
                 EatWhatDatabase.MIGRATION_1_2,
                 EatWhatDatabase.MIGRATION_2_3,
                 EatWhatDatabase.MIGRATION_3_4,
-                EatWhatDatabase.MIGRATION_4_5
+              EatWhatDatabase.MIGRATION_4_5,
+              EatWhatDatabase.MIGRATION_5_6
             )
             .build()
 
@@ -73,6 +83,38 @@ class EatWhatApplication : Application() {
         historyRepository = com.eatwhat.data.repository.HistoryRepository(database)
       aiPreferences = AIPreferences(applicationContext)
       exportRepository = ExportRepositoryImpl(applicationContext, database, aiPreferences)
+
+      // Migrate AI Config to Database
+      migrateAIConfig()
+    }
+
+  private fun migrateAIConfig() {
+    applicationScope.launch(Dispatchers.IO) {
+      try {
+        val aiProviderDao = database.aiProviderDao()
+        val existingProviders = aiProviderDao.getAllProviders().first()
+
+        // Only migrate if no providers exist
+        if (existingProviders.isEmpty()) {
+          val config = aiPreferences.aiConfigFlow.first()
+          // Only migrate if we have a valid config (at least API Key)
+          if (config.apiKey.isNotBlank()) {
+            val provider = AIProviderEntity(
+              name = "Migrated Config",
+              baseUrl = config.baseUrl,
+              apiKey = config.apiKey,
+              model = config.model,
+              isActive = true,
+              createdAt = System.currentTimeMillis(),
+              lastModified = System.currentTimeMillis()
+            )
+            aiProviderDao.insert(provider)
+          }
+        }
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
+    }
     }
 
     private class DatabaseCallback : RoomDatabase.Callback() {

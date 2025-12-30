@@ -56,7 +56,15 @@ sealed class Destinations(val route: String) {
     object Sync : Destinations("settings/sync")
 
   // AI destinations
-  object AIConfig : Destinations("settings/ai")
+  object AIConfig : Destinations("settings/ai") // Lists all providers
+  object AIProviderEdit : Destinations("settings/ai/edit?providerId={providerId}") {
+    fun createRoute(providerId: Long? = null) = if (providerId != null) {
+      "settings/ai/edit?providerId=$providerId"
+    } else {
+      "settings/ai/edit"
+    }
+  }
+
   object AIAnalysis : Destinations("ai/analysis?initialPrompt={initialPrompt}") {
     fun createRoute(initialPrompt: String? = null): String {
       return if (initialPrompt != null) {

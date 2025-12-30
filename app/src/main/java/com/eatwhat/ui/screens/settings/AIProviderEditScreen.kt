@@ -20,12 +20,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
@@ -50,24 +49,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.eatwhat.data.database.EatWhatDatabase
+import com.eatwhat.data.database.entities.AIProviderEntity
 import com.eatwhat.data.preferences.AIConfig
-import com.eatwhat.data.preferences.AIPreferences
+import com.eatwhat.data.repository.AIProviderRepository
 import com.eatwhat.domain.service.OpenAIService
+import com.eatwhat.ui.components.StyledTextField
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useEffect
@@ -75,19 +74,19 @@ import xyz.junerver.compose.hooks.useGetState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AISettingsScreen(navController: NavController) {
+fun AIProviderEditScreen(navController: NavController, providerId: Long? = null) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
-  val aiPreferences = remember { AIPreferences(context) }
+  val database = remember { EatWhatDatabase.getInstance(context) }
+  val repository = remember { AIProviderRepository(database.aiProviderDao()) }
   val openAIService = remember { OpenAIService() }
 
-  // Load initial state
-  val aiConfig by aiPreferences.aiConfigFlow.collectAsState(initial = AIConfig())
-
   // Form state
+  val (name, setName) = useGetState(default = "")
   val (baseUrl, setBaseUrl) = useGetState(default = "")
   val (apiKey, setApiKey) = useGetState(default = "")
   val (model, setModel) = useGetState(default = "")
+  val (isActive, setIsActive) = useGetState(default = false)
 
   // Model fetch & test state
   val (availableModels, setAvailableModels) = useGetState(default = emptyList<String>())
@@ -106,11 +105,20 @@ fun AISettingsScreen(navController: NavController) {
   val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else Color.Black
   val subTextColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
 
-  // Update form state when aiConfig loads
-  useEffect(aiConfig) {
-    setBaseUrl(aiConfig.baseUrl)
-    setApiKey(aiConfig.apiKey)
-    setModel(aiConfig.model)
+  // Load initial state if editing
+  useEffect(providerId) {
+    if (providerId != null) {
+      scope.launch {
+        val provider = repository.getProviderById(providerId).first()
+        if (provider != null) {
+          setName(provider.name)
+          setBaseUrl(provider.baseUrl)
+          setApiKey(provider.apiKey)
+          setModel(provider.model)
+          setIsActive(provider.isActive)
+        }
+      }
+    }
   }
 
   // Fetch models
@@ -155,14 +163,64 @@ fun AISettingsScreen(navController: NavController) {
 
   val onSave = {
     scope.launch {
-      aiPreferences.saveConfig(
-        AIConfig(
-          baseUrl = baseUrl.value,
-          apiKey = apiKey.value,
-          model = model.value
-        )
+      if (name.value.isBlank()) {
+        setName("Default") // Default name if empty
+      }
+
+      val provider = AIProviderEntity(
+        id = providerId ?: 0, // 0 for new insertion
+        syncId = if (providerId == null) java.util.UUID.randomUUID().toString() else {
+          // If editing, we keep the old syncId. Since we don't have it in state, we might need to fetch it again or
+          // just let Room handle it if we fetch the whole entity.
+          // However, simplified approach: if ID > 0, we are updating. Room's Update requires the full entity.
+          // So better to re-fetch if ID > 0 or just ignore syncId updates for now (assuming it doesn't change).
+          // A better way is to hold the entity in state.
+          // For now, let's just create a new one, but if updating, we need the original syncId to preserve sync continuity.
+          // Let's refactor slightly to keep the original entity if editing.
+          java.util.UUID.randomUUID().toString() // Placeholder, logic below fixes this
+        },
+        name = name.value,
+        baseUrl = baseUrl.value,
+        apiKey = apiKey.value,
+        model = model.value,
+        isActive = isActive.value
       )
+
+      if (providerId != null) {
+        // Updating: Get original to preserve syncId and other fields
+        val original = repository.getProviderById(providerId).first()
+        if (original != null) {
+          repository.update(
+            original.copy(
+              name = name.value,
+              baseUrl = baseUrl.value,
+              apiKey = apiKey.value,
+              model = model.value,
+              isActive = isActive.value,
+              lastModified = System.currentTimeMillis()
+            )
+          )
+        }
+      } else {
+        // Creating new
+        val newId = repository.insert(provider)
+        // If it's the first one or user checked 'active' (not implemented in UI for new yet), set active
+        // Logic: If there are no other active providers, set this one as active
+        val active = repository.activeProvider.first()
+        if (active == null) {
+          repository.setActive(newId)
+        }
+      }
       navController.popBackStack()
+    }
+  }
+
+  val onDelete = {
+    if (providerId != null) {
+      scope.launch {
+        repository.delete(providerId)
+        navController.popBackStack()
+      }
     }
   }
 
@@ -175,11 +233,21 @@ fun AISettingsScreen(navController: NavController) {
     topBar = {
       TopAppBar(
         title = {
-          Text("AI 配置", fontWeight = FontWeight.Bold)
+          Text(
+            if (providerId == null) "添加模型供应商" else "编辑模型供应商",
+            fontWeight = FontWeight.Bold
+          )
         },
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+          }
+        },
+        actions = {
+          if (providerId != null) {
+            IconButton(onClick = { onDelete() }) {
+              Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+            }
           }
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -228,12 +296,23 @@ fun AISettingsScreen(navController: NavController) {
             }
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-              text = "OpenAI API 设置",
+              text = "供应商配置",
               style = MaterialTheme.typography.titleMedium,
               fontWeight = FontWeight.Bold,
               color = textColor
             )
           }
+
+          // Name Input
+          StyledTextField(
+            value = name.value,
+            onValueChange = { setName(it) },
+            label = "供应商名称",
+            placeholder = "例如: OpenAI, DeepSeek...",
+            backgroundColor = inputBackground,
+            textColor = textColor,
+            placeholderColor = subTextColor
+          )
 
           // Base URL Input
           StyledTextField(
@@ -286,7 +365,7 @@ fun AISettingsScreen(navController: NavController) {
                   setModel(it)
                   setIsExpanded(true)
                 },
-                label = "Model Name",
+                label = "模型名称",
                 placeholder = "gpt-3.5-turbo",
                 modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
                 trailingIcon = {
@@ -393,7 +472,7 @@ fun AISettingsScreen(navController: NavController) {
               )
               Spacer(modifier = Modifier.width(8.dp))
               Text(
-                text = if (testSuccess.value) "Connection Successful" else "Connection Failed",
+                text = if (testSuccess.value) "连接成功" else "连接失败",
                 style = MaterialTheme.typography.labelLarge,
                 color = if (testSuccess.value) Color(0xFF4CAF50) else Color(0xFFFF5252),
                 fontWeight = FontWeight.Bold
@@ -422,80 +501,6 @@ fun AISettingsScreen(navController: NavController) {
       ) {
         Text("保存配置", fontSize = 16.sp, fontWeight = FontWeight.Bold)
       }
-    }
-  }
-}
-
-@Composable
-fun StyledTextField(
-  value: String,
-  onValueChange: (String) -> Unit,
-  label: String,
-  placeholder: String = "",
-  isPassword: Boolean = false,
-  modifier: Modifier = Modifier,
-  trailingIcon: @Composable (() -> Unit)? = null,
-  backgroundColor: Color = Color(0xFFF8F8F8),
-  textColor: Color = Color.Black,
-  placeholderColor: Color = Color.Gray
-) {
-  Column(modifier = modifier) {
-    Text(
-      text = label,
-      style = MaterialTheme.typography.labelMedium,
-      color = placeholderColor,
-      modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-    )
-    Surface(
-      shape = RoundedCornerShape(12.dp),
-      color = backgroundColor
-    ) {
-      BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        textStyle = TextStyle(
-          fontSize = 16.sp,
-          color = textColor
-        ),
-        singleLine = true,
-        cursorBrush = SolidColor(textColor),
-        visualTransformation = if (isPassword) androidx.compose.ui.text.input.PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
-        decorationBox = { innerTextField ->
-          Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(horizontal = 16.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Box(modifier = Modifier.weight(1f)) {
-              if (value.isEmpty()) {
-                Text(
-                  text = placeholder,
-                  color = placeholderColor.copy(alpha = 0.5f),
-                  fontSize = 16.sp
-                )
-              }
-              innerTextField()
-            }
-
-            if (value.isNotEmpty()) {
-              Icon(
-                imageVector = Icons.Default.Clear,
-                contentDescription = "Clear",
-                tint = placeholderColor,
-                modifier = Modifier
-                  .size(20.dp)
-                  .clickable { onValueChange("") }
-              )
-            }
-
-            if (trailingIcon != null) {
-              Spacer(modifier = Modifier.width(8.dp))
-              trailingIcon()
-            }
-          }
-        }
-      )
     }
   }
 }

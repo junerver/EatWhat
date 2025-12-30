@@ -29,8 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.eatwhat.data.database.EatWhatDatabase
 import com.eatwhat.data.preferences.AIConfig
-import com.eatwhat.data.preferences.AIPreferences
+import com.eatwhat.data.repository.AIProviderRepository
 import com.eatwhat.domain.service.OpenAIService
 import com.eatwhat.domain.service.RecipeAIResult
 import kotlinx.coroutines.launch
@@ -44,10 +45,12 @@ import xyz.junerver.compose.hooks.useGetState
 fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
-  val aiPreferences = remember { AIPreferences(context) }
+  val database = remember { EatWhatDatabase.getInstance(context) }
+  val repository = remember { AIProviderRepository(database.aiProviderDao()) }
   val openAIService = remember { OpenAIService() }
 
-  val aiConfig by aiPreferences.aiConfigFlow.collectAsState(initial = AIConfig())
+  val activeProvider by repository.activeProvider.collectAsState(initial = null)
+  val aiConfig = activeProvider?.toAIConfig() ?: AIConfig()
 
   val (prompt, setPrompt) = useGetState(initialPrompt ?: "")
   val (isLoading, setIsLoading) = useGetState(false)
@@ -55,8 +58,8 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
 
   val onAnalyze = {
     if (prompt.value.isNotBlank() && !isLoading.value) {
-      if (aiConfig.apiKey.isBlank()) {
-        setError("请先在设置中配置 OpenAI API Key")
+      if (activeProvider == null || aiConfig.apiKey.isBlank()) {
+        setError("请先在设置中配置有效的 AI 供应商")
       } else {
         setIsLoading(true)
         setError(null)

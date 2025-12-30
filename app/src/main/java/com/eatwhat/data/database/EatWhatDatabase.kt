@@ -5,10 +5,19 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.eatwhat.data.database.dao.AIProviderDao
 import com.eatwhat.data.database.dao.HistoryDao
 import com.eatwhat.data.database.dao.RecipeDao
 import com.eatwhat.data.database.dao.TagDao
-import com.eatwhat.data.database.entities.*
+import com.eatwhat.data.database.entities.AIProviderEntity
+import com.eatwhat.data.database.entities.CookingStepEntity
+import com.eatwhat.data.database.entities.HistoryRecipeCrossRef
+import com.eatwhat.data.database.entities.HistoryRecordEntity
+import com.eatwhat.data.database.entities.IngredientEntity
+import com.eatwhat.data.database.entities.PrepItemEntity
+import com.eatwhat.data.database.entities.RecipeEntity
+import com.eatwhat.data.database.entities.RecipeTagCrossRef
+import com.eatwhat.data.database.entities.TagEntity
 
 /**
  * Room database for EatWhat app
@@ -17,6 +26,7 @@ import com.eatwhat.data.database.entities.*
  * Version 3: Add custom_name column to history_records
  * Version 4: Add image_base64 column to recipes for storing WebP images as Base64
  * Version 5: Add recipe_image_base64 column to history_recipe_cross_ref for storing image snapshots
+ * Version 6: Add ai_providers table for multi-provider support
  */
 @Database(
     entities = [
@@ -27,15 +37,17 @@ import com.eatwhat.data.database.entities.*
         RecipeTagCrossRef::class,
         HistoryRecordEntity::class,
         HistoryRecipeCrossRef::class,
-        PrepItemEntity::class
+      PrepItemEntity::class,
+      AIProviderEntity::class
     ],
-    version = 5,
+  version = 6,
     exportSchema = true
 )
 abstract class EatWhatDatabase : RoomDatabase() {
     abstract fun recipeDao(): RecipeDao
     abstract fun historyDao(): HistoryDao
     abstract fun tagDao(): TagDao
+  abstract fun aiProviderDao(): AIProviderDao
 
     companion object {
         @Volatile
@@ -48,7 +60,13 @@ abstract class EatWhatDatabase : RoomDatabase() {
                     EatWhatDatabase::class.java,
                     "eatwhat.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                  .addMigrations(
+                    MIGRATION_1_2,
+                    MIGRATION_2_3,
+                    MIGRATION_3_4,
+                    MIGRATION_4_5,
+                    MIGRATION_5_6
+                  )
                     .build()
                 INSTANCE = instance
                 instance
@@ -97,5 +115,32 @@ abstract class EatWhatDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE history_recipe_cross_ref ADD COLUMN recipe_image_base64 TEXT DEFAULT NULL")
             }
         }
+
+      /**
+       * Migration from version 5 to 6
+       * Adds ai_providers table
+       */
+      val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+          db.execSQL(
+            """
+                    CREATE TABLE IF NOT EXISTS `ai_providers` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `sync_id` TEXT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `base_url` TEXT NOT NULL,
+                        `api_key` TEXT NOT NULL,
+                        `model` TEXT NOT NULL,
+                        `is_active` INTEGER NOT NULL,
+                        `created_at` INTEGER NOT NULL,
+                        `last_modified` INTEGER NOT NULL,
+                        `is_deleted` INTEGER NOT NULL
+                    )
+                """.trimIndent()
+          )
+          db.execSQL("CREATE INDEX IF NOT EXISTS `index_ai_providers_is_active` ON `ai_providers` (`is_active`)")
+          db.execSQL("CREATE INDEX IF NOT EXISTS `index_ai_providers_is_deleted` ON `ai_providers` (`is_deleted`)")
+        }
+      }
     }
 }

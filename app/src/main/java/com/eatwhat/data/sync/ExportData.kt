@@ -14,17 +14,32 @@ data class ExportData(
     val encrypted: Boolean = false,
     val recipes: List<RecipeExport> = emptyList(),
     val historyRecords: List<HistoryExport> = emptyList(),
-    val aiConfig: AIConfigExport? = null
+    val aiConfig: AIConfigExport? = null,
+    val aiProviders: List<AIProviderExport> = emptyList()
 )
 
 /**
- * AI配置导出结构
+ * AI配置导出结构 (Deprecated: use aiProviders instead)
  */
 @Serializable
 data class AIConfigExport(
   val baseUrl: String,
   val apiKey: String,
   val model: String
+)
+
+/**
+ * AI供应商导出结构
+ */
+@Serializable
+data class AIProviderExport(
+  val syncId: String,
+  val name: String,
+  val baseUrl: String,
+  val apiKey: String,
+  val model: String,
+  val isActive: Boolean,
+  val lastModified: Long
 )
 
 /**
@@ -135,10 +150,13 @@ data class SyncMetadata(
 data class ImportPreview(
     val recipeCount: Int = 0,
     val historyCount: Int = 0,
+    val aiProviderCount: Int = 0,
     val newRecipes: Int = 0,
     val updatedRecipes: Int = 0,
     val newHistory: Int = 0,
-    val updatedHistory: Int = 0
+    val updatedHistory: Int = 0,
+    val newAIProviders: Int = 0,
+    val updatedAIProviders: Int = 0
 )
 
 /**
@@ -152,6 +170,9 @@ data class ImportResult(
     val historyImported: Int = 0,
     val historyUpdated: Int = 0,
     val historySkipped: Int = 0,
+    val aiProvidersImported: Int = 0,
+    val aiProvidersUpdated: Int = 0,
+    val aiProvidersSkipped: Int = 0,
     val errors: List<String> = emptyList()
 )
 
