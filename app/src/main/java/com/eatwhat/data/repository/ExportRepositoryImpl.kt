@@ -54,9 +54,9 @@ class ExportRepositoryImpl(
       return createExportData(recipes, emptyList(), emptyList())
     }
 
-    override suspend fun exportHistory(): ExportData {
-        val history = exportHistoryEntities()
-      return createExportData(emptyList(), history, emptyList())
+  override suspend fun exportAIProviders(): ExportData {
+    val aiProviders = exportAIProviderEntities()
+    return createExportData(emptyList(), emptyList(), aiProviders)
     }
 
     override suspend fun previewImport(data: ExportData): ImportPreview {
@@ -202,10 +202,11 @@ class ExportRepositoryImpl(
         )
     }
 
-    override suspend fun getDataCount(): Pair<Int, Int> {
+  override suspend fun getDataCount(): Triple<Int, Int, Int> {
         val recipeCount = recipeDao.getRecipeCount()
         val historyCount = historyDao.getHistoryCount()
-        return Pair(recipeCount, historyCount)
+    val providerCount = aiProviderDao.getProviderCount()
+    return Triple(recipeCount, historyCount, providerCount)
     }
 
     // ========== Private Helper Methods ==========

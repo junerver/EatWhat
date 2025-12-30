@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import com.eatwhat.data.repository.ExportRepository
 import com.eatwhat.data.sync.ExportData
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
@@ -35,16 +34,16 @@ class ExportDataUseCase(
     }
 
     /**
-     * 仅导出历史到 URI
+     * 仅导出 AI 供应商到 URI
      */
-    suspend fun exportHistory(uri: Uri): Result<ExportResult> {
-        return export(uri) { exportRepository.exportHistory() }
+    suspend fun exportAIProviders(uri: Uri): Result<ExportResult> {
+      return export(uri) { exportRepository.exportAIProviders() }
     }
 
     /**
      * 获取当前数据统计
      */
-    suspend fun getDataCount(): Pair<Int, Int> {
+    suspend fun getDataCount(): Triple<Int, Int, Int> {
         return exportRepository.getDataCount()
     }
 
@@ -56,7 +55,7 @@ class ExportDataUseCase(
             val data = dataProvider()
 
             // 检查是否有数据
-            if (data.recipes.isEmpty() && data.historyRecords.isEmpty()) {
+          if (data.recipes.isEmpty() && data.historyRecords.isEmpty() && data.aiProviders.isEmpty()) {
                 return Result.failure(ExportException("没有可导出的数据"))
             }
 
@@ -70,6 +69,7 @@ class ExportDataUseCase(
                 ExportResult(
                     recipeCount = data.recipes.size,
                     historyCount = data.historyRecords.size,
+                  aiProviderCount = data.aiProviders.size,
                     fileSize = jsonString.length.toLong()
                 )
             )
@@ -85,6 +85,7 @@ class ExportDataUseCase(
 data class ExportResult(
     val recipeCount: Int,
     val historyCount: Int,
+    val aiProviderCount: Int,
     val fileSize: Long
 )
 

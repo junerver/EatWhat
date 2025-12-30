@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Palette
@@ -88,7 +87,7 @@ import java.util.Locale
  * 导出类型
  */
 enum class ExportType {
-    ALL, RECIPES, HISTORY
+  ALL, RECIPES, AI_PROVIDERS
 }
 
 /**
@@ -114,7 +113,7 @@ fun SettingsScreen(navController: NavController) {
     // 导出状态
     var showExportDialog by remember { mutableStateOf(false) }
     var isExporting by remember { mutableStateOf(false) }
-    var dataCount by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+  var dataCount by remember { mutableStateOf<Triple<Int, Int, Int>?>(null) }
     var pendingExportType by remember { mutableStateOf<ExportType?>(null) }
 
     // 导入状态
@@ -142,7 +141,7 @@ fun SettingsScreen(navController: NavController) {
                 val result = when (exportType) {
                     ExportType.ALL -> exportUseCase.exportAll(uri)
                     ExportType.RECIPES -> exportUseCase.exportRecipes(uri)
-                    ExportType.HISTORY -> exportUseCase.exportHistory(uri)
+                  ExportType.AI_PROVIDERS -> exportUseCase.exportAIProviders(uri)
                 }
 
                 isExporting = false
@@ -150,11 +149,13 @@ fun SettingsScreen(navController: NavController) {
 
                 result.fold(
                     onSuccess = { exportResult ->
-                        Toast.makeText(
-                            context,
-                            "导出成功！菜谱: ${exportResult.recipeCount}，历史: ${exportResult.historyCount}",
-                            Toast.LENGTH_LONG
-                        ).show()
+                      val message = buildString {
+                        append("导出成功！")
+                        if (exportResult.recipeCount > 0) append(" 菜谱: ${exportResult.recipeCount}")
+                        if (exportResult.historyCount > 0) append(" 历史: ${exportResult.historyCount}")
+                        if (exportResult.aiProviderCount > 0) append(" AI供应商: ${exportResult.aiProviderCount}")
+                      }
+                      Toast.makeText(context, message, Toast.LENGTH_LONG).show()
                     },
                     onFailure = { error ->
                         Toast.makeText(
@@ -206,7 +207,7 @@ fun SettingsScreen(navController: NavController) {
         val suffix = when (type) {
             ExportType.ALL -> "all"
             ExportType.RECIPES -> "recipes"
-            ExportType.HISTORY -> "history"
+          ExportType.AI_PROVIDERS -> "ai_providers"
         }
         return "eatwhat_${suffix}_$timestamp.json"
     }
@@ -268,8 +269,13 @@ fun SettingsScreen(navController: NavController) {
                     SettingsItem(
                         icon = Icons.Default.FileUpload,
                         title = "导出数据",
-                        subtitle = dataCount?.let { "菜谱: ${it.first}，历史: ${it.second}" }
-                            ?: "备份菜谱和历史记录",
+                      subtitle = dataCount?.let {
+                        val parts = mutableListOf<String>()
+                        if (it.first > 0) parts.add("菜谱: ${it.first}")
+                        if (it.second > 0) parts.add("历史: ${it.second}")
+                        if (it.third > 0) parts.add("AI供应商: ${it.third}")
+                        if (parts.isEmpty()) "无数据" else parts.joinToString("，")
+                      } ?: "备份菜谱、历史和配置",
                         onClick = { showExportDialog = true }
                     )
                     Divider(modifier = Modifier.padding(horizontal = 16.dp))
@@ -428,13 +434,14 @@ fun SettingsScreen(navController: NavController) {
  */
 @Composable
 private fun ExportOptionsDialog(
-    dataCount: Pair<Int, Int>?,
+  dataCount: Triple<Int, Int, Int>?,
     onDismiss: () -> Unit,
     onExport: (ExportType) -> Unit
 ) {
     val recipeCount = dataCount?.first ?: 0
     val historyCount = dataCount?.second ?: 0
-    val hasNoData = recipeCount == 0 && historyCount == 0
+  val providerCount = dataCount?.third ?: 0
+  val hasNoData = recipeCount == 0 && historyCount == 0 && providerCount == 0
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -479,7 +486,13 @@ private fun ExportOptionsDialog(
                 ExportOptionItem(
                     icon = Icons.Default.SelectAll,
                     title = "全部数据",
-                    subtitle = dataCount?.let { "菜谱: ${it.first}，历史: ${it.second}" } ?: "菜谱和历史记录",
+                  subtitle = dataCount?.let {
+                    val parts = mutableListOf<String>()
+                    if (it.first > 0) parts.add("菜谱: ${it.first}")
+                    if (it.second > 0) parts.add("历史: ${it.second}")
+                    if (it.third > 0) parts.add("AI供应商: ${it.third}")
+                    if (parts.isEmpty()) "无数据" else parts.joinToString("，")
+                  } ?: "菜谱、历史和配置",
                     enabled = !hasNoData,
                     onClick = { onExport(ExportType.ALL) }
                 )
@@ -491,11 +504,11 @@ private fun ExportOptionsDialog(
                     onClick = { onExport(ExportType.RECIPES) }
                 )
                 ExportOptionItem(
-                    icon = Icons.Default.History,
-                    title = "仅历史记录",
-                    subtitle = dataCount?.let { "${it.second} 条记录" } ?: "所有历史",
-                    enabled = historyCount > 0,
-                    onClick = { onExport(ExportType.HISTORY) }
+                  iconDrawableRes = R.drawable.ic_ai_sparkles,
+                  title = "仅AI供应商",
+                  subtitle = dataCount?.let { "${it.third} 个配置" } ?: "所有AI供应商配置",
+                  enabled = providerCount > 0,
+                  onClick = { onExport(ExportType.AI_PROVIDERS) }
                 )
             }
         },
@@ -694,7 +707,8 @@ private fun ConflictStrategyOption(
  */
 @Composable
 private fun ExportOptionItem(
-    icon: ImageVector,
+  icon: ImageVector? = null,
+  iconDrawableRes: Int? = null,
     title: String,
     subtitle: String,
     enabled: Boolean = true,
@@ -714,12 +728,21 @@ private fun ExportOptionItem(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+          if (icon != null) {
             Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = alpha),
-                modifier = Modifier.size(24.dp)
+              imageVector = icon,
+              contentDescription = null,
+              tint = MaterialTheme.colorScheme.primary.copy(alpha = alpha),
+              modifier = Modifier.size(24.dp)
             )
+          } else if (iconDrawableRes != null) {
+            Icon(
+              painter = painterResource(id = iconDrawableRes),
+              contentDescription = null,
+              tint = MaterialTheme.colorScheme.primary.copy(alpha = alpha),
+              modifier = Modifier.size(24.dp)
+            )
+          }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,

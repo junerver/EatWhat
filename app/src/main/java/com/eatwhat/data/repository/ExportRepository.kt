@@ -22,9 +22,9 @@ interface ExportRepository {
     suspend fun exportRecipes(): ExportData
 
     /**
-     * 仅导出历史记录
+     * 仅导出 AI 供应商配置
      */
-    suspend fun exportHistory(): ExportData
+    suspend fun exportAIProviders(): ExportData
 
     /**
      * 预览导入数据（不实际执行导入）
@@ -43,7 +43,7 @@ interface ExportRepository {
 
     /**
      * 获取当前数据统计
-     * @return Pair<菜谱数量, 历史数量>
+     * @return Triple<菜谱数量, 历史数量, AI供应商数量>
      */
-    suspend fun getDataCount(): Pair<Int, Int>
+    suspend fun getDataCount(): Triple<Int, Int, Int>
 }

@@ -46,4 +46,7 @@ interface AIProviderDao {
 
   @Query("SELECT * FROM ai_providers WHERE id = :id LIMIT 1")
   suspend fun getProviderByIdSync(id: Long): AIProviderEntity?
+
+  @Query("SELECT COUNT(*) FROM ai_providers WHERE is_deleted = 0")
+  suspend fun getProviderCount(): Int
 }
