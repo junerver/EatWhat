@@ -76,8 +76,8 @@ fun RecipeCard(
                     RecipeType.MEAT -> "荤" to MeatRed
                     RecipeType.VEG -> "素" to SoftGreen
                     RecipeType.SOUP -> "汤" to SoupBlue
-                    RecipeType.STAPLE -> "主" to StapleOrange
-                    RecipeType.OTHER -> "他" to OtherPurple
+                    RecipeType.STAPLE -> "主食" to StapleOrange
+                    RecipeType.OTHER -> "其他" to OtherPurple
                   }
 
                   Surface(
