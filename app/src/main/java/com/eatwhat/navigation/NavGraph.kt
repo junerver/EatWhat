@@ -123,7 +123,16 @@ fun EatWhatApp(
                 val vegCount = backStackEntry.arguments?.getString("vegCount")?.toIntOrNull() ?: 0
                 val soupCount = backStackEntry.arguments?.getString("soupCount")?.toIntOrNull() ?: 0
                 val stapleCount = backStackEntry.arguments?.getString("stapleCount")?.toIntOrNull() ?: 0
-                RollResultScreen(navController, meatCount, vegCount, soupCount, stapleCount)
+              val randomCount =
+                backStackEntry.arguments?.getString("randomCount")?.toIntOrNull() ?: 0
+              RollResultScreen(
+                navController,
+                meatCount,
+                vegCount,
+                soupCount,
+                stapleCount,
+                randomCount
+              )
             }
 
             composable(Destinations.Prep.route) {

@@ -104,7 +104,8 @@ fun RollScreen(navController: NavController) {
                     meatCount = 1,
                     vegCount = 0,
                     soupCount = 0,
-                    stapleCount = 0
+                  stapleCount = 0,
+                  randomCount = 0
                 )
             )
             return
@@ -114,41 +115,28 @@ fun RollScreen(navController: NavController) {
       val allocated = meatCount.value + vegCount.value + soupCount.value
       val remaining = totalCount.value - allocated
 
-        // 如果用户没有分配任何类型，自动平均分配
+      // 如果用户没有分配任何类型，全部作为随机分配
         if (allocated == 0) {
-          val autoMeat = totalCount.value / 2
-          val autoVeg = totalCount.value - autoMeat
             navController.navigate(
                 Destinations.RollResult.createRoute(
-                    meatCount = autoMeat,
-                    vegCount = autoVeg,
+                  meatCount = 0,
+                  vegCount = 0,
                     soupCount = 0,
-                    stapleCount = 0
+                  stapleCount = 0,
+                  randomCount = totalCount.value
                 )
             )
             return
         }
 
-        // 如果有剩余未分配的菜数，自动分配给素菜和汤
-      var finalMeatCount = meatCount.value
-      var finalVegCount = vegCount.value
-      var finalSoupCount = soupCount.value
-
-        if (remaining > 0) {
-            // 剩余的菜数平均分配给素菜和汤
-            val autoVeg = remaining / 2
-            val autoSoup = remaining - autoVeg
-            finalVegCount += autoVeg
-            finalSoupCount += autoSoup
-        }
-
-        // 使用最终分配的数量
+      // 使用最终分配的数量，剩余数量作为随机数量
         navController.navigate(
             Destinations.RollResult.createRoute(
-                meatCount = finalMeatCount,
-                vegCount = finalVegCount,
-                soupCount = finalSoupCount,
-                stapleCount = 0
+              meatCount = meatCount.value,
+              vegCount = vegCount.value,
+              soupCount = soupCount.value,
+              stapleCount = 0,
+              randomCount = remaining
             )
         )
     }

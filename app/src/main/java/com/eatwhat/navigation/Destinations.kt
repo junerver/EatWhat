@@ -39,9 +39,15 @@ sealed class Destinations(val route: String) {
         fun createRoute(historyId: Long) = "history/$historyId"
     }
 
-    object RollResult : Destinations("roll/result/{meatCount}/{vegCount}/{soupCount}/{stapleCount}") {
-        fun createRoute(meatCount: Int, vegCount: Int, soupCount: Int, stapleCount: Int) =
-            "roll/result/$meatCount/$vegCount/$soupCount/$stapleCount"
+  object RollResult :
+    Destinations("roll/result/{meatCount}/{vegCount}/{soupCount}/{stapleCount}/{randomCount}") {
+    fun createRoute(
+      meatCount: Int,
+      vegCount: Int,
+      soupCount: Int,
+      stapleCount: Int,
+      randomCount: Int = 0
+    ) = "roll/result/$meatCount/$vegCount/$soupCount/$stapleCount/$randomCount"
     }
 
     // Settings destinations

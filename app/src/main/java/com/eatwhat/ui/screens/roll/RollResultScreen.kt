@@ -77,7 +77,8 @@ fun RollResultScreen(
     meatCount: Int,
     vegCount: Int,
     soupCount: Int,
-    stapleCount: Int
+    stapleCount: Int,
+    randomCount: Int = 0
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as EatWhatApplication
@@ -94,7 +95,8 @@ fun RollResultScreen(
             meatCount = meatCount,
             vegCount = vegCount,
             soupCount = soupCount,
-            stapleCount = stapleCount
+          stapleCount = stapleCount,
+          randomCount = randomCount
         )
     }
 
@@ -518,6 +520,7 @@ private fun buildSummary(config: RollConfig): String {
     if (config.vegCount > 0) parts.add("${config.vegCount}素")
     if (config.soupCount > 0) parts.add("${config.soupCount}汤")
     if (config.stapleCount > 0) parts.add("${config.stapleCount}主食")
+  if (config.randomCount > 0) parts.add("${config.randomCount}随机")
     return if (parts.isEmpty()) "随机菜品" else parts.joinToString(" + ")
 }
 

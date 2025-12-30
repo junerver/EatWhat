@@ -9,10 +9,11 @@ data class RollConfig(
     val vegCount: Int = 0,
     val soupCount: Int = 0,
     val stapleCount: Int = 0,
+    val randomCount: Int = 0,
     val autoBalance: Boolean = false
 ) {
     val totalCount: Int
-        get() = meatCount + vegCount + soupCount + stapleCount
+      get() = meatCount + vegCount + soupCount + stapleCount + randomCount
 
     fun isValid(): Boolean {
         return totalCount > 0
@@ -31,7 +32,8 @@ data class RollConfig(
 
         return copy(
             meatCount = meatTarget,
-            vegCount = vegTarget
+          vegCount = vegTarget,
+          randomCount = 0
         )
     }
 }
