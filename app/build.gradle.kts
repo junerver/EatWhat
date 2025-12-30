@@ -25,7 +25,7 @@ android {
   }
 
   signingConfigs {
-    create("config") {
+    create("release") {
       storeFile = file("../eatwhat.keystore")
       storePassword = "eatwhat123"
       keyAlias = "eatwhat"
@@ -36,16 +36,16 @@ android {
   }
 
   buildTypes {
-    getByName("debug") {
-      signingConfig = signingConfigs.getByName("config")
+    debug {
+      signingConfig = signingConfigs.getByName("release")
     }
-    getByName("release") {
+    release {
       isMinifyEnabled = true
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro"
       )
-      signingConfig = signingConfigs.getByName("config")
+      signingConfig = signingConfigs.getByName("release")
     }
   }
 
