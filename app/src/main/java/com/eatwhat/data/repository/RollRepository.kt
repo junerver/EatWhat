@@ -73,22 +73,41 @@ class RollRepository(private val recipeRepository: RecipeRepository) {
             selectedRecipes.addAll(stapleRecipes)
         }
 
-      // Fill remaining count with random meat/veg recipes
+      // Fill remaining count with random recipes (Meat/Veg/Soup)
+      // Rule: If a specific type is requested (count > 0), do not include it in the random pool
+      // unless all types are requested, then include all.
       if (effectiveConfig.randomCount > 0) {
-        Log.d("RollRepository", "开始获取 ${effectiveConfig.randomCount} 个随机菜品（荤/素）")
-        val allMeat = recipeRepository.getRandomRecipesByType(RecipeType.MEAT, 999)
-        val allVeg = recipeRepository.getRandomRecipesByType(RecipeType.VEG, 999)
+        val candidateTypes = mutableListOf<RecipeType>()
+        if (effectiveConfig.meatCount == 0) candidateTypes.add(RecipeType.MEAT)
+        if (effectiveConfig.vegCount == 0) candidateTypes.add(RecipeType.VEG)
+        if (effectiveConfig.soupCount == 0) candidateTypes.add(RecipeType.SOUP)
+
+        // If all types are specified (e.g. 1 Meat, 1 Veg, 1 Soup), allow all types in random
+        if (candidateTypes.isEmpty()) {
+          candidateTypes.add(RecipeType.MEAT)
+          candidateTypes.add(RecipeType.VEG)
+          candidateTypes.add(RecipeType.SOUP)
+        }
+
+        Log.d(
+          "RollRepository",
+          "开始获取 ${effectiveConfig.randomCount} 个随机菜品，候选类型: $candidateTypes"
+        )
+
+        val poolRecipes = mutableListOf<Recipe>()
+        for (type in candidateTypes) {
+          poolRecipes.addAll(recipeRepository.getRandomRecipesByType(type, 999))
+        }
 
         // Filter out already selected recipes
         val selectedIds = selectedRecipes.map { it.id }.toSet()
-        val availableMeat = allMeat.filter { it.id !in selectedIds }
-        val availableVeg = allVeg.filter { it.id !in selectedIds }
+        val availablePool = poolRecipes.filter { it.id !in selectedIds }
 
-        val pool = (availableMeat + availableVeg).shuffled()
-        val toTake = effectiveConfig.randomCount.coerceAtMost(pool.size)
+        val shuffledPool = availablePool.shuffled()
+        val toTake = effectiveConfig.randomCount.coerceAtMost(shuffledPool.size)
 
         if (toTake > 0) {
-          val randomRecipes = pool.take(toTake)
+          val randomRecipes = shuffledPool.take(toTake)
           Log.d(
             "RollRepository",
             "获取到 ${randomRecipes.size} 个随机菜品: ${randomRecipes.map { it.name }}"
@@ -143,16 +162,31 @@ class RollRepository(private val recipeRepository: RecipeRepository) {
         }
 
       if (effectiveConfig.randomCount > 0) {
-        // Check if there are enough combined meat and veg recipes for random count
-        // considering what's already reserved for specific meat/veg counts
+        // Check if there are enough combined recipes for random count
+        // considering what's already reserved for specific counts
         val remainingMeat = (meatAvailable - effectiveConfig.meatCount).coerceAtLeast(0)
         val remainingVeg = (vegAvailable - effectiveConfig.vegCount).coerceAtLeast(0)
-        val totalRemaining = remainingMeat + remainingVeg
+        val remainingSoup = (soupAvailable - effectiveConfig.soupCount).coerceAtLeast(0)
+
+        var totalRemaining = 0
+        val candidateTypes = mutableListOf<RecipeType>()
+        if (effectiveConfig.meatCount == 0) candidateTypes.add(RecipeType.MEAT)
+        if (effectiveConfig.vegCount == 0) candidateTypes.add(RecipeType.VEG)
+        if (effectiveConfig.soupCount == 0) candidateTypes.add(RecipeType.SOUP)
+
+        // If all types are specified, check all
+        if (candidateTypes.isEmpty()) {
+          totalRemaining = remainingMeat + remainingVeg + remainingSoup
+        } else {
+          if (candidateTypes.contains(RecipeType.MEAT)) totalRemaining += remainingMeat
+          if (candidateTypes.contains(RecipeType.VEG)) totalRemaining += remainingVeg
+          if (candidateTypes.contains(RecipeType.SOUP)) totalRemaining += remainingSoup
+        }
 
         if (totalRemaining < effectiveConfig.randomCount) {
-          errors.add("剩余菜品(荤/素)不足: 需要${effectiveConfig.randomCount}道,只有${totalRemaining}道")
-            }
+          errors.add("剩余菜品(荤/素/汤)不足: 需要${effectiveConfig.randomCount}道,只有${totalRemaining}道")
         }
+      }
 
         return if (errors.isEmpty()) {
             ValidationResult.Success
