@@ -43,3 +43,6 @@
 -keepclassmembers class kotlin.Metadata {
     public <methods>;
 }
+
+# Fix for R8 error: Library class android.content.res.XmlResourceParser implements program class org.xmlpull.v1.XmlPullParser
+-dontwarn org.xmlpull.v1.**

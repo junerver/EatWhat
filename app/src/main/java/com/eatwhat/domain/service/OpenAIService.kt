@@ -1,6 +1,7 @@
 package com.eatwhat.domain.service
 
 import com.eatwhat.data.preferences.AIConfig
+import com.eatwhat.domain.model.ConnectionTestResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -183,7 +184,7 @@ class OpenAIService {
       }
     }
 
-  suspend fun testConnection(config: AIConfig): Result<String> =
+  suspend fun testConnection(config: AIConfig): Result<ConnectionTestResult> =
     withContext(Dispatchers.IO) {
       try {
         val messages = listOf(OpenAIMessage("user", "Hello"))
@@ -210,20 +211,44 @@ class OpenAIService {
         val responseBody = response.body?.string()
 
         if (!response.isSuccessful) {
-          return@withContext Result.failure(Exception("Error (${response.code}): $responseBody"))
+          return@withContext Result.success(
+            ConnectionTestResult(
+              isSuccess = false,
+              message = "Error (${response.code}): $responseBody",
+              latencyMs = duration
+            )
+          )
         }
 
         if (responseBody == null) {
-          return@withContext Result.failure(Exception("Empty response"))
+          return@withContext Result.success(
+            ConnectionTestResult(
+              isSuccess = false,
+              message = "Empty response",
+              latencyMs = duration
+            )
+          )
         }
 
         // Just verify we can parse it as OpenAI response
         val openAIResponse = json.decodeFromString(OpenAIResponse.serializer(), responseBody)
         val content = openAIResponse.choices.firstOrNull()?.message?.content ?: ""
 
-        Result.success("Success! Latency: ${duration}ms\nResponse: ${content.take(50)}...")
+        Result.success(
+          ConnectionTestResult(
+            isSuccess = true,
+            message = content.take(100),
+            latencyMs = duration
+          )
+        )
       } catch (e: Exception) {
-        Result.failure(e)
+        Result.success(
+          ConnectionTestResult(
+            isSuccess = false,
+            message = e.message ?: "Unknown error",
+            latencyMs = 0
+          )
+        )
       }
     }
 }

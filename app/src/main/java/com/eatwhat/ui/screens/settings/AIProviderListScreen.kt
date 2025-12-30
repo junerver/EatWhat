@@ -1,10 +1,6 @@
 package com.eatwhat.ui.screens.settings
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,6 +41,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -60,8 +57,11 @@ import com.eatwhat.data.database.EatWhatDatabase
 import com.eatwhat.data.database.entities.AIProviderEntity
 import com.eatwhat.data.preferences.AIConfig
 import com.eatwhat.data.repository.AIProviderRepository
+import com.eatwhat.domain.model.ProviderTestState
 import com.eatwhat.domain.service.OpenAIService
 import com.eatwhat.navigation.Destinations
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useGetState
@@ -77,11 +77,9 @@ fun AIProviderListScreen(navController: NavController) {
 
   val providers by repository.allProviders.collectAsState(initial = emptyList())
 
-  // Test connection state
-  val (testResult, setTestResult) = useGetState(default = "")
-  val (isTesting, setIsTesting) = useGetState(default = false)
-  val (testSuccess, setTestSuccess) = useGetState(default = false)
-  val (testingProviderId, setTestingProviderId) = useGetState(default = -1L)
+  // Test connection state map
+  val testStates = remember { mutableStateMapOf<Long, ProviderTestState>() }
+  val (isBatchTesting, setIsBatchTesting) = useGetState(default = false)
 
   // Dark mode support
   val isDark = com.eatwhat.ui.theme.LocalDarkTheme.current
@@ -93,20 +91,62 @@ fun AIProviderListScreen(navController: NavController) {
 
   // Test connection function
   val testConnection = { provider: AIProviderEntity ->
-    setIsTesting(true)
-    setTestingProviderId(provider.id)
-    setTestResult("")
-    setTestSuccess(false)
+    testStates[provider.id] =
+      testStates.getOrDefault(provider.id, ProviderTestState()).copy(isTesting = true)
     scope.launch {
       val config = AIConfig(provider.baseUrl, provider.apiKey, provider.model)
       val result = openAIService.testConnection(config)
-      setIsTesting(false)
+
       result.onSuccess {
-        setTestResult(it)
-        setTestSuccess(true)
+        testStates[provider.id] = ProviderTestState(
+          isTesting = false,
+          isSuccess = it.isSuccess,
+          latency = it.latencyMs,
+          message = if (it.isSuccess) "Connected" else it.message,
+          lastTestTime = System.currentTimeMillis()
+        )
       }.onFailure {
-        setTestResult("Test failed: ${it.message}")
-        setTestSuccess(false)
+        testStates[provider.id] = ProviderTestState(
+          isTesting = false,
+          isSuccess = false,
+          message = it.message ?: "Unknown error",
+          lastTestTime = System.currentTimeMillis()
+        )
+      }
+    }
+  }
+
+  // Batch test function
+  val batchTest = {
+    if (!isBatchTesting.value && providers.isNotEmpty()) {
+      setIsBatchTesting(true)
+      scope.launch {
+        providers.map { provider ->
+          async {
+            testStates[provider.id] =
+              testStates.getOrDefault(provider.id, ProviderTestState()).copy(isTesting = true)
+            val config = AIConfig(provider.baseUrl, provider.apiKey, provider.model)
+            val result = openAIService.testConnection(config)
+
+            result.onSuccess {
+              testStates[provider.id] = ProviderTestState(
+                isTesting = false,
+                isSuccess = it.isSuccess,
+                latency = it.latencyMs,
+                message = if (it.isSuccess) "Connected" else it.message,
+                lastTestTime = System.currentTimeMillis()
+              )
+            }.onFailure {
+              testStates[provider.id] = ProviderTestState(
+                isTesting = false,
+                isSuccess = false,
+                message = it.message ?: "Unknown error",
+                lastTestTime = System.currentTimeMillis()
+              )
+            }
+          }
+        }.awaitAll()
+        setIsBatchTesting(false)
       }
     }
   }
@@ -123,6 +163,21 @@ fun AIProviderListScreen(navController: NavController) {
           }
         },
         actions = {
+          // Batch Test Button
+          IconButton(
+            onClick = { batchTest() },
+            enabled = !isBatchTesting.value && providers.isNotEmpty()
+          ) {
+            if (isBatchTesting.value) {
+              CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                strokeWidth = 2.dp,
+                color = primaryColor
+              )
+            } else {
+              Icon(Icons.Default.Bolt, contentDescription = "Batch Test", tint = primaryColor)
+            }
+          }
           IconButton(onClick = { navController.navigate(Destinations.AIProviderEdit.createRoute()) }) {
             Icon(Icons.Default.Add, contentDescription = "Add Provider", tint = primaryColor)
           }
@@ -139,56 +194,6 @@ fun AIProviderListScreen(navController: NavController) {
         .fillMaxSize()
         .padding(paddingValues)
     ) {
-      // Test Result Card (Global for the screen)
-      AnimatedVisibility(
-        visible = testResult.value.isNotBlank(),
-        enter = fadeIn() + expandVertically(),
-        exit = fadeOut() + shrinkVertically(),
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-      ) {
-        Card(
-          modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-              elevation = 2.dp,
-              shape = RoundedCornerShape(20.dp),
-              spotColor = Color.Black.copy(alpha = 0.05f)
-            ),
-          shape = RoundedCornerShape(20.dp),
-          colors = CardDefaults.cardColors(
-            containerColor = if (testSuccess.value)
-              if (isDark) Color(0xFF1E331E) else Color(0xFFF8FBF8)
-            else
-              if (isDark) Color(0xFF331E1E) else Color(0xFFFFF8F8)
-          )
-        ) {
-          Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-              Icon(
-                imageVector = if (testSuccess.value) Icons.Default.CheckCircle else Icons.Default.Error,
-                contentDescription = null,
-                tint = if (testSuccess.value) Color(0xFF4CAF50) else Color(0xFFFF5252),
-                modifier = Modifier.size(20.dp)
-              )
-              Spacer(modifier = Modifier.width(8.dp))
-              Text(
-                text = if (testSuccess.value) "连接成功" else "连接失败",
-                style = MaterialTheme.typography.labelLarge,
-                color = if (testSuccess.value) Color(0xFF4CAF50) else Color(0xFFFF5252),
-                fontWeight = FontWeight.Bold
-              )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-              text = testResult.value,
-              style = MaterialTheme.typography.bodySmall,
-              fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-              color = textColor
-            )
-          }
-        }
-      }
-
       LazyColumn(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -196,7 +201,7 @@ fun AIProviderListScreen(navController: NavController) {
         items(providers) { provider ->
           AIProviderItem(
             provider = provider,
-            isTesting = isTesting.value && testingProviderId.value == provider.id,
+            testState = testStates[provider.id] ?: ProviderTestState(),
             isDark = isDark,
             textColor = textColor,
             subTextColor = subTextColor,
@@ -251,7 +256,7 @@ fun AIProviderListScreen(navController: NavController) {
 @Composable
 fun AIProviderItem(
   provider: AIProviderEntity,
-  isTesting: Boolean,
+  testState: ProviderTestState,
   isDark: Boolean,
   textColor: Color,
   subTextColor: Color,
@@ -313,6 +318,41 @@ fun AIProviderItem(
             maxLines = 1,
             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
           )
+
+          // Test Status
+          AnimatedVisibility(visible = testState.lastTestTime > 0 || testState.isTesting) {
+            Column {
+              Spacer(modifier = Modifier.height(8.dp))
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                if (testState.isTesting) {
+                  CircularProgressIndicator(
+                    modifier = Modifier.size(12.dp),
+                    strokeWidth = 2.dp,
+                    color = primaryColor
+                  )
+                  Spacer(modifier = Modifier.width(4.dp))
+                  Text(
+                    "Testing...",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = subTextColor
+                  )
+                } else {
+                  Icon(
+                    imageVector = if (testState.isSuccess) Icons.Default.CheckCircle else Icons.Default.Error,
+                    contentDescription = null,
+                    tint = if (testState.isSuccess) Color(0xFF4CAF50) else Color(0xFFFF5252),
+                    modifier = Modifier.size(14.dp)
+                  )
+                  Spacer(modifier = Modifier.width(4.dp))
+                  Text(
+                    text = if (testState.isSuccess) "${testState.latency}ms" else "Failed",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (testState.isSuccess) Color(0xFF4CAF50) else Color(0xFFFF5252)
+                  )
+                }
+              }
+            }
+          }
         }
 
         // Actions
@@ -320,21 +360,13 @@ fun AIProviderItem(
           // Test Button
           IconButton(
             onClick = onTest,
-            enabled = !isTesting
+            enabled = !testState.isTesting
           ) {
-            if (isTesting) {
-              CircularProgressIndicator(
-                modifier = Modifier.size(20.dp),
-                strokeWidth = 2.dp,
-                color = primaryColor
-              )
-            } else {
               Icon(
                 Icons.Default.Bolt,
                 contentDescription = "Test",
                 tint = subTextColor
               )
-            }
           }
 
           // Edit Button

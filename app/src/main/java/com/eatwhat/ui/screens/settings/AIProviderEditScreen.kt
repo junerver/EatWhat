@@ -150,8 +150,13 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
         val result = openAIService.testConnection(config)
         setIsTesting(false)
         result.onSuccess {
-          setTestResult(it)
-          setTestSuccess(true)
+          if (it.isSuccess) {
+            setTestResult("Success! Latency: ${it.latencyMs}ms\nResponse: ${it.message.take(50)}...")
+            setTestSuccess(true)
+          } else {
+            setTestResult("Test failed: ${it.message}")
+            setTestSuccess(false)
+          }
         }.onFailure {
           setTestResult("Test failed: ${it.message}")
           setTestSuccess(false)
