@@ -2,9 +2,11 @@ package com.eatwhat.ui.screens.settings
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,17 +17,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Key
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
@@ -40,11 +41,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -57,12 +56,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.database.EatWhatDatabase
@@ -70,10 +68,12 @@ import com.eatwhat.data.repository.SyncRepositoryImpl
 import com.eatwhat.data.sync.ConnectionResult
 import com.eatwhat.data.sync.SyncWorker
 import com.eatwhat.data.sync.WebDAVConfig
+import com.eatwhat.ui.components.StyledTextField
+import com.eatwhat.ui.theme.LocalDarkTheme
 import kotlinx.coroutines.launch
 
 /**
- * WebDAV 配置页面
+ * WebDAV 配置页面 - 美化版本
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +81,7 @@ fun WebDAVConfigScreen(navController: NavController) {
   val TAG = "WebDAVConfigScreen"
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
-  val isDark = com.eatwhat.ui.theme.LocalDarkTheme.current
+  val isDark = LocalDarkTheme.current
 
   // 创建 Repository
   val database = remember { EatWhatDatabase.getInstance(context) }
@@ -107,10 +107,20 @@ fun WebDAVConfigScreen(navController: NavController) {
   var showEncryptionPassword by remember { mutableStateOf(false) }
   var isTesting by remember { mutableStateOf(false) }
   var isSaving by remember { mutableStateOf(false) }
+  var testSuccess by remember { mutableStateOf(false) }
+  var testMessage by remember { mutableStateOf("") }
 
   // 验证状态
   val isFormValid = serverUrl.isNotBlank() && username.isNotBlank() && password.isNotBlank()
   val isEncryptionValid = !encryptionEnabled || encryptionPassword.isNotBlank()
+
+  // 主题颜色
+  val pageBackground = if (isDark) MaterialTheme.colorScheme.background else Color(0xFFF5F5F5)
+  val cardBackground = if (isDark) MaterialTheme.colorScheme.surface else Color.White
+  val inputBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF8F8F8)
+  val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else Color.Black
+  val subTextColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
+  val primaryColor = Color(0xFFFF6B35)
 
   Scaffold(
     topBar = {
@@ -129,49 +139,12 @@ fun WebDAVConfigScreen(navController: NavController) {
             )
           }
         },
-        actions = {
-          // 保存按钮
-          TextButton(
-            onClick = {
-              if (isFormValid && isEncryptionValid) {
-                isSaving = true
-                val config = WebDAVConfig(
-                  serverUrl = serverUrl.trim(),
-                  username = username.trim(),
-                  password = password,
-                  remotePath = remotePath.trim().ifBlank { "/EatWhat/" },
-                  encryptionEnabled = encryptionEnabled,
-                  encryptionPassword = if (encryptionEnabled) encryptionPassword else null,
-                  lastSyncTime = existingConfig?.lastSyncTime,
-                  lastSyncStatus = existingConfig?.lastSyncStatus,
-                  autoSyncEnabled = autoSyncEnabled,
-                  syncIntervalMinutes = syncIntervalMinutes
-                )
-                syncRepository.saveConfig(config)
-
-                // 根据自动同步设置调度或取消 WorkManager
-                if (autoSyncEnabled) {
-                  SyncWorker.schedule(context, syncIntervalMinutes)
-                } else {
-                  SyncWorker.cancel(context)
-                }
-
-                isSaving = false
-                Toast.makeText(context, "配置已保存", Toast.LENGTH_SHORT).show()
-                navController.popBackStack()
-              }
-            },
-            enabled = isFormValid && isEncryptionValid && !isSaving
-          ) {
-            Text("保存")
-          }
-        },
         colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = MaterialTheme.colorScheme.surface
+          containerColor = Color.Transparent
         )
       )
     },
-    containerColor = MaterialTheme.colorScheme.background
+    containerColor = pageBackground
   ) { paddingValues ->
     Column(
       modifier = Modifier
@@ -179,86 +152,78 @@ fun WebDAVConfigScreen(navController: NavController) {
         .padding(paddingValues)
         .verticalScroll(rememberScrollState())
         .padding(16.dp),
-      verticalArrangement = Arrangement.spacedBy(16.dp)
+      verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
       // 服务器配置卡片
-      ConfigCard(
+      SectionCard(
         title = "服务器设置",
-        isDark = isDark
+        icon = Icons.Default.Cloud,
+        iconColor = Color(0xFF2196F3),
+        cardBackground = cardBackground,
+        textColor = textColor
       ) {
         // 服务器地址
-        OutlinedTextField(
+        StyledTextField(
           value = serverUrl,
           onValueChange = { serverUrl = it },
-          label = { Text("服务器地址") },
-          placeholder = { Text("https://example.com/dav") },
-          leadingIcon = {
-            Icon(Icons.Default.Cloud, contentDescription = null)
-          },
-          singleLine = true,
-          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-          modifier = Modifier.fillMaxWidth()
+          label = "服务器地址",
+          placeholder = "https://example.com/dav",
+          backgroundColor = inputBackground,
+          textColor = textColor,
+          placeholderColor = subTextColor
         )
-
-        Spacer(modifier = Modifier.height(12.dp))
 
         // 用户名
-        OutlinedTextField(
+        StyledTextField(
           value = username,
           onValueChange = { username = it },
-          label = { Text("用户名") },
-          leadingIcon = {
-            Icon(Icons.Default.Person, contentDescription = null)
-          },
-          singleLine = true,
-          modifier = Modifier.fillMaxWidth()
+          label = "用户名",
+          placeholder = "your_username",
+          backgroundColor = inputBackground,
+          textColor = textColor,
+          placeholderColor = subTextColor
         )
-
-        Spacer(modifier = Modifier.height(12.dp))
 
         // 密码
-        OutlinedTextField(
+        StyledTextField(
           value = password,
           onValueChange = { password = it },
-          label = { Text("密码") },
-          leadingIcon = {
-            Icon(Icons.Default.Lock, contentDescription = null)
-          },
+          label = "密码",
+          placeholder = "your_password",
+          isPassword = !showPassword,
+          backgroundColor = inputBackground,
+          textColor = textColor,
+          placeholderColor = subTextColor,
           trailingIcon = {
-            IconButton(onClick = { showPassword = !showPassword }) {
-              Icon(
-                imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                contentDescription = if (showPassword) "隐藏密码" else "显示密码"
-              )
-            }
-          },
-          visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-          singleLine = true,
-          modifier = Modifier.fillMaxWidth()
+            Icon(
+              imageVector = if (showPassword) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+              contentDescription = if (showPassword) "隐藏密码" else "显示密码",
+              tint = subTextColor,
+              modifier = Modifier
+                .size(24.dp)
+                .clickable { showPassword = !showPassword }
+            )
+          }
         )
-
-        Spacer(modifier = Modifier.height(12.dp))
 
         // 远程路径
-        OutlinedTextField(
+        StyledTextField(
           value = remotePath,
           onValueChange = { remotePath = it },
-          label = { Text("远程目录") },
-          placeholder = { Text("/EatWhat/") },
-          leadingIcon = {
-            Icon(Icons.Default.Folder, contentDescription = null)
-          },
-          singleLine = true,
-          modifier = Modifier.fillMaxWidth()
+          label = "远程目录",
+          placeholder = "/EatWhat/",
+          backgroundColor = inputBackground,
+          textColor = textColor,
+          placeholderColor = subTextColor
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         // 测试连接按钮
         Button(
           onClick = {
             if (isFormValid) {
               isTesting = true
+              testSuccess = false
+              testMessage = ""
               scope.launch {
                 val testConfig = WebDAVConfig(
                   serverUrl = serverUrl.trim(),
@@ -271,36 +236,84 @@ fun WebDAVConfigScreen(navController: NavController) {
 
                 when (result) {
                   is ConnectionResult.Success -> {
-                    Toast.makeText(context, "连接成功！", Toast.LENGTH_SHORT).show()
+                    testSuccess = true
+                    testMessage = "连接成功！"
                   }
-
                   is ConnectionResult.Error -> {
-                    Log.d(TAG, "${result.message}")
-                    Toast.makeText(context, "连接失败: ${result.message}", Toast.LENGTH_LONG).show()
+                    testSuccess = false
+                    testMessage = result.message
+                    Log.d(TAG, result.message)
                   }
                 }
               }
             }
           },
           enabled = isFormValid && !isTesting,
-          modifier = Modifier.fillMaxWidth()
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp),
+          colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
+          shape = RoundedCornerShape(12.dp)
         ) {
           if (isTesting) {
             CircularProgressIndicator(
               modifier = Modifier.size(20.dp),
               strokeWidth = 2.dp,
-              color = MaterialTheme.colorScheme.onPrimary
+              color = Color.White
             )
             Spacer(modifier = Modifier.width(8.dp))
+            Text("正在测试...", fontSize = 15.sp)
+          } else {
+            Icon(
+              Icons.Default.CheckCircle,
+              contentDescription = null,
+              modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("测试连接", fontSize = 15.sp, fontWeight = FontWeight.Medium)
           }
-          Text(if (isTesting) "正在测试..." else "测试连接")
+        }
+
+        // 测试结果显示
+        if (testMessage.isNotBlank()) {
+          Spacer(modifier = Modifier.height(12.dp))
+          Card(
+            colors = CardDefaults.cardColors(
+              containerColor = if (testSuccess)
+                if (isDark) Color(0xFF1E331E) else Color(0xFFF8FBF8)
+              else
+                if (isDark) Color(0xFF331E1E) else Color(0xFFFFF8F8)
+            ),
+            shape = RoundedCornerShape(12.dp)
+          ) {
+            Row(
+              modifier = Modifier.padding(12.dp),
+              horizontalArrangement = Arrangement.spacedBy(8.dp),
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Icon(
+                imageVector = if (testSuccess) Icons.Default.CheckCircle else Icons.Default.Warning,
+                contentDescription = null,
+                tint = if (testSuccess) Color(0xFF4CAF50) else Color(0xFFFF5252),
+                modifier = Modifier.size(20.dp)
+              )
+              Text(
+                text = testMessage,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (testSuccess) Color(0xFF4CAF50) else Color(0xFFFF5252)
+              )
+            }
+          }
         }
       }
 
       // 加密设置卡片
-      ConfigCard(
+      SectionCard(
         title = "数据加密",
-        isDark = isDark
+        icon = Icons.Default.Security,
+        iconColor = Color(0xFF9C27B0),
+        cardBackground = cardBackground,
+        textColor = textColor
       ) {
         Row(
           modifier = Modifier.fillMaxWidth(),
@@ -311,12 +324,13 @@ fun WebDAVConfigScreen(navController: NavController) {
             Text(
               text = "启用加密",
               style = MaterialTheme.typography.bodyLarge,
-              fontWeight = FontWeight.Medium
+              fontWeight = FontWeight.Medium,
+              color = textColor
             )
             Text(
               text = "使用密码加密云端数据",
               style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant
+              color = subTextColor
             )
           }
           Switch(
@@ -326,40 +340,48 @@ fun WebDAVConfigScreen(navController: NavController) {
         }
 
         if (encryptionEnabled) {
-          Spacer(modifier = Modifier.height(12.dp))
 
-          OutlinedTextField(
+          StyledTextField(
             value = encryptionPassword,
             onValueChange = { encryptionPassword = it },
-            label = { Text("加密密码") },
-            leadingIcon = {
-              Icon(Icons.Default.Key, contentDescription = null)
-            },
+            label = "加密密码",
+            placeholder = "请输入加密密码",
+            isPassword = !showEncryptionPassword,
+            backgroundColor = inputBackground,
+            textColor = textColor,
+            placeholderColor = subTextColor,
             trailingIcon = {
-              IconButton(onClick = { showEncryptionPassword = !showEncryptionPassword }) {
-                Icon(
-                  imageVector = if (showEncryptionPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                  contentDescription = if (showEncryptionPassword) "隐藏密码" else "显示密码"
-                )
-              }
-            },
-            visualTransformation = if (showEncryptionPassword) VisualTransformation.None else PasswordVisualTransformation(),
-            singleLine = true,
-            isError = encryptionEnabled && encryptionPassword.isBlank(),
-            supportingText = if (encryptionEnabled && encryptionPassword.isBlank()) {
-              { Text("请输入加密密码") }
-            } else null,
-            modifier = Modifier.fillMaxWidth()
+              Icon(
+                imageVector = if (showEncryptionPassword) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                contentDescription = if (showEncryptionPassword) "隐藏密码" else "显示密码",
+                tint = subTextColor,
+                modifier = Modifier
+                  .size(24.dp)
+                  .clickable { showEncryptionPassword = !showEncryptionPassword }
+              )
+            }
           )
 
-          Spacer(modifier = Modifier.height(8.dp))
+          if (encryptionPassword.isBlank()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+              text = "请输入加密密码",
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.error
+            )
+          }
+
+          Spacer(modifier = Modifier.height(10.dp))
 
           // 警告提示
           Card(
             colors = CardDefaults.cardColors(
-              containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+              containerColor = if (isDark)
+                Color(0xFF4D2600).copy(alpha = 0.3f)
+              else
+                Color(0xFFFFF3E0)
             ),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(12.dp)
           ) {
             Row(
               modifier = Modifier.padding(12.dp),
@@ -368,13 +390,13 @@ fun WebDAVConfigScreen(navController: NavController) {
               Icon(
                 imageVector = Icons.Default.Warning,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.error,
+                tint = Color(0xFFFFC107),
                 modifier = Modifier.size(20.dp)
               )
               Text(
                 text = "请牢记加密密码！忘记密码将无法恢复云端数据。",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onErrorContainer
+                color = textColor
               )
             }
           }
@@ -382,9 +404,12 @@ fun WebDAVConfigScreen(navController: NavController) {
       }
 
       // 自动同步设置卡片
-      ConfigCard(
+      SectionCard(
         title = "自动同步",
-        isDark = isDark
+        icon = Icons.Default.Sync,
+        iconColor = Color(0xFF4CAF50),
+        cardBackground = cardBackground,
+        textColor = textColor
       ) {
         Row(
           modifier = Modifier.fillMaxWidth(),
@@ -395,12 +420,13 @@ fun WebDAVConfigScreen(navController: NavController) {
             Text(
               text = "启用自动同步",
               style = MaterialTheme.typography.bodyLarge,
-              fontWeight = FontWeight.Medium
+              fontWeight = FontWeight.Medium,
+              color = textColor
             )
             Text(
               text = "定期自动同步数据到云端",
               style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant
+              color = subTextColor
             )
           }
           Switch(
@@ -412,15 +438,25 @@ fun WebDAVConfigScreen(navController: NavController) {
         if (autoSyncEnabled) {
           Spacer(modifier = Modifier.height(12.dp))
 
-          Text(
-            text = "同步间隔",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium
-          )
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+              Icons.Default.Schedule,
+              contentDescription = null,
+              tint = subTextColor,
+              modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+              text = "同步间隔",
+              style = MaterialTheme.typography.bodyMedium,
+              fontWeight = FontWeight.Medium,
+              color = textColor
+            )
+          }
 
-          Spacer(modifier = Modifier.height(8.dp))
+          Spacer(modifier = Modifier.height(10.dp))
 
-          // 同步间隔选项 - 使用两行显示
+          // 同步间隔选项
           val intervalOptions = listOf(
             15 to "15分钟",
             30 to "30分钟",
@@ -459,14 +495,17 @@ fun WebDAVConfigScreen(navController: NavController) {
             }
           }
 
-          Spacer(modifier = Modifier.height(8.dp))
+          Spacer(modifier = Modifier.height(10.dp))
 
           // 智能合并说明
           Card(
             colors = CardDefaults.cardColors(
-              containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+              containerColor = if (isDark)
+                Color(0xFF1A2F1A)
+              else
+                Color(0xFFE8F5E9)
             ),
-            shape = RoundedCornerShape(8.dp)
+            shape = RoundedCornerShape(12.dp)
           ) {
             Row(
               modifier = Modifier.padding(12.dp),
@@ -475,13 +514,13 @@ fun WebDAVConfigScreen(navController: NavController) {
               Icon(
                 imageVector = Icons.Default.Info,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = Color(0xFF4CAF50),
                 modifier = Modifier.size(20.dp)
               )
               Text(
                 text = "自动同步采用智能合并策略，根据时间戳自动合并本地与云端数据。",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = textColor
               )
             }
           }
@@ -490,9 +529,12 @@ fun WebDAVConfigScreen(navController: NavController) {
 
       // 危险操作区域
       if (existingConfig != null) {
-        ConfigCard(
+        SectionCard(
           title = "危险操作",
-          isDark = isDark
+          icon = Icons.Default.Delete,
+          iconColor = Color(0xFFFF5252),
+          cardBackground = cardBackground,
+          textColor = textColor
         ) {
           OutlinedButton(
             onClick = {
@@ -502,7 +544,7 @@ fun WebDAVConfigScreen(navController: NavController) {
               navController.popBackStack()
             },
             colors = ButtonDefaults.outlinedButtonColors(
-              contentColor = MaterialTheme.colorScheme.error
+              contentColor = Color(0xFFFF5252)
             ),
             modifier = Modifier.fillMaxWidth()
           ) {
@@ -516,51 +558,117 @@ fun WebDAVConfigScreen(navController: NavController) {
           }
         }
       }
+
+      Spacer(modifier = Modifier.weight(1f))
+
+      // 保存按钮
+      Button(
+        onClick = {
+          if (isFormValid && isEncryptionValid) {
+            isSaving = true
+            val config = WebDAVConfig(
+              serverUrl = serverUrl.trim(),
+              username = username.trim(),
+              password = password,
+              remotePath = remotePath.trim().ifBlank { "/EatWhat/" },
+              encryptionEnabled = encryptionEnabled,
+              encryptionPassword = if (encryptionEnabled) encryptionPassword else null,
+              lastSyncTime = existingConfig?.lastSyncTime,
+              lastSyncStatus = existingConfig?.lastSyncStatus,
+              autoSyncEnabled = autoSyncEnabled,
+              syncIntervalMinutes = syncIntervalMinutes
+            )
+            syncRepository.saveConfig(config)
+
+            // 根据自动同步设置调度或取消 WorkManager
+            if (autoSyncEnabled) {
+              SyncWorker.schedule(context, syncIntervalMinutes)
+            } else {
+              SyncWorker.cancel(context)
+            }
+
+            isSaving = false
+            Toast.makeText(context, "配置已保存", Toast.LENGTH_SHORT).show()
+            navController.popBackStack()
+          }
+        },
+        enabled = isFormValid && isEncryptionValid && !isSaving,
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(56.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
+        shape = RoundedCornerShape(28.dp)
+      ) {
+        if (isSaving) {
+          CircularProgressIndicator(
+            modifier = Modifier.size(20.dp),
+            strokeWidth = 2.dp,
+            color = Color.White
+          )
+          Spacer(modifier = Modifier.width(8.dp))
+        }
+        Text(
+          text = if (isSaving) "保存中..." else "保存配置",
+          fontSize = 16.sp,
+          fontWeight = FontWeight.Bold
+        )
+      }
     }
   }
 }
 
 /**
- * 配置卡片容器
+ * 统一的分区卡片组件
  */
 @Composable
-private fun ConfigCard(
+private fun SectionCard(
   title: String,
-  isDark: Boolean,
-  content: @Composable ColumnScope.() -> Unit
+  icon: ImageVector,
+  iconColor: Color,
+  cardBackground: Color,
+  textColor: Color,
+  content: @Composable () -> Unit
 ) {
-  Column(
-    modifier = Modifier.fillMaxWidth(),
-    verticalArrangement = Arrangement.spacedBy(8.dp)
+  Card(
+    modifier = Modifier
+      .fillMaxWidth()
+      .shadow(
+        elevation = 4.dp,
+        shape = RoundedCornerShape(20.dp),
+        spotColor = Color.Black.copy(alpha = 0.1f)
+      ),
+    shape = RoundedCornerShape(20.dp),
+    colors = CardDefaults.cardColors(containerColor = cardBackground)
   ) {
-    Text(
-      text = title,
-      style = MaterialTheme.typography.titleSmall,
-      fontWeight = FontWeight.SemiBold,
-      color = MaterialTheme.colorScheme.onSurfaceVariant,
-      modifier = Modifier.padding(horizontal = 4.dp)
-    )
-
-    Card(
-      modifier = Modifier
-        .fillMaxWidth()
-        .shadow(
-          elevation = 2.dp,
-          shape = RoundedCornerShape(16.dp),
-          spotColor = Color.Black.copy(alpha = 0.08f)
-        ),
-      shape = RoundedCornerShape(16.dp),
-      colors = CardDefaults.cardColors(
-        containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
-      )
+    Column(
+      modifier = Modifier.padding(20.dp),
+      verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-      Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(16.dp)
-      ) {
-        content()
+      // Header
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+          modifier = Modifier
+            .size(40.dp)
+            .background(iconColor.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
+          contentAlignment = Alignment.Center
+        ) {
+          Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = iconColor,
+            modifier = Modifier.size(24.dp)
+          )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+          text = title,
+          style = MaterialTheme.typography.titleMedium,
+          fontWeight = FontWeight.Bold,
+          color = textColor
+        )
       }
+
+      content()
     }
   }
 }

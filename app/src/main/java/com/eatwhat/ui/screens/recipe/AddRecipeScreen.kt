@@ -98,6 +98,7 @@ import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.domain.model.Tag
 import com.eatwhat.ui.components.FoodEmojis
 import com.eatwhat.ui.components.RecipeIconPicker
+import com.eatwhat.ui.components.StyledTextField
 import com.eatwhat.ui.theme.LocalDarkTheme
 import com.eatwhat.ui.theme.MeatRed
 import com.eatwhat.ui.theme.OtherPurple
@@ -721,71 +722,6 @@ private fun AddButton(
                 tint = color,
                 modifier = Modifier.size(20.dp)
             )
-        }
-    }
-}
-
-/**
- * Styled text field with modern design
- */
-@Composable
-private fun StyledTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    placeholder: String = "",
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    minLines: Int = 1
-) {
-    Column {
-        Text(
-            label,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-          color = MaterialTheme.colorScheme.surfaceVariant,
-            border = null
-        ) {
-            Row(
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                leadingIcon?.invoke()
-                
-                BasicTextField(
-                    value = value,
-                    onValueChange = onValueChange,
-                    modifier = Modifier.weight(1f),
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface
-                    ),
-                    keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-                    singleLine = minLines == 1,
-                    decorationBox = { innerTextField ->
-                        Box {
-                            if (value.isEmpty()) {
-                                Text(
-                                    placeholder,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                                )
-                            }
-                            innerTextField()
-                        }
-                    }
-                )
-                
-                trailingIcon?.invoke()
-            }
         }
     }
 }
