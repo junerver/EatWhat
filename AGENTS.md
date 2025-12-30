@@ -116,11 +116,11 @@ private val PageBackground = Color(0xFFF5F5F5)  // 页面背景
 
 #### 深色模式适配规范
 
-项目支持系统深色模式自动切换，所有 UI 组件必须正确适配深色模式。
+项目支持用户手动选择主题模式（跟随系统/浅色/深色），所有 UI 组件必须正确适配深色模式。
 
 **核心原则**：
 
-1. 使用 `isSystemInDarkTheme()` 检测深色模式
+1. 使用 `LocalDarkTheme.current` 检测深色模式（**不要使用** `isSystemInDarkTheme()`）
 2. 优先使用 `MaterialTheme.colorScheme` 语义化颜色
 3. 硬编码颜色必须提供深色模式变体
 4. 状态栏和导航栏需要同步适配
@@ -128,11 +128,11 @@ private val PageBackground = Color(0xFFF5F5F5)  // 页面背景
 **标准适配模式**：
 
 ```kotlin
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.eatwhat.ui.theme.LocalDarkTheme
 
 @Composable
 fun AdaptiveComponent() {
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalDarkTheme.current
 
     // 方式1：使用 MaterialTheme 语义化颜色（推荐）
     val backgroundColor = MaterialTheme.colorScheme.surface
@@ -146,22 +146,28 @@ fun AdaptiveComponent() {
 }
 ```
 
+**⚠️ 重要提示**：
+
+- **必须使用 `LocalDarkTheme.current`** 而不是 `isSystemInDarkTheme()`
+- `LocalDarkTheme` 会根据用户在设置中选择的主题模式（跟随系统/浅色/深色）返回正确的值
+- 这样可以让用户无视系统设置强制指定使用深色或浅色主题
+
 **常用颜色映射表**：
 
-| 浅色模式 | 深色模式 | 用途 |
-|---------|---------|-----|
-| `Color.White` | `MaterialTheme.colorScheme.surface` | 卡片背景 |
-| `Color(0xFFF8F8F8)` | `MaterialTheme.colorScheme.surfaceVariant` | 列表项背景 |
-| `Color(0xFFF8FBF8)` | `MaterialTheme.colorScheme.surfaceVariant` | 食材卡片背景 |
-| `Color(0xFFF5F9FF)` | `MaterialTheme.colorScheme.surfaceVariant` | 步骤卡片背景 |
-| `Color(0xFFE0E0E0)` | `Color(0xFF3C3C3F)` | 进度条轨道 |
-| `Color(0xFFE0E0E0)` | `Color(0xFF4A4A4A)` | 边框颜色 |
-| `Color.Gray` | `MaterialTheme.colorScheme.onSurfaceVariant` | 次要文字 |
+| 浅色模式                | 深色模式                                         | 用途     |
+|---------------------|----------------------------------------------|--------|
+| `Color.White`       | `MaterialTheme.colorScheme.surface`          | 卡片背景   |
+| `Color(0xFFF8F8F8)` | `MaterialTheme.colorScheme.surfaceVariant`   | 列表项背景  |
+| `Color(0xFFF8FBF8)` | `MaterialTheme.colorScheme.surfaceVariant`   | 食材卡片背景 |
+| `Color(0xFFF5F9FF)` | `MaterialTheme.colorScheme.surfaceVariant`   | 步骤卡片背景 |
+| `Color(0xFFE0E0E0)` | `Color(0xFF3C3C3F)`                          | 进度条轨道  |
+| `Color(0xFFE0E0E0)` | `Color(0xFF4A4A4A)`                          | 边框颜色   |
+| `Color.Gray`        | `MaterialTheme.colorScheme.onSurfaceVariant` | 次要文字   |
 
 **进度条适配**：
 
 ```kotlin
-val isDark = isSystemInDarkTheme()
+val isDark = LocalDarkTheme.current
 val trackColor = if (isDark) Color(0xFF3C3C3F) else Color(0xFFE0E0E0)
 
 LinearProgressIndicator(
@@ -174,7 +180,7 @@ LinearProgressIndicator(
 **渐变背景适配**（如 RollScreen）：
 
 ```kotlin
-val isDarkTheme = isSystemInDarkTheme()
+val isDarkTheme = LocalDarkTheme.current
 
 val backgroundBrush = if (isDarkTheme) {
     Brush.linearGradient(
@@ -191,7 +197,7 @@ val backgroundBrush = if (isDarkTheme) {
 
 ```kotlin
 val view = LocalView.current
-val darkTheme = isSystemInDarkTheme()
+val darkTheme = LocalDarkTheme.current
 
 SideEffect {
     val window = (view.context as Activity).window
@@ -209,7 +215,7 @@ SideEffect {
 **复选框/选择项适配**：
 
 ```kotlin
-val isDark = isSystemInDarkTheme()
+val isDark = LocalDarkTheme.current
 val uncheckedBackground = if (isDark) MaterialTheme.colorScheme.surface else Color.White
 val uncheckedBorderColor = if (isDark) Color(0xFF4A4A4A) else Color(0xFFE0E0E0)
 val uncheckedCheckboxColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF5F5F5)
@@ -386,11 +392,13 @@ import xyz.junerver.compose.hooks.invoke  // 必须导入此依赖才能直接�
 **核心 Hooks API**:
 
 1. **useGetState** - 状态管理（推荐使用）
+
     - 返回 `Triple<State<T>, (T) -> Unit, () -> T>`
     - 提供 getter/setter 和即时获取当前值的能力
     - 适用于需要在回调中获取最新状态的场景
 
 2. **useState** - 基础状态管理
+
     - 返回 `MutableState<T>`
     - 是 `remember { mutableStateOf() }` 的简单封装
 
@@ -752,6 +760,8 @@ data class RecipeEntity(...)
 
 ### Recent Updates
 
+- 2025-12-30: Updated dark mode detection to use LocalDarkTheme.current for user-controlled theme
+  selection
 - 2025-12-29: Updated ComposeHooks usage guidelines (v2.2.1, hooks2 package)
 - 2025-12-29: Updated technology stack versions (Kotlin 2.1.0, Compose BOM 2024.06.00)
 - 2025-12-25: Added comprehensive dark mode adaptation guidelines
