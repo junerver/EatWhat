@@ -20,7 +20,7 @@ data class OpenAIRequest(
   val model: String,
   val messages: List<OpenAIMessage>,
   val temperature: Double = 0.7,
-  val response_format: ResponseFormat = ResponseFormat(type = "json_object")
+  val response_format: ResponseFormat? = null
 )
 
 @Serializable
@@ -28,7 +28,23 @@ data class ResponseFormat(val type: String)
 
 @Serializable
 data class OpenAIResponse(
-  val choices: List<Choice>
+  val choices: List<Choice>,
+  val usage: Usage? = null
+)
+
+@Serializable
+data class Usage(
+  val total_tokens: Int? = null
+)
+
+@Serializable
+data class ModelListResponse(
+  val data: List<ModelData>
+)
+
+@Serializable
+data class ModelData(
+  val id: String
 )
 
 @Serializable
@@ -100,7 +116,8 @@ class OpenAIService {
 
         val requestBody = OpenAIRequest(
           model = config.model,
-          messages = messages
+          messages = messages,
+          response_format = ResponseFormat(type = "json_object")
         )
 
         val jsonBody = json.encodeToString(OpenAIRequest.serializer(), requestBody)
@@ -133,6 +150,77 @@ class OpenAIService {
         } catch (e: Exception) {
           Result.failure(Exception("Failed to parse JSON: ${e.message}\nContent: $content"))
         }
+      } catch (e: Exception) {
+        Result.failure(e)
+      }
+    }
+
+  suspend fun fetchModels(config: AIConfig): Result<List<String>> =
+    withContext(Dispatchers.IO) {
+      try {
+        val request = Request.Builder()
+          .url("${config.baseUrl.trimEnd('/')}/models")
+          .header("Authorization", "Bearer ${config.apiKey}")
+          .get()
+          .build()
+
+        val response = client.newCall(request).execute()
+        val responseBody = response.body?.string()
+
+        if (!response.isSuccessful) {
+          return@withContext Result.failure(Exception("Failed to fetch models: ${response.code} $responseBody"))
+        }
+
+        if (responseBody == null) {
+          return@withContext Result.failure(Exception("Empty response"))
+        }
+
+        val listResponse = json.decodeFromString(ModelListResponse.serializer(), responseBody)
+        Result.success(listResponse.data.map { it.id }.sorted())
+      } catch (e: Exception) {
+        Result.failure(e)
+      }
+    }
+
+  suspend fun testConnection(config: AIConfig): Result<String> =
+    withContext(Dispatchers.IO) {
+      try {
+        val messages = listOf(OpenAIMessage("user", "Hello"))
+        val requestBody = OpenAIRequest(
+          model = config.model,
+          messages = messages,
+          response_format = null
+        )
+
+        val jsonBody = json.encodeToString(OpenAIRequest.serializer(), requestBody)
+
+        val startTime = System.currentTimeMillis()
+        val request = Request.Builder()
+          .url("${config.baseUrl.trimEnd('/')}/chat/completions")
+          .header("Authorization", "Bearer ${config.apiKey}")
+          .header("Content-Type", "application/json")
+          .post(jsonBody.toRequestBody("application/json".toMediaType()))
+          .build()
+
+        val response = client.newCall(request).execute()
+        val endTime = System.currentTimeMillis()
+        val duration = endTime - startTime
+
+        val responseBody = response.body?.string()
+
+        if (!response.isSuccessful) {
+          return@withContext Result.failure(Exception("Error (${response.code}): $responseBody"))
+        }
+
+        if (responseBody == null) {
+          return@withContext Result.failure(Exception("Empty response"))
+        }
+
+        // Just verify we can parse it as OpenAI response
+        val openAIResponse = json.decodeFromString(OpenAIResponse.serializer(), responseBody)
+        val content = openAIResponse.choices.firstOrNull()?.message?.content ?: ""
+
+        Result.success("Success! Latency: ${duration}ms\nResponse: ${content.take(50)}...")
       } catch (e: Exception) {
         Result.failure(e)
       }
