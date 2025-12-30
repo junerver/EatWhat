@@ -6,6 +6,13 @@ plugins {
   alias(libs.plugins.kotlin.serialization)
 }
 
+kotlin {
+  compilerOptions {
+    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+  }
+}
+
 android {
   namespace = "com.eatwhat"
   compileSdk = 36
@@ -52,13 +59,6 @@ android {
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
-  }
-
-  kotlinOptions {
-    jvmTarget = "17"
-    freeCompilerArgs += listOf(
-      "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
-    )
   }
 
   buildFeatures {
@@ -110,7 +110,9 @@ dependencies {
   implementation(libs.coil.compose)
 
   // Sync & Export
-  implementation(libs.dav4jvm)
+  implementation(libs.dav4jvm) {
+    exclude(group = "org.ogce", module = "xpp3")
+  }
   implementation(libs.okhttp)
   implementation(libs.kotlinx.serialization.json)
   implementation(libs.androidx.documentfile)

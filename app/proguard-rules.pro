@@ -46,3 +46,9 @@
 
 # Fix for R8 error: Library class android.content.res.XmlResourceParser implements program class org.xmlpull.v1.XmlPullParser
 -dontwarn org.xmlpull.v1.**
+
+# Ignore missing ErrorProne annotations from Tink
+-dontwarn com.google.errorprone.annotations.**
+
+# 可选：如果还有其他警告，可以添加更通用的规则
+-dontwarn com.google.crypto.tink.**
