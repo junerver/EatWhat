@@ -107,6 +107,7 @@ class OpenAIService {
                 3. icon 请根据菜品内容选择一个最合适的 Emoji。
                 4. 如果输入信息不全，请根据经验合理补全。
                 5. 请只输出 JSON 内容，不要包含 markdown 标记。
+                6. estimatedTime 应在 1-300 之间
             """.trimIndent()
 
         val messages = listOf(
