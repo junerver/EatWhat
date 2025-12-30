@@ -70,6 +70,7 @@ import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.ui.components.RecipeCard
 import com.eatwhat.ui.theme.InputBackground
 import com.eatwhat.ui.theme.MeatRed
+import com.eatwhat.ui.theme.OtherPurple
 import com.eatwhat.ui.theme.Primary
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoupBlue
@@ -105,7 +106,8 @@ fun RecipeListScreen(navController: NavController) {
         RecipeType.MEAT to TabInfo("荤菜", "🍗", MeatRed),
         RecipeType.VEG to TabInfo("素菜", "🥬", VegGreen),
         RecipeType.SOUP to TabInfo("汤", "🍲", SoupBlue),
-        RecipeType.STAPLE to TabInfo("主食", "🍚", StapleOrange)
+      RecipeType.STAPLE to TabInfo("主食", "🍚", StapleOrange),
+      RecipeType.OTHER to TabInfo("其他", "🥣", OtherPurple)
     )
 
     val pagerState = rememberPagerState(pageCount = { tabs.size })

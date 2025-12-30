@@ -207,7 +207,8 @@ object FoodEmojis {
         "MEAT" to listOf("🍖", "🍗", "🥩", "🥓", "🍔", "🌭"),
         "VEG" to listOf("🥬", "🥦", "🥒", "🥕", "🌽", "🥗", "🍄"),
         "SOUP" to listOf("🍲", "🥘", "🫕", "🥣", "🍵"),
-        "STAPLE" to listOf("🍚", "🍙", "🍜", "🍝", "🍞", "🥟", "🍕")
+      "STAPLE" to listOf("🍚", "🍙", "🍜", "🍝", "🍞", "🥟", "🍕"),
+      "OTHER" to listOf("🥣", "🧂", "🥢", "🍯", "🥫", "🥄", "🏺")
     )
 
     /**

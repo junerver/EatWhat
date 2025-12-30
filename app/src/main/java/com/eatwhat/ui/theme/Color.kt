@@ -87,6 +87,7 @@ val MeatRed = Color(0xFFE57373)         // 荤菜
 val VegGreen = Color(0xFF81C784)        // 素菜
 val SoupBlue = Color(0xFF64B5F6)        // 汤
 val StapleOrange = Color(0xFFFFB74D)    // 主食
+val OtherPurple = Color(0xFF9575CD)     // 其他 (Deep Purple 300)
 
 // ============================================
 // Background Colors - 背景色

@@ -34,7 +34,7 @@ data class Recipe(
 }
 
 enum class RecipeType {
-    MEAT, VEG, SOUP, STAPLE;
+  MEAT, VEG, SOUP, STAPLE, OTHER;
 
     companion object {
         fun fromString(value: String): RecipeType {

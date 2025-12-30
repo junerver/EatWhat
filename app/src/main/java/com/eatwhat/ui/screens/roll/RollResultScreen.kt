@@ -62,6 +62,7 @@ import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
 import com.eatwhat.ui.components.SimpleCircularProgressIndicator
 import com.eatwhat.ui.theme.MeatRed
+import com.eatwhat.ui.theme.OtherPurple
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
@@ -469,6 +470,7 @@ private fun DishCard(
                         RecipeType.VEG -> SoftGreen to "素菜"
                         RecipeType.SOUP -> SoftBlue to "汤"
                         RecipeType.STAPLE -> WarmYellow to "主食"
+                      RecipeType.OTHER -> OtherPurple to "其他"
                     }
                     InfoTag(text = typeName, color = typeColor)
                     InfoTag(text = getDifficultyName(recipe.difficulty), color = Color.Gray)

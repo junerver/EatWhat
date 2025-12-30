@@ -40,7 +40,7 @@ data class Choice(
 @Serializable
 data class RecipeAIResult(
   val name: String,
-  val type: String, // MEAT, VEG, SOUP, STAPLE
+  val type: String, // MEAT, VEG, SOUP, STAPLE, OTHER
   val difficulty: String, // EASY, MEDIUM, HARD
   val estimatedTime: Int, // minutes
   val ingredients: List<IngredientAI>,
@@ -73,7 +73,7 @@ class OpenAIService {
 
                 {
                   "name": "菜名",
-                  "type": "MEAT|VEG|SOUP|STAPLE",
+                  "type": "MEAT|VEG|SOUP|STAPLE|OTHER",
                   "difficulty": "EASY|MEDIUM|HARD",
                   "estimatedTime": 30,
                   "ingredients": [
@@ -85,7 +85,8 @@ class OpenAIService {
                 }
 
                 注意：
-                1. type 必须是 MEAT(荤菜), VEG(素菜), SOUP(汤), STAPLE(主食) 之一。
+                1. type 必须是 MEAT(荤菜), VEG(素菜), SOUP(汤), STAPLE(主食), OTHER(其他) 之一。
+                   注意：OTHER 类型用于蘸汁、酱料、汤底等辅助型配方，或者不能单独作为一道菜品的食谱。
                 2. unit 必须是 G(克), ML(毫升), PIECE(个), SPOON(勺), MODERATE(适量) 之一。
                 3. icon 请根据菜品内容选择一个最合适的 Emoji。
                 4. 如果输入信息不全，请根据经验合理补全。

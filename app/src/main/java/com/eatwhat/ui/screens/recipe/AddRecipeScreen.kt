@@ -100,6 +100,7 @@ import com.eatwhat.domain.model.Tag
 import com.eatwhat.ui.components.FoodEmojis
 import com.eatwhat.ui.components.RecipeIconPicker
 import com.eatwhat.ui.theme.MeatRed
+import com.eatwhat.ui.theme.OtherPurple
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
@@ -804,6 +805,7 @@ private fun RecipeTypeChip(
         RecipeType.VEG -> Triple("🥬", "素菜", VegGreen)
         RecipeType.SOUP -> Triple("🍲", "汤", SoupBlue)
         RecipeType.STAPLE -> Triple("🍚", "主食", StapleOrange)
+      RecipeType.OTHER -> Triple("🥣", "其他", OtherPurple)
     }
     
     Surface(

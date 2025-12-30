@@ -15,6 +15,7 @@
     <string name="roll_veg">素菜</string>
     <string name="roll_soup">汤</string>
     <string name="roll_staple">主食</string>
+    <string name="roll_other">其他</string>
     <string name="roll_auto_balance">荤素搭配</string>
     <string name="roll_button">Roll点</string>
     <string name="roll_again">重新Roll</string>
@@ -30,6 +31,7 @@
     <string name="recipe_filter_veg">素菜</string>
     <string name="recipe_filter_soup">汤</string>
     <string name="recipe_filter_staple">主食</string>
+    <string name="recipe_filter_other">其他</string>
     <string name="recipe_search_hint">搜索菜谱或标签</string>
     <string name="recipe_add">添加菜谱</string>
     <string name="recipe_empty">还没有菜谱,点击+添加</string>
