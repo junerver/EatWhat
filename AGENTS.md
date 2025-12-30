@@ -2,7 +2,7 @@
 
 **Single Source of Truth for all AI development tools**
 
-Last updated: 2025-12-25
+Last updated: 2025-12-30
 
 ---
 
@@ -23,20 +23,20 @@ This file serves as the **unified rule set** for all AI development tools workin
 ### Core Technologies
 
 - **Language**: Kotlin 2.1.0
-- **UI Framework**: Jetpack Compose (BOM 2024.06.00) - Pure Compose, no XML layouts
+- **UI Framework**: Jetpack Compose (BOM 2025.12.01) - Pure Compose, no XML layouts
 - **State Management**: [ComposeHooks 2.2.1](https://github.com/junerver/ComposeHooks) (hooks2
   package)
-- **Database**: Room 2.6.1 (SQLite)
-- **Navigation**: Navigation Compose 2.7.6
+- **Database**: Room 2.8.4 (SQLite)
+- **Navigation**: Navigation Compose 2.9.6
 - **Design System**: Material Design 3 (Material You)
-- **Build Tool**: Gradle 8.7.3 with KSP 2.1.0-1.0.29
+- **Build Tool**: Gradle 8.9.1 with KSP 2.1.0-1.0.29
 
 ### Dependencies
 
 ```gradle
 // See app/build.gradle.kts for complete dependency list
-implementation(platform("androidx.compose:compose-bom:2024.06.00"))
-implementation("androidx.room:room-runtime:2.6.1")
+implementation(platform("androidx.compose:compose-bom:2025.12.01"))
+implementation("androidx.room:room-runtime:2.8.4")
 implementation("xyz.junerver.compose:hooks2:2.2.1")
 ```
 
@@ -51,9 +51,9 @@ app/src/main/java/com/eatwhat/
 │   └── Destinations.kt         # Sealed class for routes
 ├── data/                        # Data layer (Room, Repository)
 │   ├── database/
-│   │   ├── EatWhatDatabase.kt  # Room database (current version: 3)
-│   │   ├── entities/           # 8 entities (Recipe, Ingredient, CookingStep, etc.)
-│   │   ├── dao/                # 3 DAOs (RecipeDao, HistoryDao, TagDao)
+│   │   ├── EatWhatDatabase.kt  # Room database (current version: 6)
+│   │   ├── entities/           # 9 entities (Recipe, Ingredient, CookingStep, AIProvider, etc.)
+│   │   ├── dao/                # 4 DAOs (RecipeDao, HistoryDao, TagDao, AIProviderDao)
 │   │   └── relations/          # Relations (RecipeWithDetails, HistoryWithDetails)
 │   └── repository/             # Repository pattern implementations
 ├── domain/                      # Business logic (Use Cases, Models)
@@ -95,24 +95,50 @@ app/src/main/java/com/eatwhat/
 
 #### Color Palette
 
-项目使用温暖、现代的配色方案：
+项目使用温暖、现代的配色方案，所有颜色定义在 [
+`Color.kt`](app/src/main/java/com/eatwhat/ui/theme/Color.kt) 中。
+
+**关键颜色常量**：
 
 ```kotlin
-// 主色调 - 温暖橙色系
-private val PrimaryOrange = Color(0xFFFF6B35)      // 主要操作、强调
-private val PrimaryOrangeLight = Color(0xFFFF8C5A) // 浅色变体
-private val PrimaryOrangeDark = Color(0xFFE55A2B)  // 深色变体
+// 品牌主色调
+val PrimaryOrange = Color(0xFFFF6B35)
+val PrimaryOrangeLight = Color(0xFFFF8C5A)
+val PrimaryOrangeDark = Color(0xFFE55A2B)
 
 // 功能色
-private val SoftGreen = Color(0xFF4CAF50)   // 食材相关、成功状态
-private val SoftBlue = Color(0xFF2196F3)    // 步骤相关、信息状态
-private val SoftPurple = Color(0xFF9C27B0)  // 特殊功能
-private val WarmYellow = Color(0xFFFFC107)  // 中等难度、警告
+val SoftGreen = Color(0xFF4CAF50)    // 食材相关、成功状态
+val SoftBlue = Color(0xFF2196F3)     // 步骤相关、信息状态
+val SoftPurple = Color(0xFF9C27B0)   // 特殊功能
+val WarmYellow = Color(0xFFFFC107)   // 中等难度、警告
+val ErrorRed = Color(0xFFE57373)     // 错误/删除
+
+// 菜谱类型色
+val MeatRed = Color(0xFFE57373)      // 荤菜
+val VegGreen = Color(0xFF81C784)     // 素菜
+val SoupBlue = Color(0xFF64B5F6)     // 汤
+val StapleOrange = Color(0xFFFFB74D) // 主食
+val OtherPurple = Color(0xFF9575CD)  // 其他
 
 // 背景色
-private val CardBackground = Color(0xFFFFFBF8)  // 卡片背景
-private val PageBackground = Color(0xFFF5F5F5)  // 页面背景
+val CardBackground = Color(0xFFFFFBF8)
+val PageBackground = Color(0xFFF5F5F5)
+val InputBackground = Color(0xFFF8F8F8)
+val IngredientCardBackground = Color(0xFFF8FBF8)
+val StepCardBackground = Color(0xFFF5F9FF)
+val UnselectedBackground = Color(0xFFF5F5F5)
+
+// 边框色
+val LightBorder = Color(0xFFE0E0E0)
+val DarkBorder = Color(0xFF4A4A4A)
+
+// 深色模式专用色
+val DarkGradientStart = Color(0xFF1C1B1F)
+val DarkGradientEnd = Color(0xFF2D2D30)
+val DarkProgressTrack = Color(0xFF3C3C3F)
 ```
+
+> 完整颜色定义请参考 [`Color.kt`](app/src/main/java/com/eatwhat/ui/theme/Color.kt)，包含 16 种标签粉彩色。
 
 #### 深色模式适配规范
 
@@ -122,7 +148,8 @@ private val PageBackground = Color(0xFFF5F5F5)  // 页面背景
 
 1. 使用 `LocalDarkTheme.current` 检测深色模式（**不要使用** `isSystemInDarkTheme()`）
 2. 优先使用 `MaterialTheme.colorScheme` 语义化颜色
-3. 硬编码颜色必须提供深色模式变体
+3. 硬编码颜色必须提供深色模式变体，优先使用 [
+   `Color.kt`](app/src/main/java/com/eatwhat/ui/theme/Color.kt) 中定义的颜色常量
 4. 状态栏和导航栏需要同步适配
 
 **标准适配模式**：
@@ -393,9 +420,11 @@ import xyz.junerver.compose.hooks.invoke  // 必须导入此依赖才能直接�
 
 1. **useGetState** - 状态管理（推荐使用）
 
-    - 返回 `Triple<State<T>, (T) -> Unit, () -> T>`
+    - 返回 `Triple<State<T>, SetValueFn<SetterEither<T>>, () -> T>`
     - 提供 getter/setter 和即时获取当前值的能力
     - 适用于需要在回调中获取最新状态的场景
+    - `SetValueFn` 可以通过导入 `import xyz.junerver.compose.hooks.invoke` 进行简化调用
+    - `SetValueFn` 可以通过扩展函数 `left()` 转化为 `(T) -> Unit` 直接作为各种受控组件的回调函数参数使用
 
 2. **useState** - 基础状态管理
 
@@ -757,12 +786,20 @@ data class RecipeEntity(...)
 - **v1**: Initial schema with all entities
 - **v2**: Added `is_locked` column to `history_records` with index
 - **v3**: Added `custom_name` column to `history_records`
+- **v4**: Added `image_base64` column to `recipes` for storing WebP images as Base64
+- **v5**: Added `recipe_image_base64` column to `history_recipe_cross_ref` for image snapshots
+- **v6**: Added `ai_providers` table for multi-provider support
 
 ### Recent Updates
 
+- 2025-12-30: Updated color system documentation to match actual Color.kt implementation
+- 2025-12-30: Updated dependency versions (Compose BOM 2025.12.01, Room 2.8.4, Navigation 2.9.6,
+  Gradle 8.9.1)
+- 2025-12-30: Updated database schema version history (v4-v6) and entity/DAO counts (9 entities, 4
+  DAOs)
 - 2025-12-30: Updated dark mode detection to use LocalDarkTheme.current for user-controlled theme
   selection
 - 2025-12-29: Updated ComposeHooks usage guidelines (v2.2.1, hooks2 package)
-- 2025-12-29: Updated technology stack versions (Kotlin 2.1.0, Compose BOM 2024.06.00)
+- 2025-12-29: Updated technology stack versions (Kotlin 2.1.0)
 - 2025-12-25: Added comprehensive dark mode adaptation guidelines
 - 2025-12-15: Created unified AGENTS.md for all AI tools
