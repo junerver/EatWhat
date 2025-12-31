@@ -15,6 +15,7 @@ import com.eatwhat.data.preferences.ThemePreferences
 import com.eatwhat.data.sync.FileHelper
 import com.eatwhat.navigation.EatWhatApp
 import com.eatwhat.ui.theme.EatWhatTheme
+import com.eatwhat.util.ImageUtils
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks._useGetState
 import xyz.junerver.compose.hooks.invoke
@@ -35,18 +36,24 @@ class MainActivity : ComponentActivity() {
 
           // 处理分享意图
           val (initialPrompt, setInitialPrompt) = _useGetState<String?>(null)
+          val (initialImageBase64, setInitialImageBase64) = _useGetState<String?>(null)
 
           // 只在 Activity 创建时处理一次 Intent
           xyz.junerver.compose.hooks.useEffect(Unit) {
-            handleIntent(intent) { prompt ->
+            handleIntent(intent) { prompt, imageBase64 ->
               setInitialPrompt(prompt)
+              setInitialImageBase64(imageBase64)
             }
           }
 
           EatWhatTheme(themeMode = themeMode) {
             EatWhatApp(
               initialPrompt = initialPrompt.value,
-              onPromptConsumed = { setInitialPrompt(null) }
+              initialImageBase64 = initialImageBase64.value,
+              onPromptConsumed = {
+                setInitialPrompt(null)
+                setInitialImageBase64(null)
+              }
             )
           }
         }
@@ -66,28 +73,26 @@ class MainActivity : ComponentActivity() {
     recreate()
   }
 
-  private fun handleIntent(intent: Intent, onResult: (String?) -> Unit) {
+  private fun handleIntent(intent: Intent, onResult: (String?, String?) -> Unit) {
     if (intent.action == Intent.ACTION_SEND) {
       when {
         intent.type?.startsWith("text/") == true -> {
           handleTextShare(intent, onResult)
         }
         intent.type?.startsWith("image/") == true -> {
-          // 对于图片分享，尝试获取文字说明 (EXTRA_TEXT/EXTRA_TITLE)
-          val text = intent.getStringExtra(Intent.EXTRA_TEXT)
-            ?: intent.getStringExtra(Intent.EXTRA_TITLE)
-          onResult(text)
+          handleImageShare(intent, onResult)
         }
-        else -> onResult(null)
+
+        else -> onResult(null, null)
       }
     } else {
-      onResult(null)
+      onResult(null, null)
     }
   }
 
-  private fun handleTextShare(intent: Intent, onResult: (String?) -> Unit) {
+  private fun handleTextShare(intent: Intent, onResult: (String?, String?) -> Unit) {
     intent.getStringExtra(Intent.EXTRA_TEXT)?.let { text ->
-      onResult(text) // 直接分享的文本
+      onResult(text, null) // 直接分享的文本
     } ?: run {
       // 尝试获取文件流（针对文件分享）
       (intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri)?.let { uri ->
@@ -95,13 +100,41 @@ class MainActivity : ComponentActivity() {
           try {
             val bytes = FileHelper.readFromUri(this@MainActivity, uri)
             val text = String(bytes)
-            onResult(text)
+            onResult(text, null)
           } catch (e: Exception) {
             e.printStackTrace()
-            onResult(null)
+            onResult(null, null)
           }
         }
-      } ?: onResult(null)
-        }
+      } ?: onResult(null, null)
     }
+  }
+
+  private fun handleImageShare(intent: Intent, onResult: (String?, String?) -> Unit) {
+    // 获取可能附带的文字说明
+    val text = intent.getStringExtra(Intent.EXTRA_TEXT)
+      ?: intent.getStringExtra(Intent.EXTRA_TITLE)
+
+    // 获取图片 URI
+    (intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri)?.let { uri ->
+      lifecycleScope.launch {
+        try {
+          val result = ImageUtils.processImageToBase64(this@MainActivity, uri)
+          when (result) {
+            is ImageUtils.ImageProcessingResult.Success -> {
+              onResult(text, result.base64)
+            }
+
+            is ImageUtils.ImageProcessingResult.Error -> {
+              // 图片处理失败，只传递文字（如果有）
+              onResult(text, null)
+            }
+          }
+        } catch (e: Exception) {
+          e.printStackTrace()
+          onResult(text, null)
+        }
+      }
+    } ?: onResult(text, null)
+  }
 }

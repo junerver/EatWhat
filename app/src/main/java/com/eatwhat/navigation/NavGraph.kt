@@ -25,16 +25,25 @@ import com.eatwhat.ui.screens.roll.RollScreen
 @Composable
 fun EatWhatApp(
   initialPrompt: String? = null,
+  initialImageBase64: String? = null,
   onPromptConsumed: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-  // 监听 initialPrompt 变化，自动跳转到 AI 分析页面
-  LaunchedEffect(initialPrompt) {
-    if (initialPrompt != null) {
+  // 监听 initialPrompt 或 initialImageBase64 变化，自动跳转到 AI 分析页面
+  LaunchedEffect(initialPrompt, initialImageBase64) {
+    if (initialPrompt != null || initialImageBase64 != null) {
+      // 导航到 AI 分析页面
       navController.navigate(Destinations.AIAnalysis.createRoute(initialPrompt))
+      // 如果有图片，通过 savedStateHandle 传递
+      if (initialImageBase64 != null) {
+        navController.currentBackStackEntry?.savedStateHandle?.set(
+          "shared_image",
+          initialImageBase64
+        )
+      }
       onPromptConsumed()
     }
   }

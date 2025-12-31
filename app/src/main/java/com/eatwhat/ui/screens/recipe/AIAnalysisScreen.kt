@@ -91,6 +91,22 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
   val (error, setError) = _useGetState<String?>(null)
   var selectedImageBase64 by remember { mutableStateOf<String?>(null) }
 
+  // 接收从分享传来的图片
+  val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+  val sharedImageBase64 =
+    savedStateHandle?.getStateFlow<String?>("shared_image", null)?.collectAsState()
+
+  // 判断是否从分享进入：有 initialPrompt 或有 shared_image
+  val isFromShare = remember { initialPrompt != null || sharedImageBase64?.value != null }
+
+  // 如果有分享的图片，设置为选中的图片
+  xyz.junerver.compose.hooks.useEffect(sharedImageBase64?.value) {
+    sharedImageBase64?.value?.let { imageBase64 ->
+      selectedImageBase64 = imageBase64
+      savedStateHandle?.remove<String>("shared_image")
+    }
+  }
+
   // Image picker launcher
   val launcher = rememberLauncherForActivityResult(
     contract = ActivityResultContracts.GetContent()
@@ -140,43 +156,34 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
 
               val jsonString = Json.encodeToString(RecipeAIResult.serializer(), finalResult)
 
-              // 在导航之前先设置 savedStateHandle
-              val stateHandle = if (initialPrompt != null) {
-                // From share: 目标是新的 AddRecipe 页面
-                null // 需要导航后才能获取
-              } else {
-                // 从 AddRecipe 进入的: 目标是上一个页面 (AddRecipe)
-                navController.previousBackStackEntry?.savedStateHandle
-              }
-
-              // 如果是从 AddRecipe 进入,先设置数据再返回
-              if (initialPrompt == null) {
-                stateHandle?.set("ai_result", jsonString)
-                if (finalResult.isFoodImage && selectedImageBase64 != null) {
-                  stateHandle?.set("ai_image", selectedImageBase64)
+              // 根据是否从分享进入来决定导航行为
+              if (isFromShare) {
+                // 从分享进入: 导航到 AddRecipe 页面
+                val targetRoute = com.eatwhat.navigation.Destinations.AddRecipe.route
+                navController.navigate(targetRoute) {
+                  popUpTo(com.eatwhat.navigation.Destinations.Roll.route) {
+                    inclusive = false
+                  }
+                  launchSingleTop = true
                 }
-              }
-
-              // 执行导航
-              val targetRoute = if (initialPrompt != null) {
-                // From share
-                com.eatwhat.navigation.Destinations.AddRecipe.route
-              } else {
-                null // Pop back
-              }
-
-              if (initialPrompt != null) {
-                navController.navigate(targetRoute!!) {
-                  popUpTo(com.eatwhat.navigation.Destinations.Roll.route)
+                // 延迟设置数据,确保导航完成
+                scope.launch {
+                  kotlinx.coroutines.delay(100)
+                  navController.currentBackStackEntry?.savedStateHandle?.apply {
+                    set("ai_result", jsonString)
+                    if (finalResult.isFoodImage && selectedImageBase64 != null) {
+                      set("ai_image", selectedImageBase64)
+                    }
+                  }
                 }
-                // 导航后设置数据
-                navController.currentBackStackEntry?.savedStateHandle?.apply {
+              } else {
+                // 从 AddRecipe 进入: 返回到 AddRecipe 页面
+                navController.previousBackStackEntry?.savedStateHandle?.apply {
                   set("ai_result", jsonString)
                   if (finalResult.isFoodImage && selectedImageBase64 != null) {
                     set("ai_image", selectedImageBase64)
                   }
                 }
-              } else {
                 navController.popBackStack()
               }
             },

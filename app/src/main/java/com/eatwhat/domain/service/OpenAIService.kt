@@ -137,7 +137,7 @@ class OpenAIService {
           buildJsonArray {
             addJsonObject {
               put("type", "text")
-              put("text", prompt.ifBlank { "请分析这张图片中的菜谱" })
+              put("text", prompt.ifBlank { "请分析这张图片中的内容、并创建菜谱" })
             }
             addJsonObject {
               put("type", "image_url")
