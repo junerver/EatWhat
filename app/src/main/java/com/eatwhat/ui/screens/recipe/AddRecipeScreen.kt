@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -64,6 +66,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -78,15 +82,19 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.R
@@ -145,6 +153,10 @@ fun AddRecipeScreen(
   val (newTag, setNewTag) = useGetState(default = "")
   val (isSaving, setIsSaving) = useGetState(default = false)
   val (showTagInput, setShowTagInput) = useGetState(default = false)
+
+  // Drag and drop state for steps
+  var draggedStepIndex by remember { mutableIntStateOf(-1) }
+  var draggedStepOffset by remember { mutableFloatStateOf(0f) }
     
     // Generate stable random colors for tags
   val tagColors = remember(tags.value) {
@@ -594,41 +606,109 @@ fun AddRecipeScreen(
                     }
                 ) {
                   steps.value.forEachIndexed { index, step ->
+                    val isDragging = draggedStepIndex == index
+                    val density = LocalDensity.current
+                        
                         AnimatedVisibility(
                             visible = true,
                             enter = fadeIn() + expandVertically(),
                             exit = fadeOut() + shrinkVertically()
                         ) {
-                            StepInputCard(
-                                stepNumber = index + 1,
-                                step = step,
-                                onStepChange = { newStep ->
-                                  setSteps(steps.value.toMutableList().apply {
-                                    this[index] = newStep
-                                  })
-                                },
-                                onDelete = {
-                                  if (steps.value.size > 1) {
-                                    setSteps(steps.value.filterIndexed { i, _ -> i != index })
-                                    }
-                                },
-                              canDelete = steps.value.size > 1,
-                              isLast = index == steps.value.lastIndex
-                            )
-                        }
-                    if (index < steps.value.lastIndex) {
-                            // Timeline connector
-                            Row(
-                                modifier = Modifier
-                                  .fillMaxWidth()
-                                  .padding(start = 20.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                          Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                          ) {
+                            // Left column: step number + connector
+                            Column(
+                              horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                      .width(2.dp)
-                                      .height(16.dp)
-                                      .background(SoftBlue.copy(alpha = 0.3f))
+                              // Step number badge
+                              Box(
+                                modifier = Modifier
+                                  .size(40.dp)
+                                  .clip(CircleShape)
+                                  .background(
+                                    brush = Brush.linearGradient(
+                                      colors = listOf(SoftBlue, SoftBlue.copy(alpha = 0.7f))
+                                    )
+                                  ),
+                                contentAlignment = Alignment.Center
+                              ) {
+                                Text(
+                                  "${index + 1}",
+                                  style = MaterialTheme.typography.titleMedium,
+                                  fontWeight = FontWeight.Bold,
+                                  color = Color.White
+                                )
+                              }
+
+                              // Connector with insert button
+                              if (index < steps.value.lastIndex) {
+                                StepConnectorWithInsert(
+                                  onInsertStep = {
+                                    val newList = steps.value.toMutableList()
+                                    newList.add(index + 1, StepInput())
+                                    setSteps(newList)
+                                  }
+                                )
+                              }
+                            }
+
+                            // Right column: step content
+                            StepContentCard(
+                              stepNumber = index + 1,
+                              step = step,
+                              onStepChange = { newStep ->
+                                setSteps(steps.value.toMutableList().apply {
+                                  this[index] = newStep
+                                })
+                              },
+                              onDelete = {
+                                if (steps.value.size > 1) {
+                                  setSteps(steps.value.filterIndexed { i, _ -> i != index })
+                                }
+                              },
+                              canDelete = steps.value.size > 1,
+                              isDragging = isDragging,
+                              dragOffset = if (isDragging) draggedStepOffset else 0f,
+                              onDragStart = {
+                                draggedStepIndex = index
+                                draggedStepOffset = 0f
+                              },
+                              onDrag = { delta ->
+                                if (draggedStepIndex == index) {
+                                  draggedStepOffset += delta
+
+                                  // Calculate if we should swap with another step
+                                  val stepHeight = with(density) { 120.dp.toPx() }
+                                  val swapThreshold = stepHeight / 2
+
+                                  if (draggedStepOffset > swapThreshold && index < steps.value.lastIndex) {
+                                    // Swap with next step
+                                    val newList = steps.value.toMutableList()
+                                    val temp = newList[index]
+                                    newList[index] = newList[index + 1]
+                                    newList[index + 1] = temp
+                                    setSteps(newList)
+                                    draggedStepIndex = index + 1
+                                    draggedStepOffset -= stepHeight
+                                  } else if (draggedStepOffset < -swapThreshold && index > 0) {
+                                    // Swap with previous step
+                                    val newList = steps.value.toMutableList()
+                                    val temp = newList[index]
+                                    newList[index] = newList[index - 1]
+                                    newList[index - 1] = temp
+                                    setSteps(newList)
+                                    draggedStepIndex = index - 1
+                                    draggedStepOffset += stepHeight
+                                  }
+                                }
+                              },
+                              onDragEnd = {
+                                draggedStepIndex = -1
+                                draggedStepOffset = 0f
+                              },
+                              modifier = Modifier.weight(1f)
                                 )
                             }
                         }
@@ -1022,104 +1102,93 @@ private fun IngredientInputCard(
 }
 
 /**
- * Step input card with timeline design
+ * Step content card with drag support
  */
 @Composable
-private fun StepInputCard(
+private fun StepContentCard(
     stepNumber: Int,
     step: StepInput,
     onStepChange: (StepInput) -> Unit,
     onDelete: () -> Unit,
     canDelete: Boolean,
-    isLast: Boolean
+    isDragging: Boolean = false,
+    dragOffset: Float = 0f,
+    onDragStart: () -> Unit = {},
+    onDrag: (Float) -> Unit = {},
+    onDragEnd: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
   val isDark = LocalDarkTheme.current
   val stepBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else StepCardBackground
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+  Surface(
+    shape = RoundedCornerShape(16.dp),
+    color = stepBackground,
+    border = androidx.compose.foundation.BorderStroke(1.dp, SoftBlue.copy(alpha = 0.2f)),
+    modifier = modifier
+      .offset { IntOffset(0, dragOffset.toInt()) }
+      .zIndex(if (isDragging) 1f else 0f)
+      .pointerInput(Unit) {
+        detectDragGesturesAfterLongPress(
+          onDragStart = { onDragStart() },
+          onDrag = { _, dragAmount -> onDrag(dragAmount.y) },
+          onDragEnd = { onDragEnd() },
+          onDragCancel = { onDragEnd() }
+        )
+      }
+  ) {
+    Column(
+      modifier = Modifier.padding(12.dp)
     ) {
-        // Step number badge
-        Box(
-            modifier = Modifier
-              .size(40.dp)
-              .clip(CircleShape)
-              .background(
-                brush = Brush.linearGradient(
-                  colors = listOf(SoftBlue, SoftBlue.copy(alpha = 0.7f))
-                )
-              ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                "$stepNumber",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text(
+          "步骤 $stepNumber",
+          style = MaterialTheme.typography.labelMedium,
+          color = SoftBlue,
+          fontWeight = FontWeight.SemiBold
+        )
+        if (canDelete) {
+          IconButton(
+            onClick = onDelete,
+            modifier = Modifier.size(24.dp)
+          ) {
+            Icon(
+              Icons.Outlined.Close,
+              contentDescription = "删除",
+              tint = Color.Gray.copy(alpha = 0.5f),
+              modifier = Modifier.size(16.dp)
             )
+          }
         }
-        
-        // Step content
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-          color = stepBackground,
-            border = androidx.compose.foundation.BorderStroke(1.dp, SoftBlue.copy(alpha = 0.2f)),
-            modifier = Modifier.weight(1f)
-        ) {
-            Column(
-                modifier = Modifier.padding(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "步骤 $stepNumber",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = SoftBlue,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    if (canDelete) {
-                        IconButton(
-                            onClick = onDelete,
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                Icons.Outlined.Close,
-                                contentDescription = "删除",
-                                tint = Color.Gray.copy(alpha = 0.5f),
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                BasicTextField(
-                    value = step.description,
-                    onValueChange = { onStepChange(step.copy(description = it)) },
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                        lineHeight = 22.sp
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    decorationBox = { innerTextField ->
-                        Box {
-                            if (step.description.isEmpty()) {
-                                Text(
-                                    "描述这一步的操作...",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                                )
-                            }
-                            innerTextField()
-                        }
-                    }
-                )
+      }
+
+      Spacer(modifier = Modifier.height(8.dp))
+
+      BasicTextField(
+        value = step.description,
+        onValueChange = { onStepChange(step.copy(description = it)) },
+        textStyle = MaterialTheme.typography.bodyMedium.copy(
+          color = MaterialTheme.colorScheme.onSurface,
+          lineHeight = 22.sp
+        ),
+        modifier = Modifier.fillMaxWidth(),
+        decorationBox = { innerTextField ->
+          Box {
+            if (step.description.isEmpty()) {
+              Text(
+                "描述这一步的操作...",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+              )
             }
+            innerTextField()
+          }
+        }
+      )
         }
     }
 }
@@ -1314,5 +1383,51 @@ private fun TagsFlowRow(
                 }
             }
         }
+    }
+}
+
+/**
+ * Step connector with insert button in the center
+ */
+@Composable
+fun StepConnectorWithInsert(
+  onInsertStep: () -> Unit
+) {
+  Column(
+    horizontalAlignment = Alignment.CenterHorizontally,
+    modifier = Modifier.width(40.dp)
+  ) {
+    // Top connector line
+    Box(
+      modifier = Modifier
+        .width(2.dp)
+        .height(24.dp)
+        .background(SoftBlue.copy(alpha = 0.3f))
+    )
+
+    // Insert button
+    Surface(
+      onClick = onInsertStep,
+      shape = CircleShape,
+      color = SoftBlue.copy(alpha = 0.1f),
+      modifier = Modifier.size(32.dp)
+    ) {
+      Box(contentAlignment = Alignment.Center) {
+        Icon(
+          Icons.Default.Add,
+          contentDescription = "在此处插入步骤",
+          tint = SoftBlue,
+          modifier = Modifier.size(18.dp)
+        )
+      }
+    }
+
+    // Bottom connector line
+    Box(
+      modifier = Modifier
+        .width(2.dp)
+        .height(24.dp)
+        .background(SoftBlue.copy(alpha = 0.3f))
+    )
     }
 }
