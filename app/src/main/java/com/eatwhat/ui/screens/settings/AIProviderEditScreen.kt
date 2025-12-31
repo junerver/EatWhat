@@ -10,6 +10,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +20,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bolt
@@ -34,14 +38,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -55,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,8 +71,10 @@ import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.hooks.useTimeoutFn
+import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AIProviderEditScreen(navController: NavController, providerId: Long? = null) {
   val context = LocalContext.current
@@ -79,6 +82,7 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
   val database = remember { EatWhatDatabase.getInstance(context) }
   val repository = remember { AIProviderRepository(database.aiProviderDao()) }
   val openAIService = remember { OpenAIService() }
+  val focusManager = LocalFocusManager.current
 
   // Form state
   val (name, setName) = useGetState(default = "")
@@ -90,7 +94,6 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
   // Model fetch & test state
   val (availableModels, setAvailableModels) = useGetState(default = emptyList<String>())
   val (isFetchingModels, setIsFetchingModels) = useGetState(default = false)
-  val (isExpanded, setIsExpanded) = useGetState(default = false)
   val (testResult, setTestResult) = useGetState(default = "")
   val (isTesting, setIsTesting) = useGetState(default = false)
   val (testSuccess, setTestSuccess) = useGetState(default = false)
@@ -120,19 +123,29 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
     }
   }
 
+  // Auto-hide test result after 3 seconds if successful
+  useTimeoutFn({
+    if (testSuccess.value && testResult.value.isNotBlank()) {
+      setTestResult("")
+      setTestSuccess(false)
+    }
+  }, 2.seconds)
+
   // Fetch models
   val fetchModels = {
     if (baseUrl.value.isNotBlank() && apiKey.value.isNotBlank()) {
       setIsFetchingModels(true)
+      setTestResult("")
+      setTestSuccess(false)
       scope.launch {
         val config = AIConfig(baseUrl.value, apiKey.value, model.value)
         val result = openAIService.fetchModels(config)
         setIsFetchingModels(false)
         result.onSuccess {
           setAvailableModels(it)
-          setIsExpanded(true)
+          // Don't auto-open dropdown, just show the models card below
         }.onFailure {
-          setTestResult("Error fetching models: ${it.message}")
+          setTestResult("获取模型列表失败: ${it.message}")
           setTestSuccess(false)
         }
       }
@@ -228,11 +241,6 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
     }
   }
 
-  // Filter models based on input
-  val filteredModels = availableModels.value.filter {
-    it.contains(model.value, ignoreCase = true)
-  }
-
   Scaffold(
     topBar = {
       TopAppBar(
@@ -265,6 +273,7 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
       modifier = Modifier
         .fillMaxSize()
         .padding(paddingValues)
+        .verticalScroll(rememberScrollState())
         .padding(16.dp),
       verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -357,61 +366,41 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
           ) {
-            ExposedDropdownMenuBox(
-              expanded = isExpanded.value,
-              onExpandedChange = { setIsExpanded(it) },
-              modifier = Modifier.weight(1f)
-            ) {
-              // Custom TextField for Model
-              StyledTextField(
-                value = model.value,
-                onValueChange = {
-                  setModel(it)
-                  setIsExpanded(true)
-                },
-                label = "模型名称",
-                placeholder = "gpt-3.5-turbo",
-                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
-                trailingIcon = {
-                  if (isFetchingModels.value) {
-                    CircularProgressIndicator(
-                      modifier = Modifier.size(20.dp),
-                      strokeWidth = 2.dp,
-                      color = Color(0xFFFF6B35)
-                    )
-                  } else {
+            // Model TextField
+            StyledTextField(
+              value = model.value,
+              onValueChange = { setModel(it) },
+              label = "模型名称",
+              placeholder = "gpt-3.5-turbo",
+              modifier = Modifier.weight(1f),
+              trailingIcon = {
+                if (isFetchingModels.value) {
+                  CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = Color(0xFFFF6B35)
+                  )
+                } else {
+                  IconButton(
+                    onClick = {
+                      focusManager.clearFocus()
+                      fetchModels()
+                    },
+                    modifier = Modifier.size(24.dp)
+                  ) {
                     Icon(
                       Icons.Default.Refresh,
                       contentDescription = "Fetch Models",
                       tint = subTextColor,
-                      modifier = Modifier
-                        .size(24.dp)
-                        .clickable { fetchModels() }
+                      modifier = Modifier.size(20.dp)
                     )
                   }
-                },
-                backgroundColor = inputBackground,
-                textColor = textColor,
-                placeholderColor = subTextColor
-              )
-
-              ExposedDropdownMenu(
-                expanded = isExpanded.value && filteredModels.isNotEmpty(),
-                onDismissRequest = { setIsExpanded(false) },
-                containerColor = cardBackground
-              ) {
-                filteredModels.take(5).forEach { selectionOption ->
-                  DropdownMenuItem(
-                    text = { Text(selectionOption, color = textColor) },
-                    onClick = {
-                      setModel(selectionOption)
-                      setIsExpanded(false)
-                    },
-                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                  )
                 }
-              }
-            }
+              },
+              backgroundColor = inputBackground,
+              textColor = textColor,
+              placeholderColor = subTextColor
+            )
 
             // Test Button
             Surface(
@@ -493,7 +482,102 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
         }
       }
 
-      Spacer(modifier = Modifier.weight(1f))
+      // Models Grid Card
+      AnimatedVisibility(
+        visible = availableModels.value.isNotEmpty(),
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically()
+      ) {
+        Card(
+          modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+              elevation = 4.dp,
+              shape = RoundedCornerShape(20.dp),
+              spotColor = Color.Black.copy(alpha = 0.1f)
+            ),
+          shape = RoundedCornerShape(20.dp),
+          colors = CardDefaults.cardColors(containerColor = cardBackground)
+        ) {
+          Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+          ) {
+            // Header
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Box(
+                modifier = Modifier
+                  .size(40.dp)
+                  .background(Color(0xFF2196F3).copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+              ) {
+                Icon(
+                  imageVector = Icons.Default.Settings,
+                  contentDescription = null,
+                  tint = Color(0xFF2196F3) // SoftBlue
+                )
+              }
+              Spacer(modifier = Modifier.width(12.dp))
+              Column {
+                Text(
+                  text = "可用模型列表",
+                  style = MaterialTheme.typography.titleMedium,
+                  fontWeight = FontWeight.Bold,
+                  color = textColor
+                )
+                Text(
+                  text = "共 ${availableModels.value.size} 个模型",
+                  style = MaterialTheme.typography.bodySmall,
+                  color = subTextColor
+                )
+              }
+            }
+
+            // Models Grid
+            FlowRow(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.spacedBy(8.dp),
+              verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+              availableModels.value.forEach { modelName ->
+                Surface(
+                  onClick = {
+                    setModel(modelName)
+                    // Optional: scroll to top to show the filled model
+                  },
+                  shape = RoundedCornerShape(12.dp),
+                  color = if (model.value == modelName)
+                    Color(0xFF2196F3).copy(alpha = 0.15f)
+                  else
+                    inputBackground,
+                  border = if (model.value == modelName)
+                    androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2196F3))
+                  else
+                    null,
+                  modifier = Modifier.padding(0.dp)
+                ) {
+                  Text(
+                    text = modelName,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (model.value == modelName)
+                      Color(0xFF2196F3)
+                    else
+                      textColor,
+                    fontWeight = if (model.value == modelName)
+                      FontWeight.Bold
+                    else
+                      FontWeight.Normal
+                  )
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Bottom spacing and save button
+      Spacer(modifier = Modifier.height(16.dp))
 
       Button(
         onClick = { onSave() },
@@ -505,6 +589,8 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
       ) {
         Text("保存配置", fontSize = 16.sp, fontWeight = FontWeight.Bold)
       }
+
+      Spacer(modifier = Modifier.height(16.dp))
     }
   }
 }
