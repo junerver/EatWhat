@@ -26,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Error
@@ -33,8 +34,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -58,7 +59,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.data.database.EatWhatDatabase
 import com.eatwhat.data.database.entities.AIProviderEntity
@@ -98,6 +98,7 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
   val (isTesting, setIsTesting) = useGetState(default = false)
   val (testSuccess, setTestSuccess) = useGetState(default = false)
   val (isApiKeyVisible, setApiKeyVisible) = useGetState(default = false)
+  val (showDeleteDialog, setShowDeleteDialog) = useGetState(default = false)
 
   // Dark mode support
   val isDark = com.eatwhat.ui.theme.LocalDarkTheme.current
@@ -257,9 +258,12 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
         },
         actions = {
           if (providerId != null) {
-            IconButton(onClick = { onDelete() }) {
+            IconButton(onClick = { setShowDeleteDialog(true) }) {
               Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
             }
+          }
+          IconButton(onClick = { onSave() }) {
+            Icon(Icons.Default.Check, contentDescription = "Save", tint = Color(0xFF4CAF50))
           }
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -543,7 +547,6 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
                 Surface(
                   onClick = {
                     setModel(modelName)
-                    // Optional: scroll to top to show the filled model
                   },
                   shape = RoundedCornerShape(12.dp),
                   color = if (model.value == modelName)
@@ -576,21 +579,53 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
         }
       }
 
-      // Bottom spacing and save button
-      Spacer(modifier = Modifier.height(16.dp))
+      // Bottom spacing
+      Spacer(modifier = Modifier.height(80.dp))
+    }
 
-      Button(
-        onClick = { onSave() },
-        modifier = Modifier
-          .fillMaxWidth()
-          .height(56.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B35)),
-        shape = RoundedCornerShape(28.dp)
-      ) {
-        Text("保存配置", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-      }
-
-      Spacer(modifier = Modifier.height(16.dp))
+    // Delete Confirmation Dialog
+    if (showDeleteDialog.value) {
+      AlertDialog(
+        onDismissRequest = { setShowDeleteDialog(false) },
+        icon = {
+          Icon(
+            Icons.Default.Delete,
+            contentDescription = null,
+            tint = Color.Red,
+            modifier = Modifier.size(32.dp)
+          )
+        },
+        title = {
+          Text(
+            text = "确认删除",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+          )
+        },
+        text = {
+          Text(
+            text = "确定要删除此模型供应商吗？此操作无法撤销。",
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
+          )
+        },
+        confirmButton = {
+          TextButton(
+            onClick = {
+              setShowDeleteDialog(false)
+              onDelete()
+            }
+          ) {
+            Text("删除", color = Color.Red, fontWeight = FontWeight.Bold)
+          }
+        },
+        dismissButton = {
+          TextButton(onClick = { setShowDeleteDialog(false) }) {
+            Text("取消")
+          }
+        },
+        containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
+      )
     }
   }
 }

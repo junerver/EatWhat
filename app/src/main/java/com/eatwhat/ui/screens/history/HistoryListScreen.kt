@@ -36,7 +36,6 @@ import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -282,35 +281,42 @@ fun HistoryListScreen(
                 Icon(
                     imageVector = Icons.Default.DeleteSweep,
                     contentDescription = null,
-                    tint = ErrorRed
+                  tint = ErrorRed,
+                  modifier = Modifier.size(32.dp)
                 )
             },
             title = {
-                Text("清除历史记录")
+              Text(
+                text = "确认删除",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+              )
             },
             text = {
-                Text("确定要删除全部 $unlockedCount 条未锁定的历史记录吗？\n\n此操作不可恢复，已锁定的记录将保留。")
+              Text(
+                text = "确定要删除全部 $unlockedCount 条未锁定的历史记录吗？\n\n此操作无法撤销，已锁定的记录将保留。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (darkTheme) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
+              )
             },
             confirmButton = {
                 TextButton(
                     onClick = {
+                      showClearDialog = false
                         scope.launch {
                             repository.deleteAllUnlockedHistory()
                         }
-                        showClearDialog = false
-                    },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = ErrorRed
-                    )
+                    }
                 ) {
-                    Text("确认删除")
+                  Text("删除", color = ErrorRed, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearDialog = false }) {
                     Text("取消")
                 }
-            }
+            },
+          containerColor = if (darkTheme) MaterialTheme.colorScheme.surface else Color.White
         )
     }
 }
@@ -408,17 +414,17 @@ private fun HistoryCard(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+              .fillMaxWidth()
+              .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 左侧图标
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(PrimaryOrange.copy(alpha = 0.1f)),
+                  .size(48.dp)
+                  .clip(RoundedCornerShape(12.dp))
+                  .background(PrimaryOrange.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -479,9 +485,9 @@ private fun HistoryCard(
             if (history.isLocked) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(SoftPurple.copy(alpha = 0.15f)),
+                      .size(36.dp)
+                      .clip(CircleShape)
+                      .background(SoftPurple.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
