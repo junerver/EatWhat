@@ -1,11 +1,18 @@
 package com.eatwhat.domain.service
 
+import android.util.Log
 import com.eatwhat.data.preferences.AIConfig
 import com.eatwhat.domain.model.ConnectionTestResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonObject
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -14,7 +21,14 @@ import java.util.concurrent.TimeUnit
 
 // Request/Response models
 @Serializable
-data class OpenAIMessage(val role: String, val content: String)
+data class OpenAIMessage(
+  val role: String,
+  val content: JsonElement
+)
+
+fun createTextMessage(role: String, text: String): OpenAIMessage {
+  return OpenAIMessage(role, JsonPrimitive(text))
+}
 
 @Serializable
 data class OpenAIRequest(
@@ -63,7 +77,8 @@ data class RecipeAIResult(
   val ingredients: List<IngredientAI>,
   val steps: List<String>,
   val tags: List<String>,
-  val icon: String // Emoji
+  val icon: String, // Emoji
+  val isFoodImage: Boolean = false // Whether the input image was a food photo
 )
 
 @Serializable
@@ -82,11 +97,15 @@ class OpenAIService {
 
   private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
-  suspend fun analyzeRecipe(config: AIConfig, prompt: String): Result<RecipeAIResult> =
+  suspend fun analyzeRecipe(
+    config: AIConfig,
+    prompt: String,
+    imageBase64: String? = null
+  ): Result<RecipeAIResult> =
     withContext(Dispatchers.IO) {
       try {
         val systemPrompt = """
-                你是一个专业的菜谱分析助手。请分析用户的输入（菜谱描述、做法等），并输出符合以下 JSON 格式的菜谱数据。
+                你是一个专业的菜谱分析助手。请分析用户的输入（菜谱描述、做法、图片等），并输出符合以下 JSON 格式的菜谱数据。
 
                 {
                   "name": "菜名",
@@ -98,7 +117,8 @@ class OpenAIService {
                   ],
                   "steps": ["步骤1", "步骤2"],
                   "tags": ["标签1", "标签2"],
-                  "icon": "🍳"
+                  "icon": "🍳",
+                  "isFoodImage": false
                 }
 
                 注意：
@@ -108,12 +128,32 @@ class OpenAIService {
                 3. icon 请根据菜品内容选择一个最合适的 Emoji。
                 4. 如果输入信息不全，请根据经验合理补全。
                 5. 请只输出 JSON 内容，不要包含 markdown 标记。
-                6. estimatedTime 应在 1-300 之间
+                6. estimatedTime 应在 1-300 之间。
+                7. 如果用户上传了图片且该图片是做好的食物照片（成品图），请将 "isFoodImage" 设为 true；如果是纯文字截图或非食物照片，请设为 false。
+                8. 如果 "isFoodImage" 为 true，icon 字段仍需生成一个 emoji 作为备用，但前端会优先使用用户上传的图片。
             """.trimIndent()
 
+        val userContent: JsonElement = if (imageBase64 != null) {
+          buildJsonArray {
+            addJsonObject {
+              put("type", "text")
+              put("text", prompt.ifBlank { "请分析这张图片中的菜谱" })
+            }
+            addJsonObject {
+              put("type", "image_url")
+              putJsonObject("image_url") {
+                // WebP is used by ImageUtils
+                put("url", "data:image/webp;base64,$imageBase64")
+              }
+            }
+          }
+        } else {
+          JsonPrimitive(prompt)
+        }
+
         val messages = listOf(
-          OpenAIMessage("system", systemPrompt),
-          OpenAIMessage("user", prompt)
+          createTextMessage("system", systemPrompt),
+          OpenAIMessage("user", userContent)
         )
 
         val requestBody = OpenAIRequest(
@@ -133,6 +173,7 @@ class OpenAIService {
 
         val response = client.newCall(request).execute()
         val responseBody = response.body?.string()
+        Log.d("AI_AN", "analyzeRecipe: $responseBody")
 
         if (!response.isSuccessful) {
           return@withContext Result.failure(Exception("API Error: ${response.code} $responseBody"))
@@ -143,8 +184,12 @@ class OpenAIService {
         }
 
         val openAIResponse = json.decodeFromString(OpenAIResponse.serializer(), responseBody)
-        val content = openAIResponse.choices.firstOrNull()?.message?.content
-          ?: return@withContext Result.failure(Exception("No content generated"))
+        val responseMessage = openAIResponse.choices.firstOrNull()?.message
+
+        val content = when (val c = responseMessage?.content) {
+          is JsonPrimitive -> c.content
+          else -> c?.toString()
+        } ?: return@withContext Result.failure(Exception("No content generated"))
 
         try {
           val recipeResult = json.decodeFromString(RecipeAIResult.serializer(), content)
@@ -187,7 +232,7 @@ class OpenAIService {
   suspend fun testConnection(config: AIConfig): Result<ConnectionTestResult> =
     withContext(Dispatchers.IO) {
       try {
-        val messages = listOf(OpenAIMessage("user", "Hello"))
+        val messages = listOf(createTextMessage("user", "Hello"))
         val requestBody = OpenAIRequest(
           model = config.model,
           messages = messages,
@@ -232,7 +277,11 @@ class OpenAIService {
 
         // Just verify we can parse it as OpenAI response
         val openAIResponse = json.decodeFromString(OpenAIResponse.serializer(), responseBody)
-        val content = openAIResponse.choices.firstOrNull()?.message?.content ?: ""
+        val responseMessage = openAIResponse.choices.firstOrNull()?.message
+        val content = when (val c = responseMessage?.content) {
+          is JsonPrimitive -> c.content
+          else -> c?.toString()
+        } ?: ""
 
         Result.success(
           ConnectionTestResult(

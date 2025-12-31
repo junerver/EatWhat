@@ -228,7 +228,8 @@ object ImageUtils {
         }
 
         val bytes = outputStream.toByteArray()
-        return Base64.encodeToString(bytes, Base64.DEFAULT)
+      // Use NO_WRAP to avoid newlines in Base64 string which can cause issues with APIs
+      return Base64.encodeToString(bytes, Base64.NO_WRAP)
     }
 
     /**

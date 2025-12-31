@@ -179,6 +179,7 @@ fun AddRecipeScreen(
   // Handle AI analysis result
   val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
   val aiResultJson = savedStateHandle?.getStateFlow<String?>("ai_result", null)?.collectAsState()
+  val aiImageBase64 = savedStateHandle?.getStateFlow<String?>("ai_image", null)?.collectAsState()
 
   useEffect(aiResultJson?.value) {
     aiResultJson?.value?.let { jsonString ->
@@ -194,6 +195,15 @@ fun AddRecipeScreen(
         setIcon(aiResult.icon)
         setEstimatedTime(aiResult.estimatedTime.toString())
         setTags(aiResult.tags)
+
+        // Use AI provided image if available (and it's a food image)
+        // If "ai_image" was passed separately, use that.
+        // Or if RecipeAIResult had imageBase64 field (it doesn't currently)
+        // The previous logic in AIAnalysisScreen sets "ai_image" if "isFoodImage" is true.
+        aiImageBase64?.value?.let {
+          imageBase64 = it
+          savedStateHandle.remove<String>("ai_image")
+        }
 
         // Parse type
         try {
