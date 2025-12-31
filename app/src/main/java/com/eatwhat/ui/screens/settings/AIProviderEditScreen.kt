@@ -49,7 +49,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,7 +67,9 @@ import com.eatwhat.domain.service.OpenAIService
 import com.eatwhat.ui.components.StyledTextField
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.hooks.useTimeoutFn
@@ -79,9 +80,9 @@ import kotlin.time.Duration.Companion.seconds
 fun AIProviderEditScreen(navController: NavController, providerId: Long? = null) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
-  val database = remember { EatWhatDatabase.getInstance(context) }
-  val repository = remember { AIProviderRepository(database.aiProviderDao()) }
-  val openAIService = remember { OpenAIService() }
+  val database by useCreation { EatWhatDatabase.getInstance(context) }
+  val repository by useCreation { AIProviderRepository(database.aiProviderDao()) }
+  val openAIService by useCreation { OpenAIService() }
   val focusManager = LocalFocusManager.current
 
   // Form state

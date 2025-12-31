@@ -51,8 +51,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -75,6 +73,10 @@ import com.eatwhat.data.sync.SyncResult
 import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.theme.LocalDarkTheme
 import kotlinx.coroutines.launch
+import xyz.junerver.compose.hooks._useState
+import xyz.junerver.compose.hooks.getValue
+import xyz.junerver.compose.hooks.useCreation
+import xyz.junerver.compose.hooks.useState
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -90,21 +92,21 @@ fun SyncScreen(navController: NavController) {
   val isDark = LocalDarkTheme.current
 
     // 创建 Repository
-    val database = remember { EatWhatDatabase.getInstance(context) }
+  val database by useCreation { EatWhatDatabase.getInstance(context) }
   val app = context.applicationContext as EatWhatApplication
-  val exportRepository = remember { app.exportRepository }
-    val syncRepository = remember { SyncRepositoryImpl(context, exportRepository) }
+  val exportRepository by useCreation { app.exportRepository }
+  val syncRepository by useCreation { SyncRepositoryImpl(context, exportRepository) }
 
     // 配置状态
-    val config = remember { syncRepository.getConfig() }
+  val config by useCreation { syncRepository.getConfig() }
     val isConfigured = config != null
 
     // UI 状态
-    var isSyncing by remember { mutableStateOf(false) }
-    var syncMessage by remember { mutableStateOf("") }
-    var cloudMetadata by remember { mutableStateOf<SyncMetadata?>(null) }
-    var showPasswordDialog by remember { mutableStateOf(false) }
-    var pendingAction by remember { mutableStateOf<SyncAction?>(null) }
+  var isSyncing by useState(false)
+  var syncMessage by useState("")
+  var cloudMetadata by _useState<SyncMetadata?>(null)
+  var showPasswordDialog by useState(false)
+  var pendingAction by _useState<SyncAction?>(null)
 
   // 主题颜色
   val pageBackground = if (isDark) MaterialTheme.colorScheme.background else Color(0xFFF5F5F5)
@@ -177,7 +179,7 @@ fun SyncScreen(navController: NavController) {
                     // 同步操作卡片
                     SyncActionsCard(
                         cloudMetadata = cloudMetadata,
-                        encryptionEnabled = config.encryptionEnabled,
+                      encryptionEnabled = config?.encryptionEnabled ?: false,
                       cardBackground = cardBackground,
                       textColor = textColor,
                       subTextColor = subTextColor,
@@ -187,7 +189,7 @@ fun SyncScreen(navController: NavController) {
                                 scope = scope,
                                 syncRepository = syncRepository,
                                 action = SyncAction.UPLOAD,
-                                password = if (config.encryptionEnabled) config.encryptionPassword else null,
+                              password = if (config?.encryptionEnabled == true) config?.encryptionPassword else null,
                                 onStart = {
                                     isSyncing = true
                                     syncMessage = "正在上传..."
@@ -206,12 +208,12 @@ fun SyncScreen(navController: NavController) {
                         },
                         onDownload = {
                             if (cloudMetadata?.encrypted == true) {
-                                if (config.encryptionEnabled && config.encryptionPassword != null) {
+                              if (config?.encryptionEnabled == true && config?.encryptionPassword != null) {
                                     performSync(
                                         scope = scope,
                                         syncRepository = syncRepository,
                                         action = SyncAction.DOWNLOAD,
-                                        password = config.encryptionPassword,
+                                      password = config?.encryptionPassword,
                                         onStart = {
                                             isSyncing = true
                                             syncMessage = "正在下载..."
@@ -823,8 +825,8 @@ private fun PasswordInputDialog(
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
-    var password by remember { mutableStateOf("") }
-    var showPassword by remember { mutableStateOf(false) }
+  var password by useState("")
+  var showPassword by useState(false)
 
     AlertDialog(
         onDismissRequest = onDismiss,

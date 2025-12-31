@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,10 +20,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -30,6 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eatwhat.ui.theme.InputBackground
 import com.eatwhat.ui.theme.LocalDarkTheme
+import xyz.junerver.compose.hooks.getValue
+import xyz.junerver.compose.hooks.useCreation
+import xyz.junerver.compose.hooks.useState
 
 /**
  * 统一的文本输入框组件
@@ -52,6 +65,27 @@ fun StyledTextField(
   minLines: Int = 1
 ) {
   val isDark = LocalDarkTheme.current
+  val focusManager = LocalFocusManager.current
+  val focusRequester by useCreation { FocusRequester() }
+
+  // Monitor keyboard state with real-time detection
+  val density = LocalDensity.current
+  val imeInsets = WindowInsets.ime
+  var isKeyboardVisible by useState(false)
+
+  // Track keyboard visibility changes and clear focus when keyboard is dismissed
+  LaunchedEffect(Unit) {
+    snapshotFlow {
+      imeInsets.getBottom(density)
+    }.collect { imeBottom ->
+      val newState = imeBottom > 0
+      if (isKeyboardVisible && !newState) {
+        // Keyboard was visible and now hidden
+        focusManager.clearFocus()
+      }
+      isKeyboardVisible = newState
+    }
+  }
 
   val effectiveBackgroundColor = if (backgroundColor != Color.Unspecified) {
     backgroundColor
@@ -89,6 +123,7 @@ fun StyledTextField(
           fontSize = 16.sp,
           color = effectiveTextColor
         ),
+        modifier = Modifier.focusRequester(focusRequester),
         singleLine = minLines == 1,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         cursorBrush = SolidColor(effectiveTextColor),

@@ -48,8 +48,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -71,6 +69,9 @@ import com.eatwhat.data.sync.WebDAVConfig
 import com.eatwhat.ui.components.StyledTextField
 import com.eatwhat.ui.theme.LocalDarkTheme
 import kotlinx.coroutines.launch
+import xyz.junerver.compose.hooks.getValue
+import xyz.junerver.compose.hooks.useCreation
+import xyz.junerver.compose.hooks.useState
 
 /**
  * WebDAV 配置页面 - 美化版本
@@ -84,31 +85,31 @@ fun WebDAVConfigScreen(navController: NavController) {
   val isDark = LocalDarkTheme.current
 
   // 创建 Repository
-  val database = remember { EatWhatDatabase.getInstance(context) }
+  val database by useCreation { EatWhatDatabase.getInstance(context) }
   val app = context.applicationContext as EatWhatApplication
-  val exportRepository = remember { app.exportRepository }
-  val syncRepository = remember { SyncRepositoryImpl(context, exportRepository) }
+  val exportRepository by useCreation { app.exportRepository }
+  val syncRepository by useCreation { SyncRepositoryImpl(context, exportRepository) }
 
   // 加载现有配置
-  val existingConfig = remember { syncRepository.getConfig() }
+  val existingConfig by useCreation { syncRepository.getConfig() }
 
   // 表单状态
-  var serverUrl by remember { mutableStateOf(existingConfig?.serverUrl ?: "") }
-  var username by remember { mutableStateOf(existingConfig?.username ?: "") }
-  var password by remember { mutableStateOf(existingConfig?.password ?: "") }
-  var remotePath by remember { mutableStateOf(existingConfig?.remotePath ?: "/EatWhat/") }
-  var encryptionEnabled by remember { mutableStateOf(existingConfig?.encryptionEnabled ?: false) }
-  var encryptionPassword by remember { mutableStateOf(existingConfig?.encryptionPassword ?: "") }
-  var autoSyncEnabled by remember { mutableStateOf(existingConfig?.autoSyncEnabled ?: false) }
-  var syncIntervalMinutes by remember { mutableStateOf(existingConfig?.syncIntervalMinutes ?: 60) }
+  var serverUrl by useState(existingConfig?.serverUrl ?: "")
+  var username by useState(existingConfig?.username ?: "")
+  var password by useState(existingConfig?.password ?: "")
+  var remotePath by useState(existingConfig?.remotePath ?: "/EatWhat/")
+  var encryptionEnabled by useState(existingConfig?.encryptionEnabled ?: false)
+  var encryptionPassword by useState(existingConfig?.encryptionPassword ?: "")
+  var autoSyncEnabled by useState(existingConfig?.autoSyncEnabled ?: false)
+  var syncIntervalMinutes by useState(existingConfig?.syncIntervalMinutes ?: 60)
 
   // UI 状态
-  var showPassword by remember { mutableStateOf(false) }
-  var showEncryptionPassword by remember { mutableStateOf(false) }
-  var isTesting by remember { mutableStateOf(false) }
-  var isSaving by remember { mutableStateOf(false) }
-  var testSuccess by remember { mutableStateOf(false) }
-  var testMessage by remember { mutableStateOf("") }
+  var showPassword by useState(false)
+  var showEncryptionPassword by useState(false)
+  var isTesting by useState(false)
+  var isSaving by useState(false)
+  var testSuccess by useState(false)
+  var testMessage by useState("") 
 
   // 验证状态
   val isFormValid = serverUrl.isNotBlank() && username.isNotBlank() && password.isNotBlank()

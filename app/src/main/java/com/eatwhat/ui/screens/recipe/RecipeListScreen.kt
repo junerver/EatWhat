@@ -77,7 +77,9 @@ import com.eatwhat.ui.theme.SoupBlue
 import com.eatwhat.ui.theme.StapleOrange
 import com.eatwhat.ui.theme.VegGreen
 import kotlinx.coroutines.launch
+import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -85,7 +87,7 @@ import xyz.junerver.compose.hooks.useGetState
 fun RecipeListScreen(navController: NavController) {
     val context = LocalContext.current
     val app = context.applicationContext as EatWhatApplication
-    val repository = remember { app.recipeRepository }
+  val repository by useCreation { app.recipeRepository }
     val scope = rememberCoroutineScope()
 
   val (searchQuery, setSearchQuery) = useGetState(default = "")

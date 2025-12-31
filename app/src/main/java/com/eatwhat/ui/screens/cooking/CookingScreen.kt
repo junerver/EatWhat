@@ -41,8 +41,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,7 +53,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.database.entities.CookingStepEntity
-import com.eatwhat.ui.theme.*
+import com.eatwhat.ui.theme.DarkBackground
+import com.eatwhat.ui.theme.InputBackground
+import com.eatwhat.ui.theme.LightBorder
+import com.eatwhat.ui.theme.PageBackground
+import com.eatwhat.ui.theme.PrimaryOrange
+import com.eatwhat.ui.theme.SoftBlue
+import com.eatwhat.ui.theme.SoftGreen
+import com.eatwhat.ui.theme.UnselectedBackground
+import xyz.junerver.compose.hooks.useState
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,9 +81,9 @@ fun CookingScreen(
         return
     }
 
-    var currentRecipeIndex by remember { mutableStateOf(0) }
-    var currentStepIndex by remember { mutableStateOf(0) }
-    var completedSteps by remember { mutableStateOf(setOf<String>()) }
+  var currentRecipeIndex by useState(0)
+  var currentStepIndex by useState(0)
+  var completedSteps by useState(setOf<String>())
 
     val currentRecipe = recipes.getOrNull(currentRecipeIndex)
     val currentStep = currentRecipe?.steps?.getOrNull(currentStepIndex)
@@ -111,8 +117,8 @@ fun CookingScreen(
                 ) {
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                          .fillMaxWidth()
+                          .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -135,9 +141,9 @@ fun CookingScreen(
                         LinearProgressIndicator(
                             progress = progress,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(4.dp)),
+                              .fillMaxWidth()
+                              .height(8.dp)
+                              .clip(RoundedCornerShape(4.dp)),
                             color = if (completedSteps.size == totalSteps) SoftGreen else PrimaryOrange,
                             trackColor = LightBorder
                         )
@@ -149,8 +155,8 @@ fun CookingScreen(
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+              .fillMaxSize()
+              .padding(paddingValues)
         ) {
             // Recipe selector (if multiple recipes)
             if (recipes.size > 1) {
@@ -160,8 +166,8 @@ fun CookingScreen(
                 ) {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                          .fillMaxWidth()
+                          .padding(horizontal = 16.dp, vertical = 12.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         recipes.forEachIndexed { index, recipe ->
@@ -226,8 +232,8 @@ fun CookingScreen(
             currentRecipe?.let { recipe ->
                 LazyColumn(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
+                      .weight(1f)
+                      .fillMaxWidth(),
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -235,27 +241,27 @@ fun CookingScreen(
                     item {
                         Card(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .shadow(
-                                    elevation = 4.dp,
-                                    shape = RoundedCornerShape(20.dp),
-                                    spotColor = Color.Black.copy(alpha = 0.1f)
-                                ),
+                              .fillMaxWidth()
+                              .shadow(
+                                elevation = 4.dp,
+                                shape = RoundedCornerShape(20.dp),
+                                spotColor = Color.Black.copy(alpha = 0.1f)
+                              ),
                             shape = RoundedCornerShape(20.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White)
                         ) {
                             Row(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(20.dp),
+                                  .fillMaxWidth()
+                                  .padding(20.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(SoftBlue.copy(alpha = 0.1f)),
+                                      .size(48.dp)
+                                      .clip(RoundedCornerShape(12.dp))
+                                      .background(SoftBlue.copy(alpha = 0.1f)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(

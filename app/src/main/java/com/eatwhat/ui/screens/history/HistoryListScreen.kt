@@ -53,8 +53,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -80,6 +78,10 @@ import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftPurple
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import xyz.junerver.compose.hooks._useState
+import xyz.junerver.compose.hooks.getValue
+import xyz.junerver.compose.hooks.useCreation
+import xyz.junerver.compose.hooks.useState
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -92,16 +94,16 @@ fun HistoryListScreen(
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as EatWhatApplication
-    val repository = remember { HistoryRepository(app.database) }
+  val repository by useCreation { HistoryRepository(app.database) }
     val scope = rememberCoroutineScope()
 
     val historyList by repository.getAllHistory().collectAsState(initial = emptyList())
 
     // 确认清除对话框状态
-    var showClearDialog by remember { mutableStateOf(false) }
+  var showClearDialog by useState(false)
 
     // 高亮状态：存储需要闪烁的 historyId
-    var currentHighlightId by remember { mutableStateOf<Long?>(null) }
+  var currentHighlightId by _useState<Long?>(null)
 
     // 设置透明状态栏
     val view = LocalView.current

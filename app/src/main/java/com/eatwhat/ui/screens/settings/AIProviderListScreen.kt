@@ -41,8 +41,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,22 +61,25 @@ import com.eatwhat.navigation.Destinations
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.hooks.useMap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AIProviderListScreen(navController: NavController) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
-  val database = remember { EatWhatDatabase.getInstance(context) }
-  val repository = remember { AIProviderRepository(database.aiProviderDao()) }
-  val openAIService = remember { OpenAIService() }
+  val database by useCreation { EatWhatDatabase.getInstance(context) }
+  val repository by useCreation { AIProviderRepository(database.aiProviderDao()) }
+  val openAIService by useCreation { OpenAIService() }
 
   val providers by repository.allProviders.collectAsState(initial = emptyList())
 
   // Test connection state map
-  val testStates = remember { mutableStateMapOf<Long, ProviderTestState>() }
+  val testStates = useMap<Long, ProviderTestState>()
   val (isBatchTesting, setIsBatchTesting) = useGetState(default = false)
 
   // Dark mode support

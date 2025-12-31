@@ -68,9 +68,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -125,9 +122,13 @@ import com.eatwhat.ui.theme.TagPastelColors
 import com.eatwhat.ui.theme.VegGreen
 import com.eatwhat.ui.theme.WarmYellow
 import kotlinx.coroutines.launch
+import xyz.junerver.compose.hooks._useState
+import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.hooks.useState
 import kotlin.random.Random
 import com.eatwhat.domain.model.Unit as IngredientUnit
 
@@ -139,15 +140,15 @@ fun AddRecipeScreen(
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as EatWhatApplication
-    val recipeRepository = remember { app.recipeRepository }
+  val recipeRepository by useCreation { app.recipeRepository }
     val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
+  val snackbarHostState by useCreation { SnackbarHostState() }
   val focusManager = LocalFocusManager.current
 
   // Monitor keyboard state with real-time detection
   val density = LocalDensity.current
   val imeInsets = WindowInsets.ime
-  var isKeyboardVisible by remember { mutableStateOf(false) }
+  var isKeyboardVisible by useState(false)
 
   // Track keyboard visibility changes
   LaunchedEffect(Unit) {
@@ -169,7 +170,7 @@ fun AddRecipeScreen(
   val (name, setName) = useGetState(default = "")
   val (type, setType) = useGetState(default = RecipeType.MEAT)
   val (icon, setIcon) = useGetState(default = FoodEmojis.DEFAULT_EMOJI)
-  var imageBase64 by remember { mutableStateOf<String?>(null) }
+  var imageBase64 by _useState<String?>(null)
   val (difficulty, setDifficulty) = useGetState(default = Difficulty.EASY)
   val (estimatedTime, setEstimatedTime) = useGetState(default = "30")
   val (ingredients, setIngredients) = useGetState(default = listOf(IngredientInput()))
@@ -180,8 +181,8 @@ fun AddRecipeScreen(
   val (showTagInput, setShowTagInput) = useGetState(default = false)
 
   // Drag and drop state for steps
-  var draggedStepIndex by remember { mutableIntStateOf(-1) }
-  var draggedStepOffset by remember { mutableFloatStateOf(0f) }
+  var draggedStepIndex by useState(-1)
+  var draggedStepOffset by useState(0f)
     
     // Generate stable random colors for tags
   val tagColors = remember(tags.value) {
@@ -947,7 +948,7 @@ private fun IngredientInputCard(
     onDelete: () -> Unit,
     canDelete: Boolean
 ) {
-    var unitExpanded by remember { mutableStateOf(false) }
+  var unitExpanded by useState(false)
     
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -1142,7 +1143,7 @@ private fun StepContentCard(
 ) {
   val isDark = LocalDarkTheme.current
   val stepBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else StepCardBackground
-  val focusRequester = remember { FocusRequester() }
+  val focusRequester by useCreation { FocusRequester() }
 
   Surface(
     shape = RoundedCornerShape(16.dp),

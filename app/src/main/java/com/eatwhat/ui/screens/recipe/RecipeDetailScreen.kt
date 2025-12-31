@@ -43,7 +43,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,7 +75,9 @@ import com.eatwhat.ui.theme.TagPastelColors
 import com.eatwhat.ui.theme.VegGreen
 import com.eatwhat.ui.theme.WarmYellow
 import kotlinx.coroutines.launch
+import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -87,7 +88,7 @@ fun RecipeDetailScreen(
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as EatWhatApplication
-    val repository = remember { app.recipeRepository }
+  val repository by useCreation { app.recipeRepository }
     val scope = rememberCoroutineScope()
 
     val recipe by repository.getRecipeById(recipeId).collectAsState(initial = null)

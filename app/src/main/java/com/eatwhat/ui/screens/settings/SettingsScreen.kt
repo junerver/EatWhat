@@ -53,8 +53,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -79,6 +77,10 @@ import com.eatwhat.domain.usecase.ImportPreviewResult
 import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.theme.LocalDarkTheme
 import kotlinx.coroutines.launch
+import xyz.junerver.compose.hooks._useState
+import xyz.junerver.compose.hooks.getValue
+import xyz.junerver.compose.hooks.useCreation
+import xyz.junerver.compose.hooks.useState
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -96,337 +98,337 @@ enum class ExportType {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(navController: NavController) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+  val context = LocalContext.current
+  val scope = rememberCoroutineScope()
 
-    // 创建 Repository 和 UseCase
-    val database = remember { EatWhatDatabase.getInstance(context) }
+  // 创建 Repository 和 UseCase
+  val database by useCreation { EatWhatDatabase.getInstance(context) }
   val app = context.applicationContext as EatWhatApplication
-  val exportRepository = remember { app.exportRepository }
-    val exportUseCase = remember { ExportDataUseCase(context, exportRepository) }
-    val importUseCase = remember { ImportDataUseCase(context, exportRepository) }
+  val exportRepository by useCreation { app.exportRepository }
+  val exportUseCase by useCreation { ExportDataUseCase(context, exportRepository) }
+  val importUseCase by useCreation { ImportDataUseCase(context, exportRepository) }
 
   // 主题偏好设置
-  val themePreferences = remember { ThemePreferences(context) }
+  val themePreferences by useCreation { ThemePreferences(context) }
   val currentThemeMode by themePreferences.themeModeFlow.collectAsState(initial = ThemeMode.SYSTEM)
 
-    // 导出状态
-    var showExportDialog by remember { mutableStateOf(false) }
-    var isExporting by remember { mutableStateOf(false) }
-  var dataCount by remember { mutableStateOf<Triple<Int, Int, Int>?>(null) }
-    var pendingExportType by remember { mutableStateOf<ExportType?>(null) }
+  // 导出状态
+  var showExportDialog by useState(false)
+  var isExporting by useState(false)
+  var dataCount by _useState<Triple<Int, Int, Int>?>(null)
+  var pendingExportType by _useState<ExportType?>(null)
 
-    // 导入状态
-    var isImporting by remember { mutableStateOf(false) }
-    var importPreviewResult by remember { mutableStateOf<ImportPreviewResult?>(null) }
-    var showImportPreviewDialog by remember { mutableStateOf(false) }
-    var loadingMessage by remember { mutableStateOf("") }
+  // 导入状态
+  var isImporting by useState(false)
+  var importPreviewResult by _useState<ImportPreviewResult?>(null)
+  var showImportPreviewDialog by useState(false)
+  var loadingMessage by useState("")
 
-    // 加载数据统计
-    LaunchedEffect(Unit) {
-        dataCount = exportUseCase.getDataCount()
-    }
+  // 加载数据统计
+  LaunchedEffect(Unit) {
+    dataCount = exportUseCase.getDataCount()
+  }
 
-    // SAF 导出文件选择器
-    val exportLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("application/json")
-    ) { uri ->
-        uri?.let {
-            val exportType = pendingExportType ?: ExportType.ALL
-            pendingExportType = null
-            isExporting = true
-            loadingMessage = "正在导出..."
+  // SAF 导出文件选择器
+  val exportLauncher = rememberLauncherForActivityResult(
+    ActivityResultContracts.CreateDocument("application/json")
+  ) { uri ->
+    uri?.let {
+      val exportType = pendingExportType ?: ExportType.ALL
+      pendingExportType = null
+      isExporting = true
+      loadingMessage = "正在导出..."
 
-            scope.launch {
-                val result = when (exportType) {
-                    ExportType.ALL -> exportUseCase.exportAll(uri)
-                    ExportType.RECIPES -> exportUseCase.exportRecipes(uri)
-                  ExportType.AI_PROVIDERS -> exportUseCase.exportAIProviders(uri)
-                }
+      scope.launch {
+        val result = when (exportType) {
+          ExportType.ALL -> exportUseCase.exportAll(uri)
+          ExportType.RECIPES -> exportUseCase.exportRecipes(uri)
+          ExportType.AI_PROVIDERS -> exportUseCase.exportAIProviders(uri)
+        }
 
-                isExporting = false
-                loadingMessage = ""
+        isExporting = false
+        loadingMessage = ""
 
-                result.fold(
-                    onSuccess = { exportResult ->
-                      val message = buildString {
-                        append("导出成功！")
-                        if (exportResult.recipeCount > 0) append(" 菜谱: ${exportResult.recipeCount}")
-                        if (exportResult.historyCount > 0) append(" 历史: ${exportResult.historyCount}")
-                        if (exportResult.aiProviderCount > 0) append(" AI供应商: ${exportResult.aiProviderCount}")
-                      }
-                      Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-                    },
-                    onFailure = { error ->
-                        Toast.makeText(
-                            context,
-                            "导出失败: ${error.message}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                )
+        result.fold(
+          onSuccess = { exportResult ->
+            val message = buildString {
+              append("导出成功！")
+              if (exportResult.recipeCount > 0) append(" 菜谱: ${exportResult.recipeCount}")
+              if (exportResult.historyCount > 0) append(" 历史: ${exportResult.historyCount}")
+              if (exportResult.aiProviderCount > 0) append(" AI供应商: ${exportResult.aiProviderCount}")
             }
-        }
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+          },
+          onFailure = { error ->
+            Toast.makeText(
+              context,
+              "导出失败: ${error.message}",
+              Toast.LENGTH_LONG
+            ).show()
+          }
+        )
+      }
     }
+  }
 
-    // SAF 导入文件选择器
-    val importLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        uri?.let {
-            isImporting = true
-            loadingMessage = "正在读取文件..."
+  // SAF 导入文件选择器
+  val importLauncher = rememberLauncherForActivityResult(
+    ActivityResultContracts.OpenDocument()
+  ) { uri ->
+    uri?.let {
+      isImporting = true
+      loadingMessage = "正在读取文件..."
 
-            scope.launch {
-                val result = importUseCase.previewImport(uri)
+      scope.launch {
+        val result = importUseCase.previewImport(uri)
 
-                isImporting = false
-                loadingMessage = ""
+        isImporting = false
+        loadingMessage = ""
 
-                result.fold(
-                    onSuccess = { previewResult ->
-                        importPreviewResult = previewResult
-                        showImportPreviewDialog = true
-                    },
-                    onFailure = { error ->
-                        Toast.makeText(
-                            context,
-                            "读取失败: ${error.message}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                )
-            }
-        }
+        result.fold(
+          onSuccess = { previewResult ->
+            importPreviewResult = previewResult
+            showImportPreviewDialog = true
+          },
+          onFailure = { error ->
+            Toast.makeText(
+              context,
+              "读取失败: ${error.message}",
+              Toast.LENGTH_LONG
+            ).show()
+          }
+        )
+      }
     }
+  }
 
-    // 生成导出文件名
-    fun generateFileName(type: ExportType): String {
-        val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-        val timestamp = dateFormat.format(Date())
-        val suffix = when (type) {
-            ExportType.ALL -> "all"
-            ExportType.RECIPES -> "recipes"
-          ExportType.AI_PROVIDERS -> "ai_providers"
-        }
-        return "eatwhat_${suffix}_$timestamp.json"
+  // 生成导出文件名
+  fun generateFileName(type: ExportType): String {
+    val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+    val timestamp = dateFormat.format(Date())
+    val suffix = when (type) {
+      ExportType.ALL -> "all"
+      ExportType.RECIPES -> "recipes"
+      ExportType.AI_PROVIDERS -> "ai_providers"
     }
+    return "eatwhat_${suffix}_$timestamp.json"
+  }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "设置",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "返回"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            )
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = {
+          Text(
+            text = "设置",
+            fontWeight = FontWeight.Bold
+          )
         },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                  .fillMaxSize()
-                  .padding(paddingValues)
-                  .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-              // 外观设置卡片
-              SettingsCard(
-                title = "外观",
-                icon = Icons.Default.Palette,
-                iconColor = MaterialTheme.colorScheme.tertiary
-              ) {
-                ThemeSettingItem(
-                  currentThemeMode = currentThemeMode,
-                  onThemeModeChange = { mode ->
-                    scope.launch {
-                      themePreferences.setThemeMode(mode)
-                    }
-                  }
-                )
+        navigationIcon = {
+          IconButton(onClick = { navController.popBackStack() }) {
+            Icon(
+              imageVector = Icons.Default.ArrowBack,
+              contentDescription = "返回"
+            )
+          }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+          containerColor = MaterialTheme.colorScheme.surface
+        )
+      )
+    },
+    containerColor = MaterialTheme.colorScheme.background
+  ) { paddingValues ->
+    Box(modifier = Modifier.fillMaxSize()) {
+      Column(
+        modifier = Modifier
+          .fillMaxSize()
+          .padding(paddingValues)
+          .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+      ) {
+        // 外观设置卡片
+        SettingsCard(
+          title = "外观",
+          icon = Icons.Default.Palette,
+          iconColor = MaterialTheme.colorScheme.tertiary
+        ) {
+          ThemeSettingItem(
+            currentThemeMode = currentThemeMode,
+            onThemeModeChange = { mode ->
+              scope.launch {
+                themePreferences.setThemeMode(mode)
               }
-
-                // 数据管理卡片
-                SettingsCard(
-                    title = "数据管理",
-                    icon = Icons.Default.Storage,
-                    iconColor = MaterialTheme.colorScheme.primary
-                ) {
-                    SettingsItem(
-                        icon = Icons.Default.FileUpload,
-                        title = "导出数据",
-                      subtitle = dataCount?.let {
-                        val parts = mutableListOf<String>()
-                        if (it.first > 0) parts.add("菜谱: ${it.first}")
-                        if (it.second > 0) parts.add("历史: ${it.second}")
-                        if (it.third > 0) parts.add("AI供应商: ${it.third}")
-                        if (parts.isEmpty()) "无数据" else parts.joinToString("，")
-                      } ?: "备份菜谱、历史和配置",
-                        onClick = { showExportDialog = true }
-                    )
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp))
-                    SettingsItem(
-                        icon = Icons.Default.FileDownload,
-                        title = "导入数据",
-                        subtitle = "从备份文件恢复数据",
-                        onClick = { importLauncher.launch(arrayOf("application/json")) }
-                    )
-                }
-
-                // 云同步卡片
-                SettingsCard(
-                    title = "云同步",
-                    icon = Icons.Default.Cloud,
-                    iconColor = MaterialTheme.colorScheme.tertiary
-                ) {
-                    SettingsItem(
-                        icon = Icons.Default.Settings,
-                        title = "WebDAV 配置",
-                        subtitle = "配置云端存储服务器",
-                        onClick = { navController.navigate(Destinations.WebDAVConfig.route) }
-                    )
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp))
-                    SettingsItem(
-                        icon = Icons.Default.Sync,
-                        title = "同步数据",
-                        subtitle = "上传或下载云端备份",
-                        onClick = { navController.navigate(Destinations.Sync.route) }
-                    )
-                }
-
-              // AI 助手卡片
-              SettingsCard(
-                title = "AI 助手",
-                iconDrawableRes = R.drawable.ic_ai_sparkles,
-                iconColor = MaterialTheme.colorScheme.secondary
-              ) {
-                SettingsItem(
-                  icon = Icons.Default.Settings,
-                  title = "模型配置",
-                  subtitle = "配置 OpenAI 接口参数",
-                  onClick = { navController.navigate(Destinations.AIConfig.route) }
-                )
-              }
-
-                // 关于卡片
-                SettingsCard(
-                    title = "关于",
-                    icon = Icons.Default.Info,
-                    iconColor = MaterialTheme.colorScheme.secondary
-                ) {
-                    SettingsItem(
-                        icon = Icons.Default.Info,
-                        title = "应用版本",
-                        subtitle = "1.0.0",
-                        onClick = { }
-                    )
-                }
             }
-
-            // 加载指示器
-            if (isExporting || isImporting) {
-                Box(
-                    modifier = Modifier
-                      .fillMaxSize()
-                      .background(Color.Black.copy(alpha = 0.3f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Card(
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            CircularProgressIndicator()
-                            Text(
-                                text = loadingMessage,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                }
-            }
+          )
         }
-    }
 
-    // 导出对话框
-    if (showExportDialog) {
-        ExportOptionsDialog(
-            dataCount = dataCount,
-            onDismiss = { showExportDialog = false },
-            onExport = { type ->
-                showExportDialog = false
-                pendingExportType = type
-                exportLauncher.launch(generateFileName(type))
+        // 数据管理卡片
+        SettingsCard(
+          title = "数据管理",
+          icon = Icons.Default.Storage,
+          iconColor = MaterialTheme.colorScheme.primary
+        ) {
+          SettingsItem(
+            icon = Icons.Default.FileUpload,
+            title = "导出数据",
+            subtitle = dataCount?.let {
+              val parts = mutableListOf<String>()
+              if (it.first > 0) parts.add("菜谱: ${it.first}")
+              if (it.second > 0) parts.add("历史: ${it.second}")
+              if (it.third > 0) parts.add("AI供应商: ${it.third}")
+              if (parts.isEmpty()) "无数据" else parts.joinToString("，")
+            } ?: "备份菜谱、历史和配置",
+            onClick = { showExportDialog = true }
+          )
+          Divider(modifier = Modifier.padding(horizontal = 16.dp))
+          SettingsItem(
+            icon = Icons.Default.FileDownload,
+            title = "导入数据",
+            subtitle = "从备份文件恢复数据",
+            onClick = { importLauncher.launch(arrayOf("application/json")) }
+          )
+        }
+
+        // 云同步卡片
+        SettingsCard(
+          title = "云同步",
+          icon = Icons.Default.Cloud,
+          iconColor = MaterialTheme.colorScheme.tertiary
+        ) {
+          SettingsItem(
+            icon = Icons.Default.Settings,
+            title = "WebDAV 配置",
+            subtitle = "配置云端存储服务器",
+            onClick = { navController.navigate(Destinations.WebDAVConfig.route) }
+          )
+          Divider(modifier = Modifier.padding(horizontal = 16.dp))
+          SettingsItem(
+            icon = Icons.Default.Sync,
+            title = "同步数据",
+            subtitle = "上传或下载云端备份",
+            onClick = { navController.navigate(Destinations.Sync.route) }
+          )
+        }
+
+        // AI 助手卡片
+        SettingsCard(
+          title = "AI 助手",
+          iconDrawableRes = R.drawable.ic_ai_sparkles,
+          iconColor = MaterialTheme.colorScheme.secondary
+        ) {
+          SettingsItem(
+            icon = Icons.Default.Settings,
+            title = "模型配置",
+            subtitle = "配置 OpenAI 接口参数",
+            onClick = { navController.navigate(Destinations.AIConfig.route) }
+          )
+        }
+
+        // 关于卡片
+        SettingsCard(
+          title = "关于",
+          icon = Icons.Default.Info,
+          iconColor = MaterialTheme.colorScheme.secondary
+        ) {
+          SettingsItem(
+            icon = Icons.Default.Info,
+            title = "应用版本",
+            subtitle = "1.0.0",
+            onClick = { }
+          )
+        }
+      }
+
+      // 加载指示器
+      if (isExporting || isImporting) {
+        Box(
+          modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.3f)),
+          contentAlignment = Alignment.Center
+        ) {
+          Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+              containerColor = MaterialTheme.colorScheme.surface
+            )
+          ) {
+            Column(
+              modifier = Modifier.padding(24.dp),
+              horizontalAlignment = Alignment.CenterHorizontally,
+              verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+              CircularProgressIndicator()
+              Text(
+                text = loadingMessage,
+                style = MaterialTheme.typography.bodyMedium
+              )
             }
-        )
+          }
+        }
+      }
     }
+  }
 
-    // 导入预览对话框
-    if (showImportPreviewDialog && importPreviewResult != null) {
-        ImportPreviewDialog(
-            previewResult = importPreviewResult!!,
-            onDismiss = {
-                showImportPreviewDialog = false
-                importPreviewResult = null
+  // 导出对话框
+  if (showExportDialog) {
+    ExportOptionsDialog(
+      dataCount = dataCount,
+      onDismiss = { showExportDialog = false },
+      onExport = { type ->
+        showExportDialog = false
+        pendingExportType = type
+        exportLauncher.launch(generateFileName(type))
+      }
+    )
+  }
+
+  // 导入预览对话框
+  if (showImportPreviewDialog && importPreviewResult != null) {
+    ImportPreviewDialog(
+      previewResult = importPreviewResult!!,
+      onDismiss = {
+        showImportPreviewDialog = false
+        importPreviewResult = null
+      },
+      onImport = { strategy ->
+        showImportPreviewDialog = false
+        isImporting = true
+        loadingMessage = "正在导入..."
+
+        scope.launch {
+          val result = importUseCase.executeImport(
+            importPreviewResult!!.data,
+            strategy
+          )
+
+          isImporting = false
+          loadingMessage = ""
+          importPreviewResult = null
+
+          result.fold(
+            onSuccess = { importResult ->
+              // 刷新数据统计
+              dataCount = exportUseCase.getDataCount()
+
+              Toast.makeText(
+                context,
+                "导入成功！新增: ${importResult.recipesImported + importResult.historyImported}，更新: ${importResult.recipesUpdated + importResult.historyUpdated}",
+                Toast.LENGTH_LONG
+              ).show()
             },
-            onImport = { strategy ->
-                showImportPreviewDialog = false
-                isImporting = true
-                loadingMessage = "正在导入..."
-
-                scope.launch {
-                    val result = importUseCase.executeImport(
-                        importPreviewResult!!.data,
-                        strategy
-                    )
-
-                    isImporting = false
-                    loadingMessage = ""
-                    importPreviewResult = null
-
-                    result.fold(
-                        onSuccess = { importResult ->
-                            // 刷新数据统计
-                            dataCount = exportUseCase.getDataCount()
-
-                            Toast.makeText(
-                                context,
-                                "导入成功！新增: ${importResult.recipesImported + importResult.historyImported}，更新: ${importResult.recipesUpdated + importResult.historyUpdated}",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        },
-                        onFailure = { error ->
-                            Toast.makeText(
-                                context,
-                                "导入失败: ${error.message}",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    )
-                }
+            onFailure = { error ->
+              Toast.makeText(
+                context,
+                "导入失败: ${error.message}",
+                Toast.LENGTH_LONG
+              ).show()
             }
-        )
-    }
+          )
+        }
+      }
+    )
+  }
 }
 
 /**
@@ -435,90 +437,90 @@ fun SettingsScreen(navController: NavController) {
 @Composable
 private fun ExportOptionsDialog(
   dataCount: Triple<Int, Int, Int>?,
-    onDismiss: () -> Unit,
-    onExport: (ExportType) -> Unit
+  onDismiss: () -> Unit,
+  onExport: (ExportType) -> Unit
 ) {
-    val recipeCount = dataCount?.first ?: 0
-    val historyCount = dataCount?.second ?: 0
+  val recipeCount = dataCount?.first ?: 0
+  val historyCount = dataCount?.second ?: 0
   val providerCount = dataCount?.third ?: 0
   val hasNoData = recipeCount == 0 && historyCount == 0 && providerCount == 0
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "选择导出内容",
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = {
+      Text(
+        text = "选择导出内容",
+        fontWeight = FontWeight.Bold
+      )
+    },
+    text = {
+      Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        // 无数据警告
+        if (hasNoData) {
+          Card(
+            colors = CardDefaults.cardColors(
+              containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+            ),
+            shape = RoundedCornerShape(8.dp)
+          ) {
+            Row(
+              modifier = Modifier.padding(12.dp),
+              horizontalArrangement = Arrangement.spacedBy(8.dp),
+              verticalAlignment = Alignment.CenterVertically
             ) {
-                // 无数据警告
-                if (hasNoData) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-                        ),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Warning,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Text(
-                                text = "没有数据可导出，请先添加菜谱或历史记录",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onErrorContainer
-                            )
-                        }
-                    }
-                }
-
-                ExportOptionItem(
-                    icon = Icons.Default.SelectAll,
-                    title = "全部数据",
-                  subtitle = dataCount?.let {
-                    val parts = mutableListOf<String>()
-                    if (it.first > 0) parts.add("菜谱: ${it.first}")
-                    if (it.second > 0) parts.add("历史: ${it.second}")
-                    if (it.third > 0) parts.add("AI供应商: ${it.third}")
-                    if (parts.isEmpty()) "无数据" else parts.joinToString("，")
-                  } ?: "菜谱、历史和配置",
-                    enabled = !hasNoData,
-                    onClick = { onExport(ExportType.ALL) }
-                )
-                ExportOptionItem(
-                    icon = Icons.Default.Restaurant,
-                    title = "仅菜谱",
-                    subtitle = dataCount?.let { "${it.first} 个菜谱" } ?: "所有菜谱",
-                    enabled = recipeCount > 0,
-                    onClick = { onExport(ExportType.RECIPES) }
-                )
-                ExportOptionItem(
-                  iconDrawableRes = R.drawable.ic_ai_sparkles,
-                  title = "仅AI供应商",
-                  subtitle = dataCount?.let { "${it.third} 个配置" } ?: "所有AI供应商配置",
-                  enabled = providerCount > 0,
-                  onClick = { onExport(ExportType.AI_PROVIDERS) }
-                )
+              Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(20.dp)
+              )
+              Text(
+                text = "没有数据可导出，请先添加菜谱或历史记录",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer
+              )
             }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
+          }
         }
-    )
+
+        ExportOptionItem(
+          icon = Icons.Default.SelectAll,
+          title = "全部数据",
+          subtitle = dataCount?.let {
+            val parts = mutableListOf<String>()
+            if (it.first > 0) parts.add("菜谱: ${it.first}")
+            if (it.second > 0) parts.add("历史: ${it.second}")
+            if (it.third > 0) parts.add("AI供应商: ${it.third}")
+            if (parts.isEmpty()) "无数据" else parts.joinToString("，")
+          } ?: "菜谱、历史和配置",
+          enabled = !hasNoData,
+          onClick = { onExport(ExportType.ALL) }
+        )
+        ExportOptionItem(
+          icon = Icons.Default.Restaurant,
+          title = "仅菜谱",
+          subtitle = dataCount?.let { "${it.first} 个菜谱" } ?: "所有菜谱",
+          enabled = recipeCount > 0,
+          onClick = { onExport(ExportType.RECIPES) }
+        )
+        ExportOptionItem(
+          iconDrawableRes = R.drawable.ic_ai_sparkles,
+          title = "仅AI供应商",
+          subtitle = dataCount?.let { "${it.third} 个配置" } ?: "所有AI供应商配置",
+          enabled = providerCount > 0,
+          onClick = { onExport(ExportType.AI_PROVIDERS) }
+        )
+      }
+    },
+    confirmButton = {},
+    dismissButton = {
+      TextButton(onClick = onDismiss) {
+        Text("取消")
+      }
+    }
+  )
 }
 
 /**
@@ -526,135 +528,135 @@ private fun ExportOptionsDialog(
  */
 @Composable
 private fun ImportPreviewDialog(
-    previewResult: ImportPreviewResult,
-    onDismiss: () -> Unit,
-    onImport: (ConflictStrategy) -> Unit
+  previewResult: ImportPreviewResult,
+  onDismiss: () -> Unit,
+  onImport: (ConflictStrategy) -> Unit
 ) {
-    val preview = previewResult.preview
-    var selectedStrategy by remember { mutableStateOf(ConflictStrategy.UPDATE_IF_NEWER) }
+  val preview = previewResult.preview
+  var selectedStrategy by useState(ConflictStrategy.UPDATE_IF_NEWER)
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = {
+      Text(
+        text = "导入预览",
+        fontWeight = FontWeight.Bold
+      )
+    },
+    text = {
+      Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+      ) {
+        // 数据统计
+        Card(
+          colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+          ),
+          shape = RoundedCornerShape(12.dp)
+        ) {
+          Column(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+          ) {
             Text(
-                text = "导入预览",
-                fontWeight = FontWeight.Bold
+              text = "文件内容",
+              style = MaterialTheme.typography.titleSmall,
+              fontWeight = FontWeight.SemiBold
             )
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // 数据统计
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                          .fillMaxWidth()
-                          .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "文件内容",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column {
-                                Text("菜谱", style = MaterialTheme.typography.bodySmall)
-                                Text(
-                                    "${preview.recipeCount} 个",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text("历史记录", style = MaterialTheme.typography.bodySmall)
-                                Text(
-                                    "${preview.historyCount} 条",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        }
-                        Divider(modifier = Modifier.padding(vertical = 4.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    "${preview.newRecipes + preview.newHistory}",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Text("新增", style = MaterialTheme.typography.bodySmall)
-                            }
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    "${preview.updatedRecipes + preview.updatedHistory}",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.tertiary
-                                )
-                                Text("更新", style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
-                    }
-                }
-
-                // 冲突处理策略选择
-                if (preview.updatedRecipes + preview.updatedHistory > 0) {
-                    Text(
-                        text = "冲突处理",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    ConflictStrategyOption(
-                        title = "仅更新较新的",
-                        description = "只更新修改时间更新的数据",
-                        selected = selectedStrategy == ConflictStrategy.UPDATE_IF_NEWER,
-                        onClick = { selectedStrategy = ConflictStrategy.UPDATE_IF_NEWER }
-                    )
-
-                    ConflictStrategyOption(
-                        title = "全部更新",
-                        description = "强制更新所有冲突的数据",
-                        selected = selectedStrategy == ConflictStrategy.UPDATE,
-                        onClick = { selectedStrategy = ConflictStrategy.UPDATE }
-                    )
-
-                    ConflictStrategyOption(
-                        title = "跳过冲突",
-                        description = "只导入新数据，跳过已存在的",
-                        selected = selectedStrategy == ConflictStrategy.SKIP,
-                        onClick = { selectedStrategy = ConflictStrategy.SKIP }
-                    )
-                }
+              Column {
+                Text("菜谱", style = MaterialTheme.typography.bodySmall)
+                Text(
+                  "${preview.recipeCount} 个",
+                  style = MaterialTheme.typography.bodyLarge,
+                  fontWeight = FontWeight.Medium
+                )
+              }
+              Column(horizontalAlignment = Alignment.End) {
+                Text("历史记录", style = MaterialTheme.typography.bodySmall)
+                Text(
+                  "${preview.historyCount} 条",
+                  style = MaterialTheme.typography.bodyLarge,
+                  fontWeight = FontWeight.Medium
+                )
+              }
             }
-        },
-        confirmButton = {
-            Button(
-                onClick = { onImport(selectedStrategy) }
+            Divider(modifier = Modifier.padding(vertical = 4.dp))
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text("开始导入")
+              Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                  "${preview.newRecipes + preview.newHistory}",
+                  style = MaterialTheme.typography.titleMedium,
+                  fontWeight = FontWeight.Bold,
+                  color = MaterialTheme.colorScheme.primary
+                )
+                Text("新增", style = MaterialTheme.typography.bodySmall)
+              }
+              Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                  "${preview.updatedRecipes + preview.updatedHistory}",
+                  style = MaterialTheme.typography.titleMedium,
+                  fontWeight = FontWeight.Bold,
+                  color = MaterialTheme.colorScheme.tertiary
+                )
+                Text("更新", style = MaterialTheme.typography.bodySmall)
+              }
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
+          }
         }
-    )
+
+        // 冲突处理策略选择
+        if (preview.updatedRecipes + preview.updatedHistory > 0) {
+          Text(
+            text = "冲突处理",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold
+          )
+
+          ConflictStrategyOption(
+            title = "仅更新较新的",
+            description = "只更新修改时间更新的数据",
+            selected = selectedStrategy == ConflictStrategy.UPDATE_IF_NEWER,
+            onClick = { selectedStrategy = ConflictStrategy.UPDATE_IF_NEWER }
+          )
+
+          ConflictStrategyOption(
+            title = "全部更新",
+            description = "强制更新所有冲突的数据",
+            selected = selectedStrategy == ConflictStrategy.UPDATE,
+            onClick = { selectedStrategy = ConflictStrategy.UPDATE }
+          )
+
+          ConflictStrategyOption(
+            title = "跳过冲突",
+            description = "只导入新数据，跳过已存在的",
+            selected = selectedStrategy == ConflictStrategy.SKIP,
+            onClick = { selectedStrategy = ConflictStrategy.SKIP }
+          )
+        }
+      }
+    },
+    confirmButton = {
+      Button(
+        onClick = { onImport(selectedStrategy) }
+      ) {
+        Text("开始导入")
+      }
+    },
+    dismissButton = {
+      TextButton(onClick = onDismiss) {
+        Text("取消")
+      }
+    }
+  )
 }
 
 /**
@@ -662,44 +664,44 @@ private fun ImportPreviewDialog(
  */
 @Composable
 private fun ConflictStrategyOption(
-    title: String,
-    description: String,
-    selected: Boolean,
-    onClick: () -> Unit
+  title: String,
+  description: String,
+  selected: Boolean,
+  onClick: () -> Unit
 ) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(8.dp),
-        color = if (selected)
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-        else
-            Color.Transparent
+  Surface(
+    onClick = onClick,
+    shape = RoundedCornerShape(8.dp),
+    color = if (selected)
+      MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+    else
+      Color.Transparent
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            RadioButton(
-                selected = selected,
-                onClick = onClick
-            )
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+      RadioButton(
+        selected = selected,
+        onClick = onClick
+      )
+      Column {
+        Text(
+          text = title,
+          style = MaterialTheme.typography.bodyMedium,
+          fontWeight = FontWeight.Medium
+        )
+        Text(
+          text = description,
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      }
     }
+  }
 }
 
 /**
@@ -709,63 +711,63 @@ private fun ConflictStrategyOption(
 private fun ExportOptionItem(
   icon: ImageVector? = null,
   iconDrawableRes: Int? = null,
-    title: String,
-    subtitle: String,
-    enabled: Boolean = true,
-    onClick: () -> Unit
+  title: String,
+  subtitle: String,
+  enabled: Boolean = true,
+  onClick: () -> Unit
 ) {
-    val alpha = if (enabled) 1f else 0.5f
+  val alpha = if (enabled) 1f else 0.5f
 
-    Surface(
-        onClick = { if (enabled) onClick() },
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f * alpha)
+  Surface(
+    onClick = { if (enabled) onClick() },
+    shape = RoundedCornerShape(12.dp),
+    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f * alpha)
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(12.dp),
+      horizontalArrangement = Arrangement.spacedBy(12.dp),
+      verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-          if (icon != null) {
-            Icon(
-              imageVector = icon,
-              contentDescription = null,
-              tint = MaterialTheme.colorScheme.primary.copy(alpha = alpha),
-              modifier = Modifier.size(24.dp)
-            )
-          } else if (iconDrawableRes != null) {
-            Icon(
-              painter = painterResource(id = iconDrawableRes),
-              contentDescription = null,
-              tint = MaterialTheme.colorScheme.primary.copy(alpha = alpha),
-              modifier = Modifier.size(24.dp)
-            )
-          }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha)
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha)
-                )
-            }
-            if (enabled) {
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
+      if (icon != null) {
+        Icon(
+          imageVector = icon,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.primary.copy(alpha = alpha),
+          modifier = Modifier.size(24.dp)
+        )
+      } else if (iconDrawableRes != null) {
+        Icon(
+          painter = painterResource(id = iconDrawableRes),
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.primary.copy(alpha = alpha),
+          modifier = Modifier.size(24.dp)
+        )
+      }
+      Column(modifier = Modifier.weight(1f)) {
+        Text(
+          text = title,
+          style = MaterialTheme.typography.bodyLarge,
+          fontWeight = FontWeight.Medium,
+          color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha)
+        )
+        Text(
+          text = subtitle,
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha)
+        )
+      }
+      if (enabled) {
+        Icon(
+          imageVector = Icons.Default.ChevronRight,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+          modifier = Modifier.size(20.dp)
+        )
+      }
     }
+  }
 }
 
 /**
@@ -773,68 +775,68 @@ private fun ExportOptionItem(
  */
 @Composable
 private fun SettingsCard(
-    title: String,
-    icon: ImageVector? = null,
-    iconDrawableRes: Int? = null,
-    iconColor: Color,
-    content: @Composable ColumnScope.() -> Unit
+  title: String,
+  icon: ImageVector? = null,
+  iconDrawableRes: Int? = null,
+  iconColor: Color,
+  content: @Composable ColumnScope.() -> Unit
 ) {
   val isDark = LocalDarkTheme.current
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+  Column(
+    modifier = Modifier.fillMaxWidth(),
+    verticalArrangement = Arrangement.spacedBy(8.dp)
+  ) {
+    // 卡片标题
+    Row(
+      modifier = Modifier.padding(horizontal = 4.dp),
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
+      verticalAlignment = Alignment.CenterVertically
     ) {
-        // 卡片标题
-        Row(
-            modifier = Modifier.padding(horizontal = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-          when {
-            icon != null -> Icon(
-              imageVector = icon,
-              contentDescription = null,
-              tint = iconColor,
-              modifier = Modifier.size(20.dp)
-            )
+      when {
+        icon != null -> Icon(
+          imageVector = icon,
+          contentDescription = null,
+          tint = iconColor,
+          modifier = Modifier.size(20.dp)
+        )
 
-            iconDrawableRes != null -> Icon(
-              painter = painterResource(id = iconDrawableRes),
-              contentDescription = null,
-              tint = iconColor,
-              modifier = Modifier.size(20.dp)
-            )
-          }
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        // 卡片内容
-        Card(
-            modifier = Modifier
-              .fillMaxWidth()
-              .shadow(
-                elevation = 2.dp,
-                shape = RoundedCornerShape(16.dp),
-                spotColor = Color.Black.copy(alpha = 0.08f)
-              ),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
-            )
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                content()
-            }
-        }
+        iconDrawableRes != null -> Icon(
+          painter = painterResource(id = iconDrawableRes),
+          contentDescription = null,
+          tint = iconColor,
+          modifier = Modifier.size(20.dp)
+        )
+      }
+      Text(
+        text = title,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
     }
+
+    // 卡片内容
+    Card(
+      modifier = Modifier
+        .fillMaxWidth()
+        .shadow(
+          elevation = 2.dp,
+          shape = RoundedCornerShape(16.dp),
+          spotColor = Color.Black.copy(alpha = 0.08f)
+        ),
+      shape = RoundedCornerShape(16.dp),
+      colors = CardDefaults.cardColors(
+        containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
+      )
+    ) {
+      Column(
+        modifier = Modifier.fillMaxWidth()
+      ) {
+        content()
+      }
+    }
+  }
 }
 
 /**
@@ -842,67 +844,67 @@ private fun SettingsCard(
  */
 @Composable
 private fun SettingsItem(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit
+  icon: ImageVector,
+  title: String,
+  subtitle: String,
+  onClick: () -> Unit
 ) {
-    Surface(
-        onClick = onClick,
-        color = Color.Transparent
+  Surface(
+    onClick = onClick,
+    color = Color.Transparent
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp),
+      horizontalArrangement = Arrangement.spacedBy(16.dp),
+      verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // 图标
-            Box(
-                modifier = Modifier
-                  .size(40.dp)
-                  .background(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(10.dp)
-                  ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
+      // 图标
+      Box(
+        modifier = Modifier
+          .size(40.dp)
+          .background(
+            color = MaterialTheme.colorScheme.primaryContainer,
+            shape = RoundedCornerShape(10.dp)
+          ),
+        contentAlignment = Alignment.Center
+      ) {
+        Icon(
+          imageVector = icon,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.onPrimaryContainer,
+          modifier = Modifier.size(20.dp)
+        )
+      }
 
-            // 文字
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+      // 文字
+      Column(
+        modifier = Modifier.weight(1f),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+      ) {
+        Text(
+          text = title,
+          style = MaterialTheme.typography.bodyLarge,
+          fontWeight = FontWeight.Medium,
+          color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+          text = subtitle,
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      }
 
-            // 箭头
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier.size(20.dp)
-            )
-        }
+      // 箭头
+      Icon(
+        imageVector = Icons.Default.ChevronRight,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+        modifier = Modifier.size(20.dp)
+      )
     }
+  }
 }
 
 /**
@@ -913,7 +915,7 @@ private fun ThemeSettingItem(
   currentThemeMode: ThemeMode,
   onThemeModeChange: (ThemeMode) -> Unit
 ) {
-  var showThemeDialog by remember { mutableStateOf(false) }
+  var showThemeDialog by useState(false)
 
   Surface(
     onClick = { showThemeDialog = true },

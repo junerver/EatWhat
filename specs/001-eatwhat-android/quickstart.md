@@ -333,10 +333,14 @@ Add callback to database builder:
 ### Example: Roll Screen State
 
 ```kotlin
+import xyz.junerver.compose.hooks.getValue
+import xyz.junerver.compose.hooks.useCreation
+import xyz.junerver.compose.hooks.useState
+
 @Composable
 fun RollScreen(navController: NavController) {
     val app = LocalContext.current.applicationContext as EatWhatApplication
-    val repository = remember { RollRepository(app.database) }
+  val repository by useCreation { RollRepository(app.database) }
 
     // State management with ComposeHooks
     val (config, setConfig) = useState(RollConfig())

@@ -45,7 +45,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -69,6 +68,9 @@ import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftGreen
 import com.eatwhat.ui.theme.UnselectedBackground
 import kotlinx.coroutines.launch
+import xyz.junerver.compose.hooks._useState
+import xyz.junerver.compose.hooks.getValue
+import xyz.junerver.compose.hooks.useCreation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,13 +90,13 @@ fun PrepScreen(
         return
     }
 
-    val useCase = remember { GeneratePrepListUseCase() }
-    val initialPrepList = remember { useCase(rollResult.recipes) }
+  val useCase by useCreation { GeneratePrepListUseCase() }
+  val initialPrepList by useCreation { useCase(rollResult.recipes) }
 
     // Save history when entering PrepScreen and store the historyId
-    val saveHistoryUseCase = remember { com.eatwhat.domain.usecase.SaveHistoryUseCase(app.historyRepository) }
-    val historyRepository = remember { app.historyRepository }
-    var historyId by remember { mutableStateOf<Long?>(null) }
+  val saveHistoryUseCase by useCreation { com.eatwhat.domain.usecase.SaveHistoryUseCase(app.historyRepository) }
+  val historyRepository by useCreation { app.historyRepository }
+  var historyId by _useState<Long?>(null)
     
     LaunchedEffect(Unit) {
         try {

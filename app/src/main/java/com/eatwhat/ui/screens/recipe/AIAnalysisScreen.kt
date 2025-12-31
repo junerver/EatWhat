@@ -43,7 +43,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -71,7 +70,10 @@ import com.eatwhat.util.ImageUtils
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import xyz.junerver.compose.hooks._useGetState
+import xyz.junerver.compose.hooks._useState
+import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,9 +81,9 @@ import xyz.junerver.compose.hooks.useGetState
 fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
-  val database = remember { EatWhatDatabase.getInstance(context) }
-  val repository = remember { AIProviderRepository(database.aiProviderDao()) }
-  val openAIService = remember { OpenAIService() }
+  val database by useCreation { EatWhatDatabase.getInstance(context) }
+  val repository by useCreation { AIProviderRepository(database.aiProviderDao()) }
+  val openAIService by useCreation { OpenAIService() }
 
   val activeProvider by repository.activeProvider.collectAsState(initial = null)
   val aiConfig = activeProvider?.toAIConfig() ?: AIConfig()
@@ -89,7 +91,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
   val (prompt, setPrompt) = useGetState(initialPrompt ?: "")
   val (isLoading, setIsLoading) = useGetState(false)
   val (error, setError) = _useGetState<String?>(null)
-  var selectedImageBase64 by remember { mutableStateOf<String?>(null) }
+  var selectedImageBase64 by _useState<String?>(null)
 
   // 接收从分享传来的图片
   val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
@@ -97,7 +99,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
     savedStateHandle?.getStateFlow<String?>("shared_image", null)?.collectAsState()
 
   // 判断是否从分享进入：有 initialPrompt 或有 shared_image
-  val isFromShare = remember { initialPrompt != null || sharedImageBase64?.value != null }
+  val isFromShare by useCreation { initialPrompt != null || sharedImageBase64?.value != null }
 
   // 如果有分享的图片，设置为选中的图片
   xyz.junerver.compose.hooks.useEffect(sharedImageBase64?.value) {

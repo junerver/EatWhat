@@ -37,7 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -68,7 +67,10 @@ import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
 import com.eatwhat.ui.theme.WarmYellow
 import kotlinx.coroutines.launch
+import xyz.junerver.compose.hooks._useState
+import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,13 +85,13 @@ fun RollResultScreen(
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as EatWhatApplication
-    val useCase = remember { RollRecipesUseCase(app.rollRepository) }
+  val useCase by useCreation { RollRecipesUseCase(app.rollRepository) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-  var rollResult by remember { mutableStateOf<RollResult?>(null) }
+  var rollResult by _useState<RollResult?>(null)
   val (isLoading, setIsLoading) = useGetState(default = true)
-  var error by remember { mutableStateOf<String?>(null) }
+  var error by _useState<String?>(null)
 
     val config = remember {
         RollConfig(

@@ -430,10 +430,21 @@ import xyz.junerver.compose.hooks.invoke  // 必须导入此依赖才能直接�
 
     - 返回 `MutableState<T>`
     - 是 `remember { mutableStateOf() }` 的简单封装
+   - 有多个重载，传递一个函数作为参数时可以用于创建派生状态
+     ```kotlin
+     @Composable
+     fun <T> useState(vararg keys: Any?, factory: () -> T): State<T> = remember(keys = keys) {
+         derivedStateOf(factory)
+     }
+     ```
 
 3. **useEffect** - 副作用处理
     - 监听依赖变化执行副作用
     - 支持清理函数
+
+4. **useRef** - 在重组时记住内容，修改内容不会触发重组
+    - 等同于 `remember {}`
+    - 可以使用扩展函数 `observeAsState()` 将 `Ref` 转换为只读的 `State` 进而在其值变化时触发页面重组
 
 **标准使用模式**:
 
@@ -507,7 +518,7 @@ useEffect(Unit) {
 1. **优先使用 useGetState**: 当需要在回调中访问最新状态时
 2. **配合 rememberCoroutineScope**: 处理异步操作
 3. **使用 collectAsState**: 从 Flow 收集数据
-4. **避免过度使用**: 简单状态可以用 `remember { mutableStateOf() }`
+4. 适当使用代理，简单状态可以用 `var simpleBoolean by useState(true)`
 5. **状态提升**: 将共享状态提升到父组件
 
 ### Compose Best Practices
@@ -515,10 +526,10 @@ useEffect(Unit) {
 - Use Material 3 components exclusively
 - Implement proper state hoisting
 - **Use ComposeHooks for state management (not ViewModel)**
-    - 优先使用 `useGetState`/`_useGetState` 管理复杂状态
+    - 优先使用 `useGetState`/`_useGetState`（支持null） 管理复杂状态
     - 使用 `useEffect` 处理副作用和依赖更新
     - 配合 `rememberCoroutineScope` 处理异步操作
-    - 简单状态可使用 `useState`/`_useState`
+    - 简单状态可使用 `useState`/`_useState`（支持null）
 - Follow single source of truth principle
 - Implement proper error states and loading states
 - Use `remember` and `rememberSaveable` appropriately
@@ -736,7 +747,6 @@ fun DomainClass.toEntity(): EntityClass {
 - ❌ Direct database access from UI
 - ❌ Business logic in Composables
 - ❌ 在 Composable 中直接使用 `mutableStateOf` 而不使用 `remember`
-- ❌ 过度使用 ComposeHooks（简单状态用 `remember { mutableStateOf() }`）
 
 ### Data Layer
 

@@ -85,6 +85,9 @@ import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
 import com.eatwhat.ui.theme.WarmYellow
 import kotlinx.coroutines.launch
+import xyz.junerver.compose.hooks.getValue
+import xyz.junerver.compose.hooks.useCreation
+import xyz.junerver.compose.hooks.useState
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,15 +98,15 @@ fun HistoryDetailScreen(
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as EatWhatApplication
-    val repository = remember { HistoryRepository(app.database) }
+  val repository by useCreation { HistoryRepository(app.database) }
     val scope = rememberCoroutineScope()
 
     val historyWithRecipes by repository.getHistoryById(historyId)
         .collectAsState(initial = null)
 
     // 编辑名称对话框状态
-    var showEditNameDialog by remember { mutableStateOf(false) }
-    var editingName by remember { mutableStateOf("") }
+  var showEditNameDialog by useState(false)
+  var editingName by useState("")
 
     Scaffold(
         topBar = {
@@ -446,8 +449,8 @@ private fun SectionCard(
             // Header - clickable
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onToggle() },
+                  .fillMaxWidth()
+                  .clickable { onToggle() },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -457,9 +460,9 @@ private fun SectionCard(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(iconBackgroundColor),
+                          .size(40.dp)
+                          .clip(RoundedCornerShape(12.dp))
+                          .background(iconBackgroundColor),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -497,9 +500,9 @@ private fun SectionCard(
             LinearProgressIndicator(
                 progress = progress,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp)),
+                  .fillMaxWidth()
+                  .height(6.dp)
+                  .clip(RoundedCornerShape(3.dp)),
                 color = if (progress >= 1f) SoftGreen else PrimaryOrange,
                 trackColor = trackColor
             )
@@ -536,8 +539,8 @@ private fun PrepItemCheckRow(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+              .fillMaxWidth()
+              .padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -589,8 +592,8 @@ private fun RecipeSnapshotCard(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+              .fillMaxWidth()
+              .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Use RecipeIcon to display image or emoji
