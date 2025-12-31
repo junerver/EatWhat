@@ -151,8 +151,8 @@ fun StyledTextField(
               innerTextField()
             }
 
-            // Clear button (当有内容且没有 trailing icon 时显示)
-            if (value.isNotEmpty() && trailingIcon == null) {
+            // Clear button (当有内容时总是显示)
+            if (value.isNotEmpty()) {
               Icon(
                 imageVector = Icons.Default.Clear,
                 contentDescription = "Clear",
@@ -163,7 +163,7 @@ fun StyledTextField(
               )
             }
 
-            // Trailing icon (后置图标，优先级高于 Clear 按钮)
+            // Trailing icon (后置图标，与 Clear 按钮共存)
             trailingIcon?.invoke()
           }
         }
