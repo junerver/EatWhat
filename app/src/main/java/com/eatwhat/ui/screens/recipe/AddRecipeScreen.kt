@@ -605,19 +605,19 @@ fun AddRecipeScreen(
                         )
                     }
                 ) {
+                  val density = LocalDensity.current
+
                   steps.value.forEachIndexed { index, step ->
                     val isDragging = draggedStepIndex == index
-                    val density = LocalDensity.current
-                        
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = fadeIn() + expandVertically(),
-                            exit = fadeOut() + shrinkVertically()
-                        ) {
-                          Row(
-                            modifier = Modifier.fillMaxWidth(),
+                    val currentOffset = if (isDragging) draggedStepOffset else 0f
+
+                    Row(
+                      modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(0, currentOffset.toInt()) }
+                        .zIndex(if (isDragging) 1f else 0f),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
-                          ) {
+                    ) {
                             // Left column: step number + connector
                             Column(
                               horizontalAlignment = Alignment.CenterHorizontally
@@ -654,7 +654,7 @@ fun AddRecipeScreen(
                               }
                             }
 
-                            // Right column: step content
+                      // Right column: step content
                             StepContentCard(
                               stepNumber = index + 1,
                               step = step,
@@ -669,39 +669,35 @@ fun AddRecipeScreen(
                                 }
                               },
                               canDelete = steps.value.size > 1,
-                              isDragging = isDragging,
-                              dragOffset = if (isDragging) draggedStepOffset else 0f,
                               onDragStart = {
                                 draggedStepIndex = index
                                 draggedStepOffset = 0f
                               },
                               onDrag = { delta ->
-                                if (draggedStepIndex == index) {
-                                  draggedStepOffset += delta
+                                draggedStepOffset += delta
 
-                                  // Calculate if we should swap with another step
-                                  val stepHeight = with(density) { 120.dp.toPx() }
-                                  val swapThreshold = stepHeight / 2
+                                // Calculate if we should swap with another step
+                                val stepHeight = with(density) { 120.dp.toPx() }
+                                val swapThreshold = stepHeight / 2
 
-                                  if (draggedStepOffset > swapThreshold && index < steps.value.lastIndex) {
-                                    // Swap with next step
-                                    val newList = steps.value.toMutableList()
-                                    val temp = newList[index]
-                                    newList[index] = newList[index + 1]
-                                    newList[index + 1] = temp
-                                    setSteps(newList)
-                                    draggedStepIndex = index + 1
-                                    draggedStepOffset -= stepHeight
-                                  } else if (draggedStepOffset < -swapThreshold && index > 0) {
-                                    // Swap with previous step
-                                    val newList = steps.value.toMutableList()
-                                    val temp = newList[index]
-                                    newList[index] = newList[index - 1]
-                                    newList[index - 1] = temp
-                                    setSteps(newList)
-                                    draggedStepIndex = index - 1
-                                    draggedStepOffset += stepHeight
-                                  }
+                                if (draggedStepOffset > swapThreshold && draggedStepIndex < steps.value.lastIndex) {
+                                  // Swap with next step
+                                  val newList = steps.value.toMutableList()
+                                  val temp = newList[draggedStepIndex]
+                                  newList[draggedStepIndex] = newList[draggedStepIndex + 1]
+                                  newList[draggedStepIndex + 1] = temp
+                                  setSteps(newList)
+                                  draggedStepIndex += 1
+                                  draggedStepOffset -= stepHeight
+                                } else if (draggedStepOffset < -swapThreshold && draggedStepIndex > 0) {
+                                  // Swap with previous step
+                                  val newList = steps.value.toMutableList()
+                                  val temp = newList[draggedStepIndex]
+                                  newList[draggedStepIndex] = newList[draggedStepIndex - 1]
+                                  newList[draggedStepIndex - 1] = temp
+                                  setSteps(newList)
+                                  draggedStepIndex -= 1
+                                  draggedStepOffset += stepHeight
                                 }
                               },
                               onDragEnd = {
@@ -709,8 +705,11 @@ fun AddRecipeScreen(
                                 draggedStepOffset = 0f
                               },
                               modifier = Modifier.weight(1f)
-                                )
-                            }
+                            )
+                    }
+
+                    if (index < steps.value.lastIndex) {
+                      Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
                 }
@@ -1111,8 +1110,6 @@ private fun StepContentCard(
     onStepChange: (StepInput) -> Unit,
     onDelete: () -> Unit,
     canDelete: Boolean,
-    isDragging: Boolean = false,
-    dragOffset: Float = 0f,
     onDragStart: () -> Unit = {},
     onDrag: (Float) -> Unit = {},
     onDragEnd: () -> Unit = {},
@@ -1126,9 +1123,7 @@ private fun StepContentCard(
     color = stepBackground,
     border = androidx.compose.foundation.BorderStroke(1.dp, SoftBlue.copy(alpha = 0.2f)),
     modifier = modifier
-      .offset { IntOffset(0, dragOffset.toInt()) }
-      .zIndex(if (isDragging) 1f else 0f)
-      .pointerInput(Unit) {
+      .pointerInput(stepNumber) {
         detectDragGesturesAfterLongPress(
           onDragStart = { onDragStart() },
           onDrag = { _, dragAmount -> onDrag(dragAmount.y) },
