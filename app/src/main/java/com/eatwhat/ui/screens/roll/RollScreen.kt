@@ -121,19 +121,39 @@ fun RollScreen(navController: NavController) {
       val allocated = meatCount.value + vegCount.value + soupCount.value
       val remaining = totalCount.value - allocated
 
-      // 如果用户没有分配任何类型，全部作为随机分配
-        if (allocated == 0) {
-            navController.navigate(
-                Destinations.RollResult.createRoute(
-                  meatCount = 0,
-                  vegCount = 0,
-                    soupCount = 0,
-                  stapleCount = 0,
-                  randomCount = totalCount.value
-                )
-            )
-            return
-        }
+      // 如果用户没有分配任何类型，应用自动均衡策略：荤素搭配，汤0-1
+      if (allocated == 0) {
+        val total = totalCount.value
+
+        // 策略：汤的数量默认 0 或 1（除非总量太少）
+        // 如果总量 > 1，随机决定是否要汤
+        val soupTarget = if (total > 1) (0..1).random() else 0
+
+        // 剩余数量分配给荤菜和素菜
+        val remaining = total - soupTarget
+
+        // 尽量平均分配，多余的随机给荤或素
+        val half = remaining / 2
+        val extra = remaining % 2
+
+        // 随机决定谁拿多出来的那一个
+        val meatExtra = if (extra > 0 && (0..1).random() == 1) 1 else 0
+        val vegExtra = if (extra > 0 && meatExtra == 0) 1 else 0
+
+        val meatTarget = half + meatExtra
+        val vegTarget = half + vegExtra
+
+        navController.navigate(
+          Destinations.RollResult.createRoute(
+            meatCount = meatTarget,
+            vegCount = vegTarget,
+            soupCount = soupTarget,
+            stapleCount = 0,
+            randomCount = 0
+          )
+        )
+        return
+      }
 
       // 使用最终分配的数量，剩余数量作为随机数量
         navController.navigate(
