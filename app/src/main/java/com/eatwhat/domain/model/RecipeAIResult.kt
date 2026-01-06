@@ -32,7 +32,7 @@ data class RecipeAIResult(
 data class IngredientAI(
   @Description("食材名称")
   val name: String,
-  @Description("数量")
+  @Description("数量，当单位为MODERATE(适量)时可以为空")
   val amount: String,
   @Description("单位: G(克), ML(毫升), PIECE(个), SPOON(勺), MODERATE(适量)")
   val unit: String

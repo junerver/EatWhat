@@ -4,6 +4,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.RadioButtonChecked
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -32,14 +36,17 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -88,6 +95,11 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
   val repository by useCreation { AIProviderRepository(database.aiProviderDao()) }
 
   val activeProvider by repository.activeProvider.collectAsState(initial = null)
+  val allProviders by repository.allProviders.collectAsState(initial = emptyList())
+
+  // 模型选择器状态
+  var showModelSelector by _useState(false)
+  val sheetState = rememberModalBottomSheetState()
 
   val (prompt, setPrompt) = useGetState(initialPrompt ?: "")
   val (localError, setLocalError) = _useGetState<String?>(null)
@@ -129,21 +141,6 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
     }
   }
 
-  // 系统提示词
-  val systemPrompt = """
-    你是一个专业的菜谱分析助手。请分析用户的输入（菜谱描述、做法、图片等），并输出符合 JSON Schema 的菜谱数据。
-
-    注意：
-    1. type 必须是 MEAT(荤菜), VEG(素菜), SOUP(汤), STAPLE(主食), OTHER(其他) 之一。
-       注意：OTHER 类型用于蘸汁、酱料、汤底等辅助型配方，或者不能单独作为一道菜品的食谱。
-    2. unit 必须是 G(克), ML(毫升), PIECE(个), SPOON(勺), MODERATE(适量) 之一。
-    3. icon 请根据菜品内容选择一个最合适的 Emoji。
-    4. 如果输入信息不全，请根据经验合理补全。
-    5. estimatedTime 应在 1-300 之间。
-    6. 如果用户上传了图片且该图片是做好的食物照片（成品图），请将 isFoodImage 设为 true；如果是纯文字截图或非食物照片，请设为 false。
-    7. 如果 isFoodImage 为 true，icon 字段仍需生成一个 emoji 作为备用，但前端会优先使用用户上传的图片。
-  """.trimIndent()
-
   // 使用 useGenerateObject 钩子
   val (recipe, rawJson, isLoading, error, submit, _) = useGenerateObject<RecipeAIResult>(
     schemaString = RecipeAIResult::class.jsonSchemaString,
@@ -155,7 +152,19 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
       )
       this.model = provider.model
     }
-    this.systemPrompt = systemPrompt
+    this.systemPrompt = """
+      你是一个专业的菜谱分析助手。请分析用户的输入（菜谱描述、做法、图片等），并输出符合 JSON Schema 的菜谱数据。
+      
+      注意：
+      1. type 必须是 MEAT(荤菜), VEG(素菜), SOUP(汤), STAPLE(主食), OTHER(其他) 之一。
+         注意：OTHER 类型用于蘸汁、酱料、汤底等辅助型配方，或者不能单独作为一道菜品的食谱。
+      2. unit 必须是 G(克), ML(毫升), PIECE(个), SPOON(勺), MODERATE(适量) 之一，当unit为MODERATE(适量)时，amount应为空字符串。
+      3. icon 请根据菜品内容选择一个最合适的 Emoji。
+      4. 如果输入信息不全，请根据经验合理补全。
+      5. estimatedTime 应在 1-300 之间。
+      6. 如果用户上传了图片且该图片是做好的食物照片（成品图），请将 isFoodImage 设为 true；如果是纯文字截图或非食物照片，请设为 false。
+      7. 如果 isFoodImage 为 true，icon 字段仍需生成一个 emoji 作为备用，但前端会优先使用用户上传的图片。
+    """.trimIndent()
     timeout = 60.seconds
   }
 
@@ -247,7 +256,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
       contentPadding = PaddingValues(16.dp),
       verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-      // Info card
+      // 模型选择器卡片
       item {
         Card(
           modifier = Modifier
@@ -256,7 +265,15 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
               elevation = 4.dp,
               shape = RoundedCornerShape(20.dp),
               spotColor = Color.Black.copy(alpha = 0.1f)
-            ),
+            )
+            .clickable {
+              if (allProviders.isNotEmpty()) {
+                showModelSelector = true
+              } else {
+                // 无 provider 时跳转到设置页面
+                navController.navigate(com.eatwhat.navigation.Destinations.AIConfig.route)
+              }
+            },
           shape = RoundedCornerShape(20.dp),
           colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
@@ -281,10 +298,41 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
                 modifier = Modifier.size(22.dp)
               )
             }
-            Text(
-              "输入菜谱描述或上传图片，AI 将自动生成菜谱信息",
-              style = MaterialTheme.typography.bodyMedium,
-              color = MaterialTheme.colorScheme.onSurfaceVariant
+            Column(
+              modifier = Modifier.weight(1f),
+              verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+              if (activeProvider != null) {
+                Text(
+                  activeProvider!!.name,
+                  style = MaterialTheme.typography.bodyMedium,
+                  fontWeight = FontWeight.Medium,
+                  color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                  activeProvider!!.model,
+                  style = MaterialTheme.typography.bodySmall,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+              } else {
+                Text(
+                  "未配置模型",
+                  style = MaterialTheme.typography.bodyMedium,
+                  fontWeight = FontWeight.Medium,
+                  color = MaterialTheme.colorScheme.error
+                )
+                Text(
+                  "点击前往设置",
+                  style = MaterialTheme.typography.bodySmall,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+              }
+            }
+            Icon(
+              Icons.Default.KeyboardArrowRight,
+              contentDescription = "选择模型",
+              tint = MaterialTheme.colorScheme.onSurfaceVariant,
+              modifier = Modifier.size(24.dp)
             )
           }
         }
@@ -475,6 +523,70 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
       // Bottom spacing
       item {
         Spacer(modifier = Modifier.height(32.dp))
+      }
+    }
+  }
+
+  // 模型选择底部弹窗
+  if (showModelSelector) {
+    ModalBottomSheet(
+      onDismissRequest = { showModelSelector = false },
+      sheetState = sheetState,
+      containerColor = MaterialTheme.colorScheme.surface
+    ) {
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(bottom = 32.dp)
+      ) {
+        Text(
+          "选择 AI 模型",
+          style = MaterialTheme.typography.titleMedium,
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
+        )
+
+        HorizontalDivider()
+
+        allProviders.forEach { provider ->
+          val isSelected = provider.id == activeProvider?.id
+          Row(
+            modifier = Modifier
+              .fillMaxWidth()
+              .clickable {
+                scope.launch {
+                  repository.setActive(provider.id)
+                  showModelSelector = false
+                }
+              }
+              .padding(horizontal = 20.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Icon(
+              if (isSelected) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
+              contentDescription = null,
+              tint = if (isSelected) PrimaryOrange else MaterialTheme.colorScheme.onSurfaceVariant,
+              modifier = Modifier.size(24.dp)
+            )
+            Column(
+              modifier = Modifier.weight(1f),
+              verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+              Text(
+                provider.name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                color = MaterialTheme.colorScheme.onSurface
+              )
+              Text(
+                provider.model,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+              )
+            }
+          }
+        }
       }
     }
   }
