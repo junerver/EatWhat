@@ -1,4 +1,3 @@
-
 package com.eatwhat.ui.screens.recipe
 
 import androidx.compose.animation.AnimatedVisibility
@@ -104,6 +103,7 @@ import com.eatwhat.domain.model.CookingStep
 import com.eatwhat.domain.model.Difficulty
 import com.eatwhat.domain.model.Ingredient
 import com.eatwhat.domain.model.Recipe
+import com.eatwhat.domain.model.RecipeAIResult
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.domain.model.Tag
 import com.eatwhat.ui.components.FoodEmojis
@@ -135,13 +135,13 @@ import com.eatwhat.domain.model.Unit as IngredientUnit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddRecipeScreen(
-    navController: NavController,
-    recipeId: Long? = null
+  navController: NavController,
+  recipeId: Long? = null
 ) {
-    val context = LocalContext.current
-    val app = context.applicationContext as EatWhatApplication
+  val context = LocalContext.current
+  val app = context.applicationContext as EatWhatApplication
   val recipeRepository by useCreation { app.recipeRepository }
-    val scope = rememberCoroutineScope()
+  val scope = rememberCoroutineScope()
   val snackbarHostState by useCreation { SnackbarHostState() }
   val focusManager = LocalFocusManager.current
 
@@ -164,9 +164,9 @@ fun AddRecipeScreen(
     }
   }
 
-    val isEditMode = recipeId != null
+  val isEditMode = recipeId != null
 
-    // Form state
+  // Form state
   val (name, setName) = useGetState(default = "")
   val (type, setType) = useGetState(default = RecipeType.MEAT)
   val (icon, setIcon) = useGetState(default = FoodEmojis.DEFAULT_EMOJI)
@@ -183,36 +183,36 @@ fun AddRecipeScreen(
   // Drag and drop state for steps
   var draggedStepIndex by useState(-1)
   var draggedStepOffset by useState(0f)
-    
-    // Generate stable random colors for tags
+
+  // Generate stable random colors for tags
   val tagColors = remember(tags.value) {
     tags.value.associateWith { generatePastelColor() }
-    }
+  }
 
-    // Load existing recipe if editing
-    useEffect(recipeId ?: 0L) {
-        recipeId?.let { id ->
-            scope.launch {
-                recipeRepository.getRecipeById(id).collect { recipe ->
-                    recipe?.let {
-                        setName(it.name)
-                        setType(it.type)
-                        setIcon(it.icon)
-                      imageBase64 = it.imageBase64
-                        setDifficulty(it.difficulty)
-                        setEstimatedTime(it.estimatedTime.toString())
-                        setIngredients(it.ingredients.map { ing ->
-                            IngredientInput(ing.name, ing.amount, ing.unit)
-                        })
-                        setSteps(it.steps.map { step ->
-                            StepInput(step.description)
-                        })
-                        setTags(it.tags.map { tag -> tag.name })
-                    }
-                }
-            }
+  // Load existing recipe if editing
+  useEffect(recipeId ?: 0L) {
+    recipeId?.let { id ->
+      scope.launch {
+        recipeRepository.getRecipeById(id).collect { recipe ->
+          recipe?.let {
+            setName(it.name)
+            setType(it.type)
+            setIcon(it.icon)
+            imageBase64 = it.imageBase64
+            setDifficulty(it.difficulty)
+            setEstimatedTime(it.estimatedTime.toString())
+            setIngredients(it.ingredients.map { ing ->
+              IngredientInput(ing.name, ing.amount, ing.unit)
+            })
+            setSteps(it.steps.map { step ->
+              StepInput(step.description)
+            })
+            setTags(it.tags.map { tag -> tag.name })
+          }
         }
+      }
     }
+  }
 
   // Handle AI analysis result
   val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
@@ -224,7 +224,7 @@ fun AddRecipeScreen(
       try {
         val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
         val aiResult = json.decodeFromString(
-          com.eatwhat.domain.service.RecipeAIResult.serializer(),
+          RecipeAIResult.serializer(),
           jsonString
         )
 
@@ -285,468 +285,468 @@ fun AddRecipeScreen(
     }
   }
 
-    // Save function extracted for use in TopAppBar
-    val onSave: () -> Unit = {
-        // Validation
-      if (name.value.isBlank()) {
-            scope.launch {
-                snackbarHostState.showSnackbar("请输入菜名")
-            }
-        } else {
-        val time = estimatedTime.value.toIntOrNull()
-            if (time == null || time < 1 || time > 300) {
-                scope.launch {
-                    snackbarHostState.showSnackbar("预计时间必须在1-300分钟之间")
-                }
-            } else if (ingredients.value.any { it.name.isBlank() }) {
-                scope.launch {
-                    snackbarHostState.showSnackbar("请填写所有食材名称")
-                }
-            } else if (steps.value.any { it.description.isBlank() }) {
-                scope.launch {
-                    snackbarHostState.showSnackbar("请填写所有步骤描述")
-                }
-            } else {
-                // Save recipe
-                scope.launch {
-                    setIsSaving(true)
-                    try {
-                        val recipe = Recipe(
-                            id = recipeId ?: 0,
-                            syncId = java.util.UUID.randomUUID().toString(),
-                          name = name.value,
-                          type = type.value,
-                          icon = icon.value,
-                            imageBase64 = imageBase64,
-                          difficulty = difficulty.value,
-                            estimatedTime = time,
-                          ingredients = ingredients.value.mapIndexed { index, ing ->
-                                Ingredient(
-                                    name = ing.name,
-                                    amount = ing.amount,
-                                    unit = ing.unit,
-                                    orderIndex = index
-                                )
-                            },
-                          steps = steps.value.mapIndexed { index, step ->
-                                CookingStep(
-                                    stepNumber = index + 1,
-                                    description = step.description
-                                )
-                            },
-                          tags = tags.value.map { Tag(name = it) }
-                        )
-
-                        if (isEditMode) {
-                            recipeRepository.updateRecipe(recipe)
-                        } else {
-                            recipeRepository.insertRecipe(recipe)
-                        }
-
-                        navController.navigateUp()
-                    } catch (e: Exception) {
-                        snackbarHostState.showSnackbar("保存失败: ${e.message}")
-                    } finally {
-                        setIsSaving(false)
-                    }
-                }
-            }
+  // Save function extracted for use in TopAppBar
+  val onSave: () -> Unit = {
+    // Validation
+    if (name.value.isBlank()) {
+      scope.launch {
+        snackbarHostState.showSnackbar("请输入菜名")
+      }
+    } else {
+      val time = estimatedTime.value.toIntOrNull()
+      if (time == null || time < 1 || time > 300) {
+        scope.launch {
+          snackbarHostState.showSnackbar("预计时间必须在1-300分钟之间")
         }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        if (isEditMode) "编辑菜谱" else "创建新菜谱",
-                        fontWeight = FontWeight.Bold
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
-                    }
-                },
-                actions = {
-                  // AI Analysis button
-                  IconButton(
-                    onClick = { navController.navigate(com.eatwhat.navigation.Destinations.AIAnalysis.route) }
-                  ) {
-                    Icon(
-                      painter = painterResource(id = R.drawable.ic_ai_sparkles),
-                      contentDescription = "AI 分析",
-                      modifier = Modifier
-                        .size(24.dp)
-                        .graphicsLayer(alpha = 0.99f)
-                        .drawWithCache {
-                          val brush = Brush.linearGradient(
-                            colors = listOf(
-                              Color(0xFFE040FB), // Bright Purple
-                              Color(0xFF7C4DFF)  // Deep Purple
-                            )
-                          )
-                          onDrawWithContent {
-                            drawContent()
-                            drawRect(brush, blendMode = BlendMode.SrcAtop)
-                          }
-                        },
-                      tint = Color.Unspecified
-                    )
-                  }
-
-                    // Save button
-                    FilledTonalButton(
-                        onClick = onSave,
-                      enabled = !isSaving.value,
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = PrimaryOrange,
-                          contentColor = MaterialTheme.colorScheme.onPrimary
-                        ),
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                      if (isSaving.value) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                              color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Icon(
-                                Icons.Default.Check,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(if (isEditMode) "保存" else "创建")
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                windowInsets = WindowInsets.statusBars
+      } else if (ingredients.value.any { it.name.isBlank() }) {
+        scope.launch {
+          snackbarHostState.showSnackbar("请填写所有食材名称")
+        }
+      } else if (steps.value.any { it.description.isBlank() }) {
+        scope.launch {
+          snackbarHostState.showSnackbar("请填写所有步骤描述")
+        }
+      } else {
+        // Save recipe
+        scope.launch {
+          setIsSaving(true)
+          try {
+            val recipe = Recipe(
+              id = recipeId ?: 0,
+              syncId = java.util.UUID.randomUUID().toString(),
+              name = name.value,
+              type = type.value,
+              icon = icon.value,
+              imageBase64 = imageBase64,
+              difficulty = difficulty.value,
+              estimatedTime = time,
+              ingredients = ingredients.value.mapIndexed { index, ing ->
+                Ingredient(
+                  name = ing.name,
+                  amount = ing.amount,
+                  unit = ing.unit,
+                  orderIndex = index
+                )
+              },
+              steps = steps.value.mapIndexed { index, step ->
+                CookingStep(
+                  stepNumber = index + 1,
+                  description = step.description
+                )
+              },
+              tags = tags.value.map { Tag(name = it) }
             )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-      containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-              .fillMaxSize()
-              .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            // Basic Info Section
-            item {
-                SectionCard(
-                    title = "基本信息",
-                    icon = Icons.Outlined.Restaurant,
-                    iconBackgroundColor = PrimaryOrange.copy(alpha = 0.1f),
-                    iconTint = PrimaryOrange
-                ) {
-                    // Recipe name input with emoji decoration
-                    StyledTextField(
-                      value = name.value,
-                      onValueChange = { setName(it) },
-                        label = "菜名",
-                        placeholder = "给你的美食起个名字吧",
-                        leadingIcon = {
-                            Text("🍳", fontSize = 20.sp)
-                        }
-                    )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Type selector with colorful chips
-                    Text(
-                        "菜品类型",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        RecipeType.entries.forEach { recipeType ->
-                            RecipeTypeChip(
-                                type = recipeType,
-                              isSelected = type.value == recipeType,
-                                onClick = { setType(recipeType) },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Tags section
-                    Text(
-                        "标签",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TagsFlowRow(
-                      tags = tags.value,
-                        tagColors = tagColors,
-                      showTagInput = showTagInput.value,
-                      newTag = newTag.value,
-                      onNewTagChange = { setNewTag(it) },
-                        onAddTag = {
-                          if (newTag.value.isNotBlank() && !tags.value.contains(newTag.value)) {
-                            setTags(tags.value + newTag.value)
-                                setNewTag("")
-                            }
-                            setShowTagInput(false)
-                        },
-                      onRemoveTag = { tag -> setTags(tags.value.filter { it != tag }) },
-                        onShowInput = { setShowTagInput(true) },
-                        onHideInput = {
-                            setShowTagInput(false)
-                            setNewTag("")
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Icon/Image picker
-                    RecipeIconPicker(
-                      selectedEmoji = icon.value,
-                        selectedImageBase64 = imageBase64,
-                      recipeType = type.value.name,
-                        onEmojiSelected = { setIcon(it) },
-                      onImageSelected = { imageBase64 = it },
-                      onImageCleared = { imageBase64 = null },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Difficulty selector
-                    Text(
-                        "难度等级",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Difficulty.entries.forEach { diff ->
-                            DifficultyChip(
-                                difficulty = diff,
-                              isSelected = difficulty.value == diff,
-                                onClick = { setDifficulty(diff) },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Time input
-                    StyledTextField(
-                      value = estimatedTime.value,
-                      onValueChange = { setEstimatedTime(it) },
-                        label = "预计时间",
-                        placeholder = "30",
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.Timer,
-                                contentDescription = null,
-                                tint = PrimaryOrange,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        },
-                        trailingIcon = {
-                            Text(
-                                "分钟",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            )
-                        },
-                        keyboardType = KeyboardType.Number
-                    )
-                }
+            if (isEditMode) {
+              recipeRepository.updateRecipe(recipe)
+            } else {
+              recipeRepository.insertRecipe(recipe)
             }
 
-            // Ingredients Section
-            item {
-                SectionCard(
-                    title = "食材清单",
-                    icon = Icons.Outlined.ShoppingCart,
-                    iconBackgroundColor = SoftGreen.copy(alpha = 0.1f),
-                    iconTint = SoftGreen,
-                    action = {
-                        AddButton(
-                          onClick = { setIngredients(ingredients.value + IngredientInput()) },
-                            color = SoftGreen
-                        )
-                    }
-                ) {
-                  ingredients.value.forEachIndexed { index, ingredient ->
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = fadeIn() + expandVertically(),
-                            exit = fadeOut() + shrinkVertically()
-                        ) {
-                            IngredientInputCard(
-                                index = index,
-                                ingredient = ingredient,
-                                onIngredientChange = { newIngredient ->
-                                  setIngredients(ingredients.value.toMutableList().apply {
-                                    this[index] = newIngredient
-                                  })
-                                },
-                                onDelete = {
-                                  if (ingredients.value.size > 1) {
-                                    setIngredients(ingredients.value.filterIndexed { i, _ -> i != index })
-                                    }
-                                },
-                              canDelete = ingredients.value.size > 1
-                            )
-                        }
-                    if (index < ingredients.value.lastIndex) {
-                            Spacer(modifier = Modifier.height(12.dp))
-                        }
-                    }
-                }
-            }
-
-            // Cooking Steps Section
-            item {
-                SectionCard(
-                    title = "烹饪步骤",
-                    icon = Icons.Outlined.MenuBook,
-                    iconBackgroundColor = SoftBlue.copy(alpha = 0.1f),
-                    iconTint = SoftBlue,
-                    action = {
-                        AddButton(
-                          onClick = { setSteps(steps.value + StepInput()) },
-                            color = SoftBlue
-                        )
-                    }
-                ) {
-                  val density = LocalDensity.current
-
-                  steps.value.forEachIndexed { index, step ->
-                    val isDragging = draggedStepIndex == index
-                    val currentOffset = if (isDragging) draggedStepOffset else 0f
-
-                    Row(
-                      modifier = Modifier
-                        .fillMaxWidth()
-                        .offset { IntOffset(0, currentOffset.toInt()) }
-                        .zIndex(if (isDragging) 1f else 0f),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                            // Left column: step number + connector
-                            Column(
-                              horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                              // Step number badge
-                              Box(
-                                modifier = Modifier
-                                  .size(40.dp)
-                                  .clip(CircleShape)
-                                  .background(
-                                    brush = Brush.linearGradient(
-                                      colors = listOf(SoftBlue, SoftBlue.copy(alpha = 0.7f))
-                                    )
-                                  ),
-                                contentAlignment = Alignment.Center
-                              ) {
-                                Text(
-                                  "${index + 1}",
-                                  style = MaterialTheme.typography.titleMedium,
-                                  fontWeight = FontWeight.Bold,
-                                  color = Color.White
-                                )
-                              }
-
-                              // Connector with insert button
-                              if (index < steps.value.lastIndex) {
-                                StepConnectorWithInsert(
-                                  onInsertStep = {
-                                    val newList = steps.value.toMutableList()
-                                    newList.add(index + 1, StepInput())
-                                    setSteps(newList)
-                                  }
-                                )
-                              }
-                            }
-
-                      // Right column: step content
-                            StepContentCard(
-                              stepNumber = index + 1,
-                              step = step,
-                              onStepChange = { newStep ->
-                                setSteps(steps.value.toMutableList().apply {
-                                  this[index] = newStep
-                                })
-                              },
-                              onDelete = {
-                                if (steps.value.size > 1) {
-                                  setSteps(steps.value.filterIndexed { i, _ -> i != index })
-                                }
-                              },
-                              canDelete = steps.value.size > 1,
-                              onDragStart = {
-                                draggedStepIndex = index
-                                draggedStepOffset = 0f
-                              },
-                              onDrag = { delta ->
-                                draggedStepOffset += delta
-
-                                // Calculate if we should swap with another step
-                                val stepHeight = with(density) { 120.dp.toPx() }
-                                val swapThreshold = stepHeight / 2
-
-                                if (draggedStepOffset > swapThreshold && draggedStepIndex < steps.value.lastIndex) {
-                                  // Swap with next step
-                                  val newList = steps.value.toMutableList()
-                                  val temp = newList[draggedStepIndex]
-                                  newList[draggedStepIndex] = newList[draggedStepIndex + 1]
-                                  newList[draggedStepIndex + 1] = temp
-                                  setSteps(newList)
-                                  draggedStepIndex += 1
-                                  draggedStepOffset -= stepHeight
-                                } else if (draggedStepOffset < -swapThreshold && draggedStepIndex > 0) {
-                                  // Swap with previous step
-                                  val newList = steps.value.toMutableList()
-                                  val temp = newList[draggedStepIndex]
-                                  newList[draggedStepIndex] = newList[draggedStepIndex - 1]
-                                  newList[draggedStepIndex - 1] = temp
-                                  setSteps(newList)
-                                  draggedStepIndex -= 1
-                                  draggedStepOffset += stepHeight
-                                }
-                              },
-                              onDragEnd = {
-                                draggedStepIndex = -1
-                                draggedStepOffset = 0f
-                              },
-                              modifier = Modifier.weight(1f)
-                            )
-                    }
-
-                    if (index < steps.value.lastIndex) {
-                      Spacer(modifier = Modifier.height(12.dp))
-                        }
-                    }
-                }
-            }
-
-            // Bottom spacing
-            item {
-                Spacer(modifier = Modifier.height(32.dp))
-            }
+            navController.navigateUp()
+          } catch (e: Exception) {
+            snackbarHostState.showSnackbar("保存失败: ${e.message}")
+          } finally {
+            setIsSaving(false)
+          }
         }
+      }
     }
+  }
+
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = {
+          Text(
+            if (isEditMode) "编辑菜谱" else "创建新菜谱",
+            fontWeight = FontWeight.Bold
+          )
+        },
+        navigationIcon = {
+          IconButton(onClick = { navController.navigateUp() }) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+          }
+        },
+        actions = {
+          // AI Analysis button
+          IconButton(
+            onClick = { navController.navigate(com.eatwhat.navigation.Destinations.AIAnalysis.route) }
+          ) {
+            Icon(
+              painter = painterResource(id = R.drawable.ic_ai_sparkles),
+              contentDescription = "AI 分析",
+              modifier = Modifier
+                .size(24.dp)
+                .graphicsLayer(alpha = 0.99f)
+                .drawWithCache {
+                  val brush = Brush.linearGradient(
+                    colors = listOf(
+                      Color(0xFFE040FB), // Bright Purple
+                      Color(0xFF7C4DFF)  // Deep Purple
+                    )
+                  )
+                  onDrawWithContent {
+                    drawContent()
+                    drawRect(brush, blendMode = BlendMode.SrcAtop)
+                  }
+                },
+              tint = Color.Unspecified
+            )
+          }
+
+          // Save button
+          FilledTonalButton(
+            onClick = onSave,
+            enabled = !isSaving.value,
+            colors = ButtonDefaults.filledTonalButtonColors(
+              containerColor = PrimaryOrange,
+              contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            modifier = Modifier.padding(end = 8.dp)
+          ) {
+            if (isSaving.value) {
+              CircularProgressIndicator(
+                modifier = Modifier.size(16.dp),
+                color = MaterialTheme.colorScheme.onPrimary,
+                strokeWidth = 2.dp
+              )
+            } else {
+              Icon(
+                Icons.Default.Check,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+              )
+              Spacer(modifier = Modifier.width(4.dp))
+              Text(if (isEditMode) "保存" else "创建")
+            }
+          }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+          containerColor = MaterialTheme.colorScheme.surface
+        ),
+        windowInsets = WindowInsets.statusBars
+      )
+    },
+    snackbarHost = { SnackbarHost(snackbarHostState) },
+    containerColor = MaterialTheme.colorScheme.background
+  ) { paddingValues ->
+    LazyColumn(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(paddingValues),
+      contentPadding = PaddingValues(16.dp),
+      verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+      // Basic Info Section
+      item {
+        SectionCard(
+          title = "基本信息",
+          icon = Icons.Outlined.Restaurant,
+          iconBackgroundColor = PrimaryOrange.copy(alpha = 0.1f),
+          iconTint = PrimaryOrange
+        ) {
+          // Recipe name input with emoji decoration
+          StyledTextField(
+            value = name.value,
+            onValueChange = { setName(it) },
+            label = "菜名",
+            placeholder = "给你的美食起个名字吧",
+            leadingIcon = {
+              Text("🍳", fontSize = 20.sp)
+            }
+          )
+
+          Spacer(modifier = Modifier.height(16.dp))
+
+          // Type selector with colorful chips
+          Text(
+            "菜品类型",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+          )
+          Spacer(modifier = Modifier.height(8.dp))
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+          ) {
+            RecipeType.entries.forEach { recipeType ->
+              RecipeTypeChip(
+                type = recipeType,
+                isSelected = type.value == recipeType,
+                onClick = { setType(recipeType) },
+                modifier = Modifier.weight(1f)
+              )
+            }
+          }
+
+          Spacer(modifier = Modifier.height(16.dp))
+
+          // Tags section
+          Text(
+            "标签",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+          )
+          Spacer(modifier = Modifier.height(8.dp))
+          TagsFlowRow(
+            tags = tags.value,
+            tagColors = tagColors,
+            showTagInput = showTagInput.value,
+            newTag = newTag.value,
+            onNewTagChange = { setNewTag(it) },
+            onAddTag = {
+              if (newTag.value.isNotBlank() && !tags.value.contains(newTag.value)) {
+                setTags(tags.value + newTag.value)
+                setNewTag("")
+              }
+              setShowTagInput(false)
+            },
+            onRemoveTag = { tag -> setTags(tags.value.filter { it != tag }) },
+            onShowInput = { setShowTagInput(true) },
+            onHideInput = {
+              setShowTagInput(false)
+              setNewTag("")
+            }
+          )
+
+          Spacer(modifier = Modifier.height(16.dp))
+
+          // Icon/Image picker
+          RecipeIconPicker(
+            selectedEmoji = icon.value,
+            selectedImageBase64 = imageBase64,
+            recipeType = type.value.name,
+            onEmojiSelected = { setIcon(it) },
+            onImageSelected = { imageBase64 = it },
+            onImageCleared = { imageBase64 = null },
+            modifier = Modifier.fillMaxWidth()
+          )
+
+          Spacer(modifier = Modifier.height(16.dp))
+
+          // Difficulty selector
+          Text(
+            "难度等级",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+          )
+          Spacer(modifier = Modifier.height(8.dp))
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+          ) {
+            Difficulty.entries.forEach { diff ->
+              DifficultyChip(
+                difficulty = diff,
+                isSelected = difficulty.value == diff,
+                onClick = { setDifficulty(diff) },
+                modifier = Modifier.weight(1f)
+              )
+            }
+          }
+
+          Spacer(modifier = Modifier.height(16.dp))
+
+          // Time input
+          StyledTextField(
+            value = estimatedTime.value,
+            onValueChange = { setEstimatedTime(it) },
+            label = "预计时间",
+            placeholder = "30",
+            leadingIcon = {
+              Icon(
+                Icons.Outlined.Timer,
+                contentDescription = null,
+                tint = PrimaryOrange,
+                modifier = Modifier.size(20.dp)
+              )
+            },
+            trailingIcon = {
+              Text(
+                "分钟",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+              )
+            },
+            keyboardType = KeyboardType.Number
+          )
+        }
+      }
+
+      // Ingredients Section
+      item {
+        SectionCard(
+          title = "食材清单",
+          icon = Icons.Outlined.ShoppingCart,
+          iconBackgroundColor = SoftGreen.copy(alpha = 0.1f),
+          iconTint = SoftGreen,
+          action = {
+            AddButton(
+              onClick = { setIngredients(ingredients.value + IngredientInput()) },
+              color = SoftGreen
+            )
+          }
+        ) {
+          ingredients.value.forEachIndexed { index, ingredient ->
+            AnimatedVisibility(
+              visible = true,
+              enter = fadeIn() + expandVertically(),
+              exit = fadeOut() + shrinkVertically()
+            ) {
+              IngredientInputCard(
+                index = index,
+                ingredient = ingredient,
+                onIngredientChange = { newIngredient ->
+                  setIngredients(ingredients.value.toMutableList().apply {
+                    this[index] = newIngredient
+                  })
+                },
+                onDelete = {
+                  if (ingredients.value.size > 1) {
+                    setIngredients(ingredients.value.filterIndexed { i, _ -> i != index })
+                  }
+                },
+                canDelete = ingredients.value.size > 1
+              )
+            }
+            if (index < ingredients.value.lastIndex) {
+              Spacer(modifier = Modifier.height(12.dp))
+            }
+          }
+        }
+      }
+
+      // Cooking Steps Section
+      item {
+        SectionCard(
+          title = "烹饪步骤",
+          icon = Icons.Outlined.MenuBook,
+          iconBackgroundColor = SoftBlue.copy(alpha = 0.1f),
+          iconTint = SoftBlue,
+          action = {
+            AddButton(
+              onClick = { setSteps(steps.value + StepInput()) },
+              color = SoftBlue
+            )
+          }
+        ) {
+          val density = LocalDensity.current
+
+          steps.value.forEachIndexed { index, step ->
+            val isDragging = draggedStepIndex == index
+            val currentOffset = if (isDragging) draggedStepOffset else 0f
+
+            Row(
+              modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(0, currentOffset.toInt()) }
+                .zIndex(if (isDragging) 1f else 0f),
+              horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+              // Left column: step number + connector
+              Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+              ) {
+                // Step number badge
+                Box(
+                  modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(
+                      brush = Brush.linearGradient(
+                        colors = listOf(SoftBlue, SoftBlue.copy(alpha = 0.7f))
+                      )
+                    ),
+                  contentAlignment = Alignment.Center
+                ) {
+                  Text(
+                    "${index + 1}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                  )
+                }
+
+                // Connector with insert button
+                if (index < steps.value.lastIndex) {
+                  StepConnectorWithInsert(
+                    onInsertStep = {
+                      val newList = steps.value.toMutableList()
+                      newList.add(index + 1, StepInput())
+                      setSteps(newList)
+                    }
+                  )
+                }
+              }
+
+              // Right column: step content
+              StepContentCard(
+                stepNumber = index + 1,
+                step = step,
+                onStepChange = { newStep ->
+                  setSteps(steps.value.toMutableList().apply {
+                    this[index] = newStep
+                  })
+                },
+                onDelete = {
+                  if (steps.value.size > 1) {
+                    setSteps(steps.value.filterIndexed { i, _ -> i != index })
+                  }
+                },
+                canDelete = steps.value.size > 1,
+                onDragStart = {
+                  draggedStepIndex = index
+                  draggedStepOffset = 0f
+                },
+                onDrag = { delta ->
+                  draggedStepOffset += delta
+
+                  // Calculate if we should swap with another step
+                  val stepHeight = with(density) { 120.dp.toPx() }
+                  val swapThreshold = stepHeight / 2
+
+                  if (draggedStepOffset > swapThreshold && draggedStepIndex < steps.value.lastIndex) {
+                    // Swap with next step
+                    val newList = steps.value.toMutableList()
+                    val temp = newList[draggedStepIndex]
+                    newList[draggedStepIndex] = newList[draggedStepIndex + 1]
+                    newList[draggedStepIndex + 1] = temp
+                    setSteps(newList)
+                    draggedStepIndex += 1
+                    draggedStepOffset -= stepHeight
+                  } else if (draggedStepOffset < -swapThreshold && draggedStepIndex > 0) {
+                    // Swap with previous step
+                    val newList = steps.value.toMutableList()
+                    val temp = newList[draggedStepIndex]
+                    newList[draggedStepIndex] = newList[draggedStepIndex - 1]
+                    newList[draggedStepIndex - 1] = temp
+                    setSteps(newList)
+                    draggedStepIndex -= 1
+                    draggedStepOffset += stepHeight
+                  }
+                },
+                onDragEnd = {
+                  draggedStepIndex = -1
+                  draggedStepOffset = 0f
+                },
+                modifier = Modifier.weight(1f)
+              )
+            }
+
+            if (index < steps.value.lastIndex) {
+              Spacer(modifier = Modifier.height(12.dp))
+            }
+          }
+        }
+      }
+
+      // Bottom spacing
+      item {
+        Spacer(modifier = Modifier.height(32.dp))
+      }
+    }
+  }
 }
 
 /**
@@ -754,66 +754,66 @@ fun AddRecipeScreen(
  */
 @Composable
 private fun SectionCard(
-    title: String,
-    icon: ImageVector,
-    iconBackgroundColor: Color,
-    iconTint: Color,
-    action: (@Composable () -> Unit)? = null,
-    content: @Composable ColumnScope.() -> Unit
+  title: String,
+  icon: ImageVector,
+  iconBackgroundColor: Color,
+  iconTint: Color,
+  action: (@Composable () -> Unit)? = null,
+  content: @Composable ColumnScope.() -> Unit
 ) {
-    Card(
-        modifier = Modifier
-          .fillMaxWidth()
-          .shadow(
-            elevation = 4.dp,
-            shape = RoundedCornerShape(20.dp),
-            spotColor = Color.Black.copy(alpha = 0.1f)
-          ),
+  Card(
+    modifier = Modifier
+      .fillMaxWidth()
+      .shadow(
+        elevation = 4.dp,
         shape = RoundedCornerShape(20.dp),
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        spotColor = Color.Black.copy(alpha = 0.1f)
+      ),
+    shape = RoundedCornerShape(20.dp),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+  ) {
+    Column(
+      modifier = Modifier.padding(20.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
+      // Header
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Icon with background
-                    Box(
-                        modifier = Modifier
-                          .size(40.dp)
-                          .clip(RoundedCornerShape(12.dp))
-                          .background(iconBackgroundColor),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            icon,
-                            contentDescription = null,
-                            tint = iconTint,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-                    Text(
-                        title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-                action?.invoke()
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            content()
+          // Icon with background
+          Box(
+            modifier = Modifier
+              .size(40.dp)
+              .clip(RoundedCornerShape(12.dp))
+              .background(iconBackgroundColor),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              icon,
+              contentDescription = null,
+              tint = iconTint,
+              modifier = Modifier.size(22.dp)
+            )
+          }
+          Text(
+            title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+          )
         }
+        action?.invoke()
+      }
+
+      Spacer(modifier = Modifier.height(16.dp))
+
+      content()
     }
+  }
 }
 
 /**
@@ -821,24 +821,24 @@ private fun SectionCard(
  */
 @Composable
 private fun AddButton(
-    onClick: () -> Unit,
-    color: Color
+  onClick: () -> Unit,
+  color: Color
 ) {
-    Surface(
-        onClick = onClick,
-        shape = CircleShape,
-        color = color.copy(alpha = 0.1f),
-        modifier = Modifier.size(36.dp)
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(
-                Icons.Default.Add,
-                contentDescription = "添加",
-                tint = color,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+  Surface(
+    onClick = onClick,
+    shape = CircleShape,
+    color = color.copy(alpha = 0.1f),
+    modifier = Modifier.size(36.dp)
+  ) {
+    Box(contentAlignment = Alignment.Center) {
+      Icon(
+        Icons.Default.Add,
+        contentDescription = "添加",
+        tint = color,
+        modifier = Modifier.size(20.dp)
+      )
     }
+  }
 }
 
 /**
@@ -846,43 +846,43 @@ private fun AddButton(
  */
 @Composable
 private fun RecipeTypeChip(
-    type: RecipeType,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+  type: RecipeType,
+  isSelected: Boolean,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier
 ) {
-    val (emoji, label, color) = when (type) {
-        RecipeType.MEAT -> Triple("🥩", "荤菜", MeatRed)
-        RecipeType.VEG -> Triple("🥬", "素菜", VegGreen)
-        RecipeType.SOUP -> Triple("🍲", "汤", SoupBlue)
-        RecipeType.STAPLE -> Triple("🍚", "主食", StapleOrange)
-      RecipeType.OTHER -> Triple("🥣", "其他", OtherPurple)
-    }
-    
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
-      color = if (isSelected) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
-        border = if (isSelected) {
-            androidx.compose.foundation.BorderStroke(2.dp, color)
-        } else null,
-        modifier = modifier
+  val (emoji, label, color) = when (type) {
+    RecipeType.MEAT -> Triple("🥩", "荤菜", MeatRed)
+    RecipeType.VEG -> Triple("🥬", "素菜", VegGreen)
+    RecipeType.SOUP -> Triple("🍲", "汤", SoupBlue)
+    RecipeType.STAPLE -> Triple("🍚", "主食", StapleOrange)
+    RecipeType.OTHER -> Triple("🥣", "其他", OtherPurple)
+  }
+
+  Surface(
+    onClick = onClick,
+    shape = RoundedCornerShape(12.dp),
+    color = if (isSelected) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
+    border = if (isSelected) {
+      androidx.compose.foundation.BorderStroke(2.dp, color)
+    } else null,
+    modifier = modifier
+  ) {
+    Column(
+      modifier = Modifier
+        .padding(vertical = 12.dp, horizontal = 8.dp),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .padding(vertical = 12.dp, horizontal = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(emoji, fontSize = 20.sp)
-            Text(
-                label,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                color = if (isSelected) color else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
-        }
+      Text(emoji, fontSize = 20.sp)
+      Text(
+        label,
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+        color = if (isSelected) color else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+      )
     }
+  }
 }
 
 /**
@@ -890,50 +890,50 @@ private fun RecipeTypeChip(
  */
 @Composable
 private fun DifficultyChip(
-    difficulty: Difficulty,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+  difficulty: Difficulty,
+  isSelected: Boolean,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier
 ) {
-    val (label, stars, color) = when (difficulty) {
-        Difficulty.EASY -> Triple("简单", 1, SoftGreen)
-        Difficulty.MEDIUM -> Triple("中等", 2, WarmYellow)
-        Difficulty.HARD -> Triple("困难", 3, MeatRed)
-    }
-    
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
-      color = if (isSelected) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
-        border = if (isSelected) {
-            androidx.compose.foundation.BorderStroke(2.dp, color)
-        } else null,
-        modifier = modifier
+  val (label, stars, color) = when (difficulty) {
+    Difficulty.EASY -> Triple("简单", 1, SoftGreen)
+    Difficulty.MEDIUM -> Triple("中等", 2, WarmYellow)
+    Difficulty.HARD -> Triple("困难", 3, MeatRed)
+  }
+
+  Surface(
+    onClick = onClick,
+    shape = RoundedCornerShape(12.dp),
+    color = if (isSelected) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
+    border = if (isSelected) {
+      androidx.compose.foundation.BorderStroke(2.dp, color)
+    } else null,
+    modifier = modifier
+  ) {
+    Column(
+      modifier = Modifier
+        .padding(vertical = 12.dp, horizontal = 8.dp),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .padding(vertical = 12.dp, horizontal = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                repeat(stars) {
-                    Icon(
-                        Icons.Default.Star,
-                        contentDescription = null,
-                        tint = if (isSelected) color else Color.Gray.copy(alpha = 0.4f),
-                        modifier = Modifier.size(14.dp)
-                    )
-                }
-            }
-            Text(
-                label,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                color = if (isSelected) color else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
+      Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        repeat(stars) {
+          Icon(
+            Icons.Default.Star,
+            contentDescription = null,
+            tint = if (isSelected) color else Color.Gray.copy(alpha = 0.4f),
+            modifier = Modifier.size(14.dp)
+          )
         }
+      }
+      Text(
+        label,
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+        color = if (isSelected) color else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+      )
     }
+  }
 }
 
 /**
@@ -942,188 +942,188 @@ private fun DifficultyChip(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun IngredientInputCard(
-    index: Int,
-    ingredient: IngredientInput,
-    onIngredientChange: (IngredientInput) -> Unit,
-    onDelete: () -> Unit,
-    canDelete: Boolean
+  index: Int,
+  ingredient: IngredientInput,
+  onIngredientChange: (IngredientInput) -> Unit,
+  onDelete: () -> Unit,
+  canDelete: Boolean
 ) {
   var unitExpanded by useState(false)
-    
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-      color = MaterialTheme.colorScheme.surfaceVariant,
-        border = androidx.compose.foundation.BorderStroke(1.dp, SoftGreen.copy(alpha = 0.2f)),
-        modifier = Modifier.fillMaxWidth()
+
+  Surface(
+    shape = RoundedCornerShape(16.dp),
+    color = MaterialTheme.colorScheme.surfaceVariant,
+    border = androidx.compose.foundation.BorderStroke(1.dp, SoftGreen.copy(alpha = 0.2f)),
+    modifier = Modifier.fillMaxWidth()
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(12.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+      // Index badge
+      Box(
+        modifier = Modifier
+          .size(28.dp)
+          .clip(CircleShape)
+          .background(SoftGreen.copy(alpha = 0.1f)),
+        contentAlignment = Alignment.Center
+      ) {
+        Text(
+          "${index + 1}",
+          style = MaterialTheme.typography.labelMedium,
+          fontWeight = FontWeight.Bold,
+          color = SoftGreen
+        )
+      }
+
+      // Name input
+      Column(modifier = Modifier.weight(1f)) {
+        Text(
+          "食材",
+          style = MaterialTheme.typography.labelSmall,
+          color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+        )
+        BasicTextField(
+          value = ingredient.name,
+          onValueChange = { onIngredientChange(ingredient.copy(name = it)) },
+          textStyle = MaterialTheme.typography.bodyMedium.copy(
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Medium
+          ),
+          singleLine = true,
+          decorationBox = { innerTextField ->
+            Box {
+              if (ingredient.name.isEmpty()) {
+                Text(
+                  "例如：鸡蛋",
+                  style = MaterialTheme.typography.bodyMedium,
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                )
+              }
+              innerTextField()
+            }
+          }
+        )
+      }
+
+      // Amount and unit row
+      Row(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        // Amount input
+        Surface(
+          shape = RoundedCornerShape(8.dp),
+          color = MaterialTheme.colorScheme.surface,
+          border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+          ),
+          modifier = Modifier.width(50.dp)
         ) {
-            // Index badge
-            Box(
-                modifier = Modifier
-                  .size(28.dp)
-                  .clip(CircleShape)
-                  .background(SoftGreen.copy(alpha = 0.1f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    "${index + 1}",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = SoftGreen
-                )
-            }
-            
-            // Name input
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    "食材",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
-                BasicTextField(
-                    value = ingredient.name,
-                    onValueChange = { onIngredientChange(ingredient.copy(name = it)) },
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Medium
-                    ),
-                    singleLine = true,
-                    decorationBox = { innerTextField ->
-                        Box {
-                            if (ingredient.name.isEmpty()) {
-                                Text(
-                                    "例如：鸡蛋",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                                )
-                            }
-                            innerTextField()
-                        }
-                    }
-                )
-            }
-            
-            // Amount and unit row
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Amount input
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                  color = MaterialTheme.colorScheme.surface,
-                  border = androidx.compose.foundation.BorderStroke(
-                    1.dp,
-                    MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                  ),
-                    modifier = Modifier.width(50.dp)
-                ) {
-                    BasicTextField(
-                        value = ingredient.amount,
-                        onValueChange = { onIngredientChange(ingredient.copy(amount = it)) },
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Center
-                        ),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
-                        decorationBox = { innerTextField ->
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                if (ingredient.amount.isEmpty()) {
-                                    Text(
-                                        "数量",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        }
-                    )
+          BasicTextField(
+            value = ingredient.amount,
+            onValueChange = { onIngredientChange(ingredient.copy(amount = it)) },
+            textStyle = MaterialTheme.typography.bodyMedium.copy(
+              color = MaterialTheme.colorScheme.onSurface,
+              textAlign = TextAlign.Center
+            ),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+            decorationBox = { innerTextField ->
+              Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxWidth()
+              ) {
+                if (ingredient.amount.isEmpty()) {
+                  Text(
+                    "数量",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                  )
                 }
-                
-                // Unit selector
-                ExposedDropdownMenuBox(
-                    expanded = unitExpanded,
-                    onExpandedChange = { unitExpanded = it }
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = SoftGreen.copy(alpha = 0.1f),
-                        modifier = Modifier
-                          .menuAnchor()
-                          .width(56.dp)
-                          .clickable { unitExpanded = true }
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                ingredient.unit.getDisplayName(),
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Medium,
-                                color = SoftGreen
-                            )
-                            Icon(
-                                Icons.Default.ArrowDropDown,
-                                contentDescription = null,
-                                tint = SoftGreen,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-                    
-                    ExposedDropdownMenu(
-                        expanded = unitExpanded,
-                        onDismissRequest = { unitExpanded = false }
-                    ) {
-                        IngredientUnit.entries.forEach { unit ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        unit.getDisplayName(),
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                },
-                                onClick = {
-                                    onIngredientChange(ingredient.copy(unit = unit))
-                                    unitExpanded = false
-                                },
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                            )
-                        }
-                    }
-                }
+                innerTextField()
+              }
             }
-            
-            // Delete button
-            if (canDelete) {
-                IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        Icons.Outlined.Close,
-                        contentDescription = "删除",
-                        tint = Color.Gray.copy(alpha = 0.5f),
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
+          )
         }
+
+        // Unit selector
+        ExposedDropdownMenuBox(
+          expanded = unitExpanded,
+          onExpandedChange = { unitExpanded = it }
+        ) {
+          Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = SoftGreen.copy(alpha = 0.1f),
+            modifier = Modifier
+              .menuAnchor()
+              .width(56.dp)
+              .clickable { unitExpanded = true }
+          ) {
+            Row(
+              modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.Center
+            ) {
+              Text(
+                ingredient.unit.getDisplayName(),
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
+                color = SoftGreen
+              )
+              Icon(
+                Icons.Default.ArrowDropDown,
+                contentDescription = null,
+                tint = SoftGreen,
+                modifier = Modifier.size(16.dp)
+              )
+            }
+          }
+
+          ExposedDropdownMenu(
+            expanded = unitExpanded,
+            onDismissRequest = { unitExpanded = false }
+          ) {
+            IngredientUnit.entries.forEach { unit ->
+              DropdownMenuItem(
+                text = {
+                  Text(
+                    unit.getDisplayName(),
+                    style = MaterialTheme.typography.bodyMedium
+                  )
+                },
+                onClick = {
+                  onIngredientChange(ingredient.copy(unit = unit))
+                  unitExpanded = false
+                },
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+              )
+            }
+          }
+        }
+      }
+
+      // Delete button
+      if (canDelete) {
+        IconButton(
+          onClick = onDelete,
+          modifier = Modifier.size(32.dp)
+        ) {
+          Icon(
+            Icons.Outlined.Close,
+            contentDescription = "删除",
+            tint = Color.Gray.copy(alpha = 0.5f),
+            modifier = Modifier.size(18.dp)
+          )
+        }
+      }
     }
+  }
 }
 
 /**
@@ -1131,15 +1131,15 @@ private fun IngredientInputCard(
  */
 @Composable
 private fun StepContentCard(
-    stepNumber: Int,
-    step: StepInput,
-    onStepChange: (StepInput) -> Unit,
-    onDelete: () -> Unit,
-    canDelete: Boolean,
-    onDragStart: () -> Unit = {},
-    onDrag: (Float) -> Unit = {},
-    onDragEnd: () -> Unit = {},
-    modifier: Modifier = Modifier
+  stepNumber: Int,
+  step: StepInput,
+  onStepChange: (StepInput) -> Unit,
+  onDelete: () -> Unit,
+  canDelete: Boolean,
+  onDragStart: () -> Unit = {},
+  onDrag: (Float) -> Unit = {},
+  onDragEnd: () -> Unit = {},
+  modifier: Modifier = Modifier
 ) {
   val isDark = LocalDarkTheme.current
   val stepBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else StepCardBackground
@@ -1213,38 +1213,38 @@ private fun StepContentCard(
           }
         }
       )
-        }
     }
+  }
 }
 
 data class IngredientInput(
-    val name: String = "",
-    val amount: String = "",
-    val unit: IngredientUnit = IngredientUnit.G
+  val name: String = "",
+  val amount: String = "",
+  val unit: IngredientUnit = IngredientUnit.G
 )
 
 data class StepInput(
-    val description: String = ""
+  val description: String = ""
 )
 
 /**
  * Get display name for Unit enum in Chinese
  */
 private fun IngredientUnit.getDisplayName(): String {
-    return when (this) {
-        IngredientUnit.G -> "克"
-        IngredientUnit.ML -> "毫升"
-        IngredientUnit.PIECE -> "个"
-        IngredientUnit.SPOON -> "勺"
-        IngredientUnit.MODERATE -> "适量"
-    }
+  return when (this) {
+    IngredientUnit.G -> "克"
+    IngredientUnit.ML -> "毫升"
+    IngredientUnit.PIECE -> "个"
+    IngredientUnit.SPOON -> "勺"
+    IngredientUnit.MODERATE -> "适量"
+  }
 }
 
 /**
  * Generate a random pastel (light) color for tags
  */
 private fun generatePastelColor(): Color {
-    return TagPastelColors[Random.nextInt(TagPastelColors.size)]
+  return TagPastelColors[Random.nextInt(TagPastelColors.size)]
 }
 
 /**
@@ -1253,161 +1253,161 @@ private fun generatePastelColor(): Color {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TagsFlowRow(
-    tags: List<String>,
-    tagColors: Map<String, Color>,
-    showTagInput: Boolean,
-    newTag: String,
-    onNewTagChange: (String) -> Unit,
-    onAddTag: () -> Unit,
-    onRemoveTag: (String) -> Unit,
-    onShowInput: () -> Unit,
-    onHideInput: () -> Unit
+  tags: List<String>,
+  tagColors: Map<String, Color>,
+  showTagInput: Boolean,
+  newTag: String,
+  onNewTagChange: (String) -> Unit,
+  onAddTag: () -> Unit,
+  onRemoveTag: (String) -> Unit,
+  onShowInput: () -> Unit,
+  onHideInput: () -> Unit
 ) {
-    val focusManager = LocalFocusManager.current
-    
-    FlowRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Existing tags
-        tags.forEach { tag ->
-            val backgroundColor = tagColors[tag] ?: generatePastelColor()
-            val contentColor = Color.Black.copy(alpha = 0.8f)
-            
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = backgroundColor,
-                modifier = Modifier.height(32.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(start = 12.dp, end = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = tag,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = contentColor,
-                        maxLines = 1
-                    )
-                    IconButton(
-                        onClick = { onRemoveTag(tag) },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = "删除标签",
-                            modifier = Modifier.size(14.dp),
-                            tint = contentColor
-                        )
-                    }
-                }
-            }
+  val focusManager = LocalFocusManager.current
+
+  FlowRow(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = Arrangement.spacedBy(8.dp),
+    verticalArrangement = Arrangement.spacedBy(8.dp)
+  ) {
+    // Existing tags
+    tags.forEach { tag ->
+      val backgroundColor = tagColors[tag] ?: generatePastelColor()
+      val contentColor = Color.Black.copy(alpha = 0.8f)
+
+      Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = backgroundColor,
+        modifier = Modifier.height(32.dp)
+      ) {
+        Row(
+          modifier = Modifier.padding(start = 12.dp, end = 4.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = tag,
+            style = MaterialTheme.typography.labelMedium,
+            color = contentColor,
+            maxLines = 1
+          )
+          IconButton(
+            onClick = { onRemoveTag(tag) },
+            modifier = Modifier.size(24.dp)
+          ) {
+            Icon(
+              Icons.Default.Close,
+              contentDescription = "删除标签",
+              modifier = Modifier.size(14.dp),
+              tint = contentColor
+            )
+          }
         }
-        
-        // Add tag button or input field
-        if (showTagInput) {
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.height(32.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(start = 12.dp, end = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    BasicTextField(
-                        value = newTag,
-                        onValueChange = onNewTagChange,
-                        modifier = Modifier
-                          .width(80.dp)
-                          .padding(vertical = 6.dp),
-                        textStyle = MaterialTheme.typography.labelMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                onAddTag()
-                                focusManager.clearFocus()
-                            }
-                        ),
-                        decorationBox = { innerTextField ->
-                            Box(
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                if (newTag.isEmpty()) {
-                                    Text(
-                                        text = "标签名",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        }
-                    )
-                    IconButton(
-                        onClick = {
-                            onAddTag()
-                            focusManager.clearFocus()
-                        },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Check,
-                            contentDescription = "确认添加",
-                            modifier = Modifier.size(16.dp),
-                            tint = PrimaryOrange
-                        )
-                    }
-                    IconButton(
-                        onClick = {
-                            onHideInput()
-                            focusManager.clearFocus()
-                        },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = "取消",
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        } else {
-            // Add tag button - always at the end
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = PrimaryOrange.copy(alpha = 0.1f),
-                modifier = Modifier
-                  .height(32.dp)
-                  .clip(RoundedCornerShape(20.dp))
-                  .clickable { onShowInput() }
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = "添加标签",
-                        modifier = Modifier.size(16.dp),
-                        tint = PrimaryOrange
-                    )
-                    Text(
-                        text = "添加",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = PrimaryOrange
-                    )
-                }
-            }
-        }
+      }
     }
+
+    // Add tag button or input field
+    if (showTagInput) {
+      Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        modifier = Modifier.height(32.dp)
+      ) {
+        Row(
+          modifier = Modifier.padding(start = 12.dp, end = 4.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          BasicTextField(
+            value = newTag,
+            onValueChange = onNewTagChange,
+            modifier = Modifier
+              .width(80.dp)
+              .padding(vertical = 6.dp),
+            textStyle = MaterialTheme.typography.labelMedium.copy(
+              color = MaterialTheme.colorScheme.onSurface
+            ),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(
+              onDone = {
+                onAddTag()
+                focusManager.clearFocus()
+              }
+            ),
+            decorationBox = { innerTextField ->
+              Box(
+                contentAlignment = Alignment.CenterStart
+              ) {
+                if (newTag.isEmpty()) {
+                  Text(
+                    text = "标签名",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                  )
+                }
+                innerTextField()
+              }
+            }
+          )
+          IconButton(
+            onClick = {
+              onAddTag()
+              focusManager.clearFocus()
+            },
+            modifier = Modifier.size(24.dp)
+          ) {
+            Icon(
+              Icons.Default.Check,
+              contentDescription = "确认添加",
+              modifier = Modifier.size(16.dp),
+              tint = PrimaryOrange
+            )
+          }
+          IconButton(
+            onClick = {
+              onHideInput()
+              focusManager.clearFocus()
+            },
+            modifier = Modifier.size(24.dp)
+          ) {
+            Icon(
+              Icons.Default.Close,
+              contentDescription = "取消",
+              modifier = Modifier.size(14.dp),
+              tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          }
+        }
+      }
+    } else {
+      // Add tag button - always at the end
+      Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = PrimaryOrange.copy(alpha = 0.1f),
+        modifier = Modifier
+          .height(32.dp)
+          .clip(RoundedCornerShape(20.dp))
+          .clickable { onShowInput() }
+      ) {
+        Row(
+          modifier = Modifier.padding(horizontal = 12.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+          Icon(
+            Icons.Default.Add,
+            contentDescription = "添加标签",
+            modifier = Modifier.size(16.dp),
+            tint = PrimaryOrange
+          )
+          Text(
+            text = "添加",
+            style = MaterialTheme.typography.labelMedium,
+            color = PrimaryOrange
+          )
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -1453,5 +1453,5 @@ fun StepConnectorWithInsert(
         .height(24.dp)
         .background(SoftBlue.copy(alpha = 0.3f))
     )
-    }
+  }
 }

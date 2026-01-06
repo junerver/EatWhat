@@ -19,6 +19,7 @@ import com.eatwhat.util.ImageUtils
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks._useGetState
 import xyz.junerver.compose.hooks.invoke
+import xyz.junerver.compose.hooks.useEffect
 
 /**
  * Main activity for EatWhat app
@@ -39,7 +40,7 @@ class MainActivity : ComponentActivity() {
           val (initialImageBase64, setInitialImageBase64) = _useGetState<String?>(null)
 
           // 只在 Activity 创建时处理一次 Intent
-          xyz.junerver.compose.hooks.useEffect(Unit) {
+          useEffect(Unit) {
             handleIntent(intent) { prompt, imageBase64 ->
               setInitialPrompt(prompt)
               setInitialImageBase64(imageBase64)

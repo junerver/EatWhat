@@ -59,22 +59,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.data.database.EatWhatDatabase
-import com.eatwhat.data.preferences.AIConfig
 import com.eatwhat.data.repository.AIProviderRepository
-import com.eatwhat.domain.service.OpenAIService
-import com.eatwhat.domain.service.RecipeAIResult
+import com.eatwhat.domain.model.RecipeAIResult
+import com.eatwhat.domain.model.jsonSchemaString
 import com.eatwhat.ui.theme.LocalDarkTheme
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftPurple
 import com.eatwhat.util.ImageUtils
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
+import xyz.junerver.compose.ai.invoke
+import xyz.junerver.compose.ai.usechat.Providers
+import xyz.junerver.compose.ai.usegenerateobject.useGenerateObject
 import xyz.junerver.compose.hooks._useGetState
 import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
+import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,14 +86,11 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
   val scope = rememberCoroutineScope()
   val database by useCreation { EatWhatDatabase.getInstance(context) }
   val repository by useCreation { AIProviderRepository(database.aiProviderDao()) }
-  val openAIService by useCreation { OpenAIService() }
 
   val activeProvider by repository.activeProvider.collectAsState(initial = null)
-  val aiConfig = activeProvider?.toAIConfig() ?: AIConfig()
 
   val (prompt, setPrompt) = useGetState(initialPrompt ?: "")
-  val (isLoading, setIsLoading) = useGetState(false)
-  val (error, setError) = _useGetState<String?>(null)
+  val (localError, setLocalError) = _useGetState<String?>(null)
   var selectedImageBase64 by _useState<String?>(null)
 
   // 接收从分享传来的图片
@@ -102,7 +102,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
   val isFromShare by useCreation { initialPrompt != null || sharedImageBase64?.value != null }
 
   // 如果有分享的图片，设置为选中的图片
-  xyz.junerver.compose.hooks.useEffect(sharedImageBase64?.value) {
+  useEffect(sharedImageBase64?.value) {
     sharedImageBase64?.value?.let { imageBase64 ->
       selectedImageBase64 = imageBase64
       savedStateHandle?.remove<String>("shared_image")
@@ -122,81 +122,99 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
           }
 
           is ImageUtils.ImageProcessingResult.Error -> {
-            setError(result.message)
+            setLocalError(result.message)
           }
         }
       }
     }
   }
 
+  // 系统提示词
+  val systemPrompt = """
+    你是一个专业的菜谱分析助手。请分析用户的输入（菜谱描述、做法、图片等），并输出符合 JSON Schema 的菜谱数据。
+
+    注意：
+    1. type 必须是 MEAT(荤菜), VEG(素菜), SOUP(汤), STAPLE(主食), OTHER(其他) 之一。
+       注意：OTHER 类型用于蘸汁、酱料、汤底等辅助型配方，或者不能单独作为一道菜品的食谱。
+    2. unit 必须是 G(克), ML(毫升), PIECE(个), SPOON(勺), MODERATE(适量) 之一。
+    3. icon 请根据菜品内容选择一个最合适的 Emoji。
+    4. 如果输入信息不全，请根据经验合理补全。
+    5. estimatedTime 应在 1-300 之间。
+    6. 如果用户上传了图片且该图片是做好的食物照片（成品图），请将 isFoodImage 设为 true；如果是纯文字截图或非食物照片，请设为 false。
+    7. 如果 isFoodImage 为 true，icon 字段仍需生成一个 emoji 作为备用，但前端会优先使用用户上传的图片。
+  """.trimIndent()
+
+  // 使用 useGenerateObject 钩子
+  val (recipe, rawJson, isLoading, error, submit, _) = useGenerateObject<RecipeAIResult>(
+    schemaString = RecipeAIResult::class.jsonSchemaString,
+  ) {
+    activeProvider?.let { provider ->
+      this.provider = Providers.OpenAI(
+        baseUrl = provider.baseUrl,
+        apiKey = provider.apiKey
+      )
+      this.model = provider.model
+    }
+    this.systemPrompt = systemPrompt
+    timeout = 60.seconds
+  }
+
+  // 处理分析结果
+  useEffect(recipe.value) {
+    recipe.value?.let { recipeResult ->
+      val jsonString = rawJson.value
+
+      // 根据是否从分享进入来决定导航行为
+      if (isFromShare) {
+        // 从分享进入: 导航到 AddRecipe 页面
+        val targetRoute = com.eatwhat.navigation.Destinations.AddRecipe.route
+        navController.navigate(targetRoute) {
+          popUpTo(com.eatwhat.navigation.Destinations.Roll.route) {
+            inclusive = false
+          }
+          launchSingleTop = true
+        }
+        // 延迟设置数据,确保导航完成
+        scope.launch {
+          kotlinx.coroutines.delay(100)
+          navController.currentBackStackEntry?.savedStateHandle?.apply {
+            set("ai_result", jsonString)
+            if (recipeResult.isFoodImage && selectedImageBase64 != null) {
+              set("ai_image", selectedImageBase64)
+            }
+          }
+        }
+      } else {
+        // 从 AddRecipe 进入: 返回到 AddRecipe 页面
+        navController.previousBackStackEntry?.savedStateHandle?.apply {
+          set("ai_result", jsonString)
+          if (recipeResult.isFoodImage && selectedImageBase64 != null) {
+            set("ai_image", selectedImageBase64)
+          }
+        }
+        navController.popBackStack()
+      }
+    }
+  }
+
   val onAnalyze = {
     if ((prompt.value.isNotBlank() || selectedImageBase64 != null) && !isLoading.value) {
-      if (activeProvider == null || aiConfig.apiKey.isBlank()) {
-        setError("请先在设置中配置有效的 AI 供应商")
+      if (activeProvider == null || activeProvider?.apiKey.isNullOrBlank()) {
+        setLocalError("请先在设置中配置有效的 AI 供应商")
       } else {
-        setIsLoading(true)
-        setError(null)
-        scope.launch {
-          val result = openAIService.analyzeRecipe(aiConfig, prompt.value, selectedImageBase64)
-          setIsLoading(false)
-          result.fold(
-            onSuccess = { recipeResult ->
-              val finalResult = if (recipeResult.isFoodImage && selectedImageBase64 != null) {
-                // If AI says it's a food image, attach the image to the result but use AI-generated icon as backup
-                // Wait, RecipeAIResult doesn't have imageBase64 field, we need to pass it separately or add it?
-                // Actually the result is JSON string passed to next screen.
-                // We can add the image to the result if we modify RecipeAIResult, OR we can pass it via savedStateHandle separately.
-                // But wait, the requirement says: "if the picture is a food photo, bring it back to the icon position in the recipe instead of generating an emoji"
-                // RecipeAIResult is immutable. We can create a new object or modify the JSON.
-                // But actually, the next screen (AddRecipeScreen) will handle the filling.
-                // We should pass the image separately in savedStateHandle or include it in the logic.
-                // Let's rely on passing the imageBase64 via savedStateHandle if it's a food image.
-                recipeResult
-              } else {
-                recipeResult
-              }
-
-              val jsonString = Json.encodeToString(RecipeAIResult.serializer(), finalResult)
-
-              // 根据是否从分享进入来决定导航行为
-              if (isFromShare) {
-                // 从分享进入: 导航到 AddRecipe 页面
-                val targetRoute = com.eatwhat.navigation.Destinations.AddRecipe.route
-                navController.navigate(targetRoute) {
-                  popUpTo(com.eatwhat.navigation.Destinations.Roll.route) {
-                    inclusive = false
-                  }
-                  launchSingleTop = true
-                }
-                // 延迟设置数据,确保导航完成
-                scope.launch {
-                  kotlinx.coroutines.delay(100)
-                  navController.currentBackStackEntry?.savedStateHandle?.apply {
-                    set("ai_result", jsonString)
-                    if (finalResult.isFoodImage && selectedImageBase64 != null) {
-                      set("ai_image", selectedImageBase64)
-                    }
-                  }
-                }
-              } else {
-                // 从 AddRecipe 进入: 返回到 AddRecipe 页面
-                navController.previousBackStackEntry?.savedStateHandle?.apply {
-                  set("ai_result", jsonString)
-                  if (finalResult.isFoodImage && selectedImageBase64 != null) {
-                    set("ai_image", selectedImageBase64)
-                  }
-                }
-                navController.popBackStack()
-              }
-            },
-            onFailure = { e ->
-              setError(e.message ?: "分析失败")
-            }
-          )
+        setLocalError(null)
+        val promptText = prompt.value.ifBlank { "请分析这张图片中的内容并创建菜谱" }
+        if (selectedImageBase64 != null) {
+          submit(promptText, selectedImageBase64!!, "image/webp")
+        } else {
+          submit(promptText)
         }
       }
     }
   }
+
+  // 合并错误信息
+  val displayError = localError.value ?: error.value?.message
 
   val isDark = LocalDarkTheme.current
 
@@ -403,9 +421,9 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
             }
 
             // Error message
-            if (error.value != null) {
+            if (displayError != null) {
               Text(
-                error.value!!,
+                displayError,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error
               )

@@ -9,8 +9,21 @@ plugins {
 kotlin {
   compilerOptions {
     jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-    freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+    freeCompilerArgs.addAll(
+      listOf(
+        "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
+        "-Xannotation-default-target=param-property"
+      )
+    )
   }
+  sourceSets.main {
+    kotlin.srcDir("build/generated/ksp/main/kotlin")
+  }
+}
+
+ksp {
+  arg("kotlinx.schema.withSchemaObject", "true")
+  arg("kotlinx.schema.rootPackage", "com.eatwhat")
 }
 
 android {
@@ -87,6 +100,11 @@ dependencies {
 
   // ComposeHooks
   implementation(libs.compose.hooks)
+  implementation(libs.compose.ai)
+
+  // kotlinx-schema
+  implementation(libs.kotlinx.schema.annotations)
+  ksp("org.jetbrains.kotlinx:kotlinx-schema-ksp:0.0.2")
 
   // Room
   implementation(libs.androidx.room.runtime)
