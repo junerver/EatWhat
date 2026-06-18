@@ -55,7 +55,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -77,6 +76,8 @@ import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -158,7 +159,6 @@ fun SyncScreen(navController: NavController) {
                 if (!isConfigured) {
                     // 未配置提示
                     NotConfiguredCard(
-                      cardBackground = cardBackground,
                       textColor = textColor,
                       subTextColor = subTextColor,
                       primaryColor = primaryColor,
@@ -171,7 +171,6 @@ fun SyncScreen(navController: NavController) {
                     SyncStatusCard(
                         config = config!!,
                         cloudMetadata = cloudMetadata,
-                      cardBackground = cardBackground,
                       textColor = textColor,
                       subTextColor = subTextColor
                     )
@@ -180,7 +179,6 @@ fun SyncScreen(navController: NavController) {
                     SyncActionsCard(
                         cloudMetadata = cloudMetadata,
                       encryptionEnabled = config?.encryptionEnabled ?: false,
-                      cardBackground = cardBackground,
                       textColor = textColor,
                       subTextColor = subTextColor,
                       primaryColor = primaryColor,
@@ -250,7 +248,6 @@ fun SyncScreen(navController: NavController) {
 
                   // 配置入口卡片
                   ConfigEntryCard(
-                    cardBackground = cardBackground,
                     textColor = textColor,
                     subTextColor = subTextColor,
                     primaryColor = primaryColor,
@@ -368,27 +365,19 @@ private fun performSync(
  */
 @Composable
 private fun NotConfiguredCard(
-  cardBackground: Color,
   textColor: Color,
   subTextColor: Color,
   primaryColor: Color,
     onConfigureClick: () -> Unit
 ) {
-    Card(
+    PCard(
         modifier = Modifier
-          .fillMaxWidth()
-          .shadow(
-            elevation = 4.dp,
-            shape = RoundedCornerShape(20.dp),
-            spotColor = Color.Black.copy(alpha = 0.1f)
-          ),
-      shape = RoundedCornerShape(20.dp),
-      colors = CardDefaults.cardColors(containerColor = cardBackground)
+          .fillMaxWidth(),
+      variant = CardVariant.Elevated
     ) {
         Column(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(32.dp),
+              .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
@@ -445,25 +434,17 @@ private fun NotConfiguredCard(
 private fun SyncStatusCard(
     config: com.eatwhat.data.sync.WebDAVConfig,
     cloudMetadata: SyncMetadata?,
-    cardBackground: Color,
     textColor: Color,
     subTextColor: Color
 ) {
-    Card(
+    PCard(
         modifier = Modifier
-          .fillMaxWidth()
-          .shadow(
-            elevation = 4.dp,
-            shape = RoundedCornerShape(20.dp),
-            spotColor = Color.Black.copy(alpha = 0.1f)
-          ),
-      shape = RoundedCornerShape(20.dp),
-      colors = CardDefaults.cardColors(containerColor = cardBackground)
+          .fillMaxWidth(),
+      variant = CardVariant.Elevated
     ) {
         Column(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(20.dp),
+              .fillMaxWidth(),
           verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
           // Header
@@ -602,28 +583,20 @@ private fun SyncStatusCard(
 private fun SyncActionsCard(
     cloudMetadata: SyncMetadata?,
     encryptionEnabled: Boolean,
-    cardBackground: Color,
     textColor: Color,
     subTextColor: Color,
     primaryColor: Color,
     onUpload: () -> Unit,
     onDownload: () -> Unit
 ) {
-    Card(
+    PCard(
         modifier = Modifier
-          .fillMaxWidth()
-          .shadow(
-            elevation = 4.dp,
-            shape = RoundedCornerShape(20.dp),
-            spotColor = Color.Black.copy(alpha = 0.1f)
-          ),
-      shape = RoundedCornerShape(20.dp),
-      colors = CardDefaults.cardColors(containerColor = cardBackground)
+          .fillMaxWidth(),
+      variant = CardVariant.Elevated
     ) {
         Column(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(20.dp),
+              .fillMaxWidth(),
           verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
           // Header
@@ -730,28 +703,20 @@ private fun SyncActionsCard(
  */
 @Composable
 private fun ConfigEntryCard(
-  cardBackground: Color,
   textColor: Color,
   subTextColor: Color,
   primaryColor: Color,
   onClick: () -> Unit
 ) {
-  Card(
+  PCard(
     modifier = Modifier
-      .fillMaxWidth()
-      .shadow(
-        elevation = 2.dp,
-        shape = RoundedCornerShape(20.dp),
-        spotColor = Color.Black.copy(alpha = 0.08f)
-      ),
-    shape = RoundedCornerShape(20.dp),
-    colors = CardDefaults.cardColors(containerColor = cardBackground),
+      .fillMaxWidth(),
+    variant = CardVariant.Elevated,
     onClick = onClick
   ) {
     Row(
       modifier = Modifier
-        .fillMaxWidth()
-        .padding(20.dp),
+        .fillMaxWidth(),
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically
     ) {
