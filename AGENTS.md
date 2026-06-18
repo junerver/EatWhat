@@ -26,7 +26,7 @@ This file serves as the **unified rule set** for all AI development tools workin
 - **UI Framework**: Jetpack Compose (BOM 2025.12.01) - Pure Compose, no XML layouts
 - **State Management**: [ComposeHooks 2.3.0](https://github.com/junerver/ComposeHooks) (hooks2
   package)
-- **Component Library**: [Palette 0.1.1](https://github.com/junerver/Palette)
+- **Component Library**: [Palette 0.1.7](https://github.com/junerver/Palette)
 - **Database**: Room 2.8.4 (SQLite)
 - **Navigation**: Navigation Compose 2.9.6
 - **Design System**: Material Design 3 (Material You)
@@ -39,7 +39,7 @@ This file serves as the **unified rule set** for all AI development tools workin
 implementation(platform("androidx.compose:compose-bom:2025.12.01"))
 implementation("androidx.room:room-runtime:2.8.4")
 implementation("xyz.junerver.compose:hooks2:2.3.0")
-implementation("xyz.junerver.compose:palette:0.1.6")
+implementation("xyz.junerver.compose:palette:0.1.7")
 ```
 
 ## 📁 Project Structure

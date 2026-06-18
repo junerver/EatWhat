@@ -25,7 +25,6 @@ import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
@@ -55,6 +54,7 @@ import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.palette.components.button.ButtonSize
 import xyz.junerver.compose.palette.components.button.PButton
+import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.text.PText
 
@@ -203,7 +203,7 @@ fun RollScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(80.dp))
 
             // Main Roll Button
-            Surface(
+            PContainer(
                 modifier = Modifier
                   .size(180.dp)
                   .shadow(16.dp, CircleShape),
@@ -353,7 +353,7 @@ private fun ConfigButton(
     label: String,
     onClick: () -> Unit
 ) {
-    Surface(
+    PContainer(
         onClick = onClick,
         shape = RoundedCornerShape(24.dp),
         color = Color.White.copy(alpha = 0.2f),
@@ -382,7 +382,7 @@ private fun TypeConfigChip(
     color: Color,
     onClick: () -> Unit
 ) {
-    Surface(
+    PContainer(
         onClick = onClick,
         shape = RoundedCornerShape(16.dp),
         color = if (count > 0) Color.White else Color.White.copy(alpha = 0.2f),
@@ -435,7 +435,7 @@ private fun SelectorDialog(
                 modifier = Modifier.fillMaxWidth()
               ) {
                 // Minus Button
-                Surface(
+                PContainer(
                   onClick = { if (count.value > 1) setCount(count.value - 1) },
                   shape = CircleShape,
                   color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -461,7 +461,7 @@ private fun SelectorDialog(
                 )
 
                 // Plus Button
-                Surface(
+                PContainer(
                   onClick = { setCount(count.value + 1) },
                   shape = CircleShape,
                   color = PrimaryOrange,
@@ -486,7 +486,7 @@ private fun SelectorDialog(
               ) {
                 listOf(3, 5, 7).forEach { option ->
                   val isSelected = count.value == option
-                  Surface(
+                  PContainer(
                     onClick = { setCount(option) },
                     shape = RoundedCornerShape(12.dp),
                     color = if (isSelected) PrimaryOrange else MaterialTheme.colorScheme.surfaceVariant.copy(
@@ -559,7 +559,7 @@ private fun TypeSelectorDialog(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             row.forEach { count ->
-                                Surface(
+                                PContainer(
                                     onClick = { onSelect(count) },
                                     shape = RoundedCornerShape(12.dp),
                                     color = color.copy(alpha = 0.1f),
