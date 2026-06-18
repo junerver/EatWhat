@@ -23,6 +23,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.eatwhat.domain.model.RollConfig
+import com.eatwhat.ui.screens.roll.RollPlannerContent
 import xyz.junerver.compose.hooks.useState
 import xyz.junerver.compose.palette.components.alert.AlertType
 import xyz.junerver.compose.palette.components.alert.PAlert
@@ -52,13 +54,23 @@ fun EatWhatDesktopApp() {
     MaterialTheme {
       val (mode, setMode) = useState("balanced")
       val (pantryTags, setPantryTags) = useState(listOf("鸡蛋", "番茄", "青菜", "米饭"))
+      val (showRollPlanner, setShowRollPlanner) = useState(false)
+      val (lastRollSummary, setLastRollSummary) = useState("尚未 Roll")
       val progress = when (mode) {
         "quick" -> 75f
         "balanced" -> 55f
         else -> 35f
       }
 
-      Box(
+      if (showRollPlanner) {
+        RollPlannerContent(
+          onRoll = { config ->
+            setLastRollSummary(formatRollConfig(config))
+            setShowRollPlanner(false)
+          }
+        )
+      } else {
+        Box(
         modifier = Modifier
           .fillMaxSize()
           .background(MaterialTheme.colorScheme.background)
@@ -120,12 +132,14 @@ fun EatWhatDesktopApp() {
                 PButton(
                   text = "随机一餐",
                   size = ButtonSize.MEDIUM,
-                  type = ButtonType.PRIMARY
+                  type = ButtonType.PRIMARY,
+                  onClick = { setShowRollPlanner(true) }
                 )
                 PButton(
                   text = "清空",
                   size = ButtonSize.MEDIUM,
-                  type = ButtonType.PLAIN
+                  type = ButtonType.PLAIN,
+                  onClick = { setLastRollSummary("尚未 Roll") }
                 )
               }
             }
@@ -138,6 +152,12 @@ fun EatWhatDesktopApp() {
                 text = "样例指标",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
+              )
+              Spacer(modifier = Modifier.height(8.dp))
+              PText(
+                text = lastRollSummary,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
               )
               Spacer(modifier = Modifier.height(16.dp))
               Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
@@ -235,7 +255,23 @@ fun EatWhatDesktopApp() {
           }
         }
       }
+      }
     }
+  }
+}
+
+private fun formatRollConfig(config: RollConfig): String {
+  val parts = buildList {
+    if (config.meatCount > 0) add("${config.meatCount}荤")
+    if (config.vegCount > 0) add("${config.vegCount}素")
+    if (config.soupCount > 0) add("${config.soupCount}汤")
+    if (config.stapleCount > 0) add("${config.stapleCount}主食")
+    if (config.randomCount > 0) add("${config.randomCount}随机")
+  }
+  return if (parts.isEmpty()) {
+    "随机一餐"
+  } else {
+    "最近一次：${parts.joinToString(" + ")}"
   }
 }
 
