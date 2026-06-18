@@ -24,15 +24,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -43,7 +41,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -56,7 +53,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -84,6 +80,10 @@ import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.palette.components.card.CardColors
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.text.PText
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -117,7 +117,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
   useEffect(sharedImageBase64?.value) {
     sharedImageBase64?.value?.let { imageBase64 ->
       selectedImageBase64 = imageBase64
-      savedStateHandle?.remove<String>("shared_image")
+      savedStateHandle.remove<String>("shared_image")
     }
   }
 
@@ -236,7 +236,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
     topBar = {
       TopAppBar(
         title = {
-          Text(
+          PText(
             "AI 菜谱分析",
             fontWeight = FontWeight.Bold
           )
@@ -263,29 +263,27 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
     ) {
       // 模型选择器卡片
       item {
-        Card(
+        PCard(
           modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-              elevation = 4.dp,
-              shape = RoundedCornerShape(20.dp),
-              spotColor = Color.Black.copy(alpha = 0.1f)
-            )
-            .clickable {
-              if (allProviders.isNotEmpty()) {
-                showModelSelector = true
-              } else {
-                // 无 provider 时跳转到设置页面
-                navController.navigate(com.eatwhat.navigation.Destinations.AIConfig.route)
-              }
-            },
-          shape = RoundedCornerShape(20.dp),
-          colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            .fillMaxWidth(),
+          variant = CardVariant.Elevated,
+          onClick = {
+            if (allProviders.isNotEmpty()) {
+              showModelSelector = true
+            } else {
+              // 无 provider 时跳转到设置页面
+              navController.navigate(com.eatwhat.navigation.Destinations.AIConfig.route)
+            }
+          },
+          colors = CardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+          )
         ) {
           Row(
             modifier = Modifier
               .fillMaxWidth()
-              .padding(20.dp),
+              .padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
           ) {
@@ -308,25 +306,25 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
               verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
               if (activeProvider != null) {
-                Text(
+                PText(
                   activeProvider!!.name,
                   style = MaterialTheme.typography.bodyMedium,
                   fontWeight = FontWeight.Medium,
                   color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
+                PText(
                   activeProvider!!.model,
                   style = MaterialTheme.typography.bodySmall,
                   color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
               } else {
-                Text(
+                PText(
                   "未配置模型",
                   style = MaterialTheme.typography.bodyMedium,
                   fontWeight = FontWeight.Medium,
                   color = MaterialTheme.colorScheme.error
                 )
-                Text(
+                PText(
                   "点击前往设置",
                   style = MaterialTheme.typography.bodySmall,
                   color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -334,7 +332,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
               }
             }
             Icon(
-              Icons.Default.KeyboardArrowRight,
+              Icons.AutoMirrored.Filled.KeyboardArrowRight,
               contentDescription = "选择模型",
               tint = MaterialTheme.colorScheme.onSurfaceVariant,
               modifier = Modifier.size(24.dp)
@@ -345,22 +343,20 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
 
       // Input section
       item {
-        Card(
+        PCard(
           modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-              elevation = 4.dp,
-              shape = RoundedCornerShape(20.dp),
-              spotColor = Color.Black.copy(alpha = 0.1f)
-            ),
-          shape = RoundedCornerShape(20.dp),
-          colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            .fillMaxWidth(),
+          variant = CardVariant.Elevated,
+          colors = CardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+          )
         ) {
           Column(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(4.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
           ) {
-            Text(
+            PText(
               "菜谱描述",
               style = MaterialTheme.typography.labelLarge,
               color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -388,7 +384,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
                       .padding(16.dp)
                   ) {
                     if (prompt.value.isEmpty()) {
-                      Text(
+                      PText(
                         "例如：\n西红柿炒鸡蛋\n需要两个西红柿和三个鸡蛋\n先炒鸡蛋后加西红柿...",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
@@ -402,7 +398,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
             }
 
             // Image Picker Section
-            Text(
+            PText(
               "添加图片 (可选)",
               style = MaterialTheme.typography.labelLarge,
               color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -464,7 +460,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
                     modifier = Modifier.size(32.dp)
                   )
                   Spacer(modifier = Modifier.height(8.dp))
-                  Text(
+                  PText(
                     "点击上传图片",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -475,7 +471,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
 
             // Error message
             if (displayError != null) {
-              Text(
+              PText(
                 displayError,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error
@@ -504,7 +500,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
               strokeWidth = 2.dp
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
+            PText(
               "分析中...",
               style = MaterialTheme.typography.titleMedium,
               fontWeight = FontWeight.SemiBold
@@ -516,7 +512,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
               modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
+            PText(
               "开始分析",
               style = MaterialTheme.typography.titleMedium,
               fontWeight = FontWeight.SemiBold
@@ -544,7 +540,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
           .fillMaxWidth()
           .padding(bottom = 32.dp)
       ) {
-        Text(
+        PText(
           "选择 AI 模型",
           style = MaterialTheme.typography.titleMedium,
           fontWeight = FontWeight.Bold,
@@ -578,13 +574,13 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
               modifier = Modifier.weight(1f),
               verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-              Text(
+              PText(
                 provider.name,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onSurface
               )
-              Text(
+              PText(
                 provider.model,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
