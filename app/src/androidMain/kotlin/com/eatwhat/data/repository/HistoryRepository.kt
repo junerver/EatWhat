@@ -8,13 +8,15 @@ import com.eatwhat.domain.model.HistoryRecord
 import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.domain.model.RollConfig
+import com.eatwhat.domain.usecase.HistorySaver
+import com.eatwhat.domain.usecase.PrepListItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /**
  * Repository for History operations
  */
-class HistoryRepository(private val database: EatWhatDatabase) {
+class HistoryRepository(private val database: EatWhatDatabase) : HistorySaver {
 
     private val historyDao = database.historyDao()
 
@@ -28,10 +30,10 @@ class HistoryRepository(private val database: EatWhatDatabase) {
         return historyDao.getHistoryWithDetails(historyId).map { it?.toDomain() }
     }
 
-    suspend fun insertHistory(
+    override suspend fun insertHistory(
         config: RollConfig,
         recipes: List<Recipe>,
-        prepItems: List<com.eatwhat.domain.usecase.PrepListItem>
+        prepItems: List<PrepListItem>
     ): Long {
         val summary = buildSummary(config)
 
