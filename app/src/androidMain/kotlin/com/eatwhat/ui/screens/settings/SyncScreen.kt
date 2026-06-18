@@ -73,6 +73,8 @@ import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.button.ButtonSize
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
@@ -824,13 +826,12 @@ private fun PasswordInputDialog(
             )
         },
         confirmButton = {
-            Button(
-                onClick = { onConfirm(password) },
-              enabled = password.isNotBlank(),
-              shape = RoundedCornerShape(12.dp)
-            ) {
-                PText("确定")
-            }
+            PButton(
+              text = "确定",
+              size = ButtonSize.SMALL,
+              disabled = password.isBlank(),
+              onClick = { onConfirm(password) }
+            )
         },
         dismissButton = {
           TextButton(

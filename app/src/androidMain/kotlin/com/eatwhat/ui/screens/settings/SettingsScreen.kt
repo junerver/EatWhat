@@ -33,7 +33,6 @@ import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -76,6 +75,8 @@ import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.button.ButtonSize
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
@@ -647,11 +648,11 @@ private fun ImportPreviewDialog(
       }
     },
     confirmButton = {
-      Button(
+      PButton(
+        text = "开始导入",
+        size = ButtonSize.SMALL,
         onClick = { onImport(selectedStrategy) }
-      ) {
-        PText("开始导入")
-      }
+      )
     },
     dismissButton = {
       TextButton(onClick = onDismiss) {
