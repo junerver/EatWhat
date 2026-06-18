@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.EmojiEmotions
@@ -36,8 +38,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -48,7 +48,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.eatwhat.util.ImageUtils
@@ -56,6 +55,8 @@ import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.useState
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.loading.PLoading
+import xyz.junerver.compose.palette.components.segmented.PSegmented
+import xyz.junerver.compose.palette.components.segmented.SegmentedOption
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -349,23 +350,23 @@ private fun EmojiPickerDialog(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Category tabs
-                ScrollableTabRow(
-                    selectedTabIndex = FoodEmojis.categories.indexOf(selectedCategory),
-                    edgePadding = 0.dp
+                Box(
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .horizontalScroll(rememberScrollState())
                 ) {
-                    FoodEmojis.categories.forEach { category ->
-                        Tab(
-                            selected = category == selectedCategory,
-                            onClick = { selectedCategory = category },
-                            text = {
-                                PText(
-                                    text = category.name,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        )
-                    }
+                    PSegmented(
+                        options = FoodEmojis.categories.map { category ->
+                            SegmentedOption(
+                                value = category.name,
+                                label = category.name
+                            )
+                        },
+                        value = selectedCategory.name,
+                        onValueChange = { selectedName ->
+                            selectedCategory = FoodEmojis.categories.first { it.name == selectedName }
+                        }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
