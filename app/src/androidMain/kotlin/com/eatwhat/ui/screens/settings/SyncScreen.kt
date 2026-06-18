@@ -17,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CloudDownload
@@ -36,8 +35,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,6 +55,7 @@ import com.eatwhat.data.repository.SyncRepositoryImpl
 import com.eatwhat.data.sync.SyncMetadata
 import com.eatwhat.data.sync.SyncResult
 import com.eatwhat.navigation.Destinations
+import com.eatwhat.ui.components.AppToolbar
 import com.eatwhat.ui.components.StyledTextField
 import com.eatwhat.ui.theme.LocalDarkTheme
 import kotlinx.coroutines.launch
@@ -122,24 +120,10 @@ fun SyncScreen(navController: NavController) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    PText(
-                        text = "数据同步",
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                  containerColor = Color.Transparent
-                )
+            AppToolbar(
+                title = "数据同步",
+                containerColor = Color.Transparent,
+                onNavigateUp = { navController.popBackStack() }
             )
         },
       containerColor = pageBackground

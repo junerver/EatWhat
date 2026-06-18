@@ -24,7 +24,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
@@ -38,8 +37,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -56,6 +53,7 @@ import com.eatwhat.domain.model.AIConfig
 import com.eatwhat.data.repository.AIProviderRepository
 import com.eatwhat.domain.service.AIService
 import com.eatwhat.domain.service.OpenAIService
+import com.eatwhat.ui.components.AppToolbar
 import com.eatwhat.ui.components.PaletteConfirmDialog
 import com.eatwhat.ui.components.StyledTextField
 import kotlinx.coroutines.flow.first
@@ -248,18 +246,10 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          PText(
-            if (providerId == null) "添加模型供应商" else "编辑模型供应商",
-            fontWeight = FontWeight.Bold
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { navController.popBackStack() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
-          }
-        },
+      AppToolbar(
+        title = if (providerId == null) "添加模型供应商" else "编辑模型供应商",
+        containerColor = Color.Transparent,
+        onNavigateUp = { navController.popBackStack() },
         actions = {
           if (providerId != null) {
             IconButton(onClick = { setShowDeleteDialog(true) }) {
@@ -269,10 +259,7 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
           IconButton(onClick = { onSave() }) {
             Icon(Icons.Default.Check, contentDescription = "Save", tint = Color(0xFF4CAF50))
           }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = Color.Transparent
-        )
+        }
       )
     },
     containerColor = pageBackground

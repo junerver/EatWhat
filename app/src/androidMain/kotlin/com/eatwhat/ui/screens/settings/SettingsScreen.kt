@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Cloud
@@ -35,12 +34,9 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -67,6 +63,7 @@ import com.eatwhat.domain.usecase.ExportDataUseCase
 import com.eatwhat.domain.usecase.ImportDataUseCase
 import com.eatwhat.domain.usecase.ImportPreviewResult
 import com.eatwhat.navigation.Destinations
+import com.eatwhat.ui.components.AppToolbar
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
@@ -217,24 +214,9 @@ fun SettingsScreen(navController: NavController) {
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          PText(
-            text = "设置",
-            fontWeight = FontWeight.Bold
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { navController.popBackStack() }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-              contentDescription = "返回"
-            )
-          }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = MaterialTheme.colorScheme.surface
-        )
+      AppToolbar(
+        title = "设置",
+        onNavigateUp = { navController.popBackStack() }
       )
     },
     containerColor = MaterialTheme.colorScheme.background

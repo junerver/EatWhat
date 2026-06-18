@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CheckCircle
@@ -29,8 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -50,6 +47,7 @@ import com.eatwhat.domain.model.ProviderTestState
 import com.eatwhat.domain.service.AIService
 import com.eatwhat.domain.service.OpenAIService
 import com.eatwhat.navigation.Destinations
+import com.eatwhat.ui.components.AppToolbar
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
@@ -152,15 +150,10 @@ fun AIProviderListScreen(navController: NavController) {
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          PText("AI 模型供应商", fontWeight = FontWeight.Bold)
-        },
-        navigationIcon = {
-          IconButton(onClick = { navController.popBackStack() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
-          }
-        },
+      AppToolbar(
+        title = "AI 模型供应商",
+        containerColor = Color.Transparent,
+        onNavigateUp = { navController.popBackStack() },
         actions = {
           // Batch Test Button
           IconButton(
@@ -179,10 +172,7 @@ fun AIProviderListScreen(navController: NavController) {
           IconButton(onClick = { navController.navigate(Destinations.AIProviderEdit.createRoute()) }) {
             Icon(Icons.Default.Add, contentDescription = "Add Provider", tint = primaryColor)
           }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = Color.Transparent
-        )
+        }
       )
     },
     containerColor = pageBackground
