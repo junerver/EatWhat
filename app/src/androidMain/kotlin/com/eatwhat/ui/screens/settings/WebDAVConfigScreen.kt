@@ -33,7 +33,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -69,6 +68,8 @@ import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.segmented.PSegmented
 import xyz.junerver.compose.palette.components.segmented.SegmentedOption
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
 import xyz.junerver.compose.palette.components.switch.PSwitch
 import xyz.junerver.compose.palette.components.text.PText
 
@@ -121,7 +122,7 @@ fun WebDAVConfigScreen(navController: NavController) {
   val subTextColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
   val primaryColor = Color(0xFFFF6B35)
 
-  Scaffold(
+  PScaffold(
     topBar = {
       AppToolbar(
         title = "WebDAV 配置",
@@ -129,7 +130,9 @@ fun WebDAVConfigScreen(navController: NavController) {
         onNavigateUp = { navController.popBackStack() }
       )
     },
-    containerColor = pageBackground
+    colors = ScaffoldDefaults.colors(
+      containerColor = pageBackground
+    )
   ) { paddingValues ->
     Column(
       modifier = Modifier

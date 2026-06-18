@@ -35,7 +35,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -70,6 +69,8 @@ import xyz.junerver.compose.palette.components.button.ButtonType
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.loading.PLoading
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -244,7 +245,7 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
     }
   }
 
-  Scaffold(
+  PScaffold(
     topBar = {
       AppToolbar(
         title = if (providerId == null) "添加模型供应商" else "编辑模型供应商",
@@ -262,7 +263,9 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
         }
       )
     },
-    containerColor = pageBackground
+    colors = ScaffoldDefaults.colors(
+      containerColor = pageBackground
+    )
   ) { paddingValues ->
     Column(
       modifier = Modifier

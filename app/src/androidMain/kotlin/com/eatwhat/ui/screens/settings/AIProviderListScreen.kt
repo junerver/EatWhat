@@ -27,7 +27,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -62,6 +61,8 @@ import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.empty.PEmpty
 import xyz.junerver.compose.palette.components.loading.PLoading
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
 import xyz.junerver.compose.palette.components.text.PText
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -148,7 +149,7 @@ fun AIProviderListScreen(navController: NavController) {
     }
   }
 
-  Scaffold(
+  PScaffold(
     topBar = {
       AppToolbar(
         title = "AI 模型供应商",
@@ -175,7 +176,9 @@ fun AIProviderListScreen(navController: NavController) {
         }
       )
     },
-    containerColor = pageBackground
+    colors = ScaffoldDefaults.colors(
+      containerColor = pageBackground
+    )
   ) { paddingValues ->
     Column(
       modifier = Modifier

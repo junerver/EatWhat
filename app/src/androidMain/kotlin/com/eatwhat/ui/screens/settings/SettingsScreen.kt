@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -78,6 +77,8 @@ import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.radio.PRadio
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
 import xyz.junerver.compose.palette.components.text.PText
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -212,14 +213,16 @@ fun SettingsScreen(navController: NavController) {
     return "eatwhat_${suffix}_$timestamp.json"
   }
 
-  Scaffold(
+  PScaffold(
     topBar = {
       AppToolbar(
         title = "设置",
         onNavigateUp = { navController.popBackStack() }
       )
     },
-    containerColor = MaterialTheme.colorScheme.background
+    colors = ScaffoldDefaults.colors(
+      containerColor = MaterialTheme.colorScheme.background
+    )
   ) { paddingValues ->
     Box(modifier = Modifier.fillMaxSize()) {
       Column(

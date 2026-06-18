@@ -34,7 +34,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -72,6 +71,8 @@ import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.loading.PLoading
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
 import xyz.junerver.compose.palette.components.text.PText
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -118,7 +119,7 @@ fun SyncScreen(navController: NavController) {
         }
     }
 
-    Scaffold(
+    PScaffold(
         topBar = {
             AppToolbar(
                 title = "数据同步",
@@ -126,7 +127,9 @@ fun SyncScreen(navController: NavController) {
                 onNavigateUp = { navController.popBackStack() }
             )
         },
-      containerColor = pageBackground
+      colors = ScaffoldDefaults.colors(
+        containerColor = pageBackground
+      )
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
