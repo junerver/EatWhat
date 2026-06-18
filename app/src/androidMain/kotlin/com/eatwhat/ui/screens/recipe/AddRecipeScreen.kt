@@ -1,80 +1,21 @@
 package com.eatwhat.ui.screens.recipe
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Restaurant
-import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material.icons.outlined.Timer
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
-import com.eatwhat.R
 import com.eatwhat.domain.model.CookingStep
 import com.eatwhat.domain.model.Difficulty
 import com.eatwhat.domain.model.Ingredient
@@ -82,21 +23,8 @@ import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeAIResult
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.domain.model.Tag
-import com.eatwhat.ui.components.AppToolbar
 import com.eatwhat.ui.components.FoodEmojis
 import com.eatwhat.ui.components.RecipeIconPicker
-import com.eatwhat.ui.components.StyledTextField
-import com.eatwhat.ui.theme.LocalDarkTheme
-import com.eatwhat.ui.theme.MeatRed
-import com.eatwhat.ui.theme.OtherPurple
-import com.eatwhat.ui.theme.PrimaryOrange
-import com.eatwhat.ui.theme.SoftBlue
-import com.eatwhat.ui.theme.SoftGreen
-import com.eatwhat.ui.theme.SoupBlue
-import com.eatwhat.ui.theme.StapleOrange
-import com.eatwhat.ui.theme.StepCardBackground
-import com.eatwhat.ui.theme.VegGreen
-import com.eatwhat.ui.theme.WarmYellow
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
@@ -105,26 +33,8 @@ import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.hooks.useState
-import xyz.junerver.compose.palette.components.button.ButtonColors
-import xyz.junerver.compose.palette.components.button.ButtonSize
-import xyz.junerver.compose.palette.components.button.PButton
-import xyz.junerver.compose.palette.components.card.CardColors
-import xyz.junerver.compose.palette.components.card.CardVariant
-import xyz.junerver.compose.palette.components.card.PCard
-import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.message.MessageType
 import xyz.junerver.compose.palette.components.message.rememberMessageState
-import xyz.junerver.compose.palette.components.scaffold.PScaffold
-import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
-import xyz.junerver.compose.palette.components.select.PSelect
-import xyz.junerver.compose.palette.components.select.SelectDefaults
-import xyz.junerver.compose.palette.components.select.SelectOption
-import xyz.junerver.compose.palette.components.tag.PEditableTagGroup
-import xyz.junerver.compose.palette.components.tag.TagDefaults
-import xyz.junerver.compose.palette.components.tag.TagSize
-import xyz.junerver.compose.palette.components.text.PText
-import xyz.junerver.compose.palette.core.spec.ComponentSize
-import xyz.junerver.compose.palette.core.spec.ComponentStatus
 import com.eatwhat.domain.model.Unit as IngredientUnit
 
 @Composable
@@ -139,19 +49,16 @@ fun AddRecipeScreen(
   val messageState = rememberMessageState()
   val focusManager = LocalFocusManager.current
 
-  // Monitor keyboard state with real-time detection
   val density = LocalDensity.current
   val imeInsets = WindowInsets.ime
   var isKeyboardVisible by useState(false)
 
-  // Track keyboard visibility changes
   LaunchedEffect(Unit) {
     snapshotFlow {
       imeInsets.getBottom(density)
     }.collect { imeBottom ->
       val newState = imeBottom > 0
       if (isKeyboardVisible && !newState) {
-        // Keyboard was visible and now hidden
         focusManager.clearFocus()
       }
       isKeyboardVisible = newState
@@ -160,7 +67,6 @@ fun AddRecipeScreen(
 
   val isEditMode = recipeId != null
 
-  // Form state
   val (name, setName) = useGetState(default = "")
   val (type, setType) = useGetState(default = RecipeType.MEAT)
   val (icon, setIcon) = useGetState(default = FoodEmojis.DEFAULT_EMOJI)
@@ -172,11 +78,9 @@ fun AddRecipeScreen(
   val (tags, setTags) = useGetState(default = emptyList<String>())
   val (isSaving, setIsSaving) = useGetState(default = false)
 
-  // Drag and drop state for steps
   var draggedStepIndex by useState(-1)
   var draggedStepOffset by useState(0f)
 
-  // Load existing recipe if editing
   useEffect(recipeId ?: 0L) {
     recipeId?.let { id ->
       scope.launch {
@@ -201,7 +105,6 @@ fun AddRecipeScreen(
     }
   }
 
-  // Handle AI analysis result
   val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
   val aiResultJson = savedStateHandle?.getStateFlow<String?>("ai_result", null)?.collectAsState()
   val aiImageBase64 = savedStateHandle?.getStateFlow<String?>("ai_image", null)?.collectAsState()
@@ -215,52 +118,32 @@ fun AddRecipeScreen(
           jsonString
         )
 
-        // Fill form with AI result
         setName(aiResult.name)
         setIcon(aiResult.icon)
         setEstimatedTime(aiResult.estimatedTime.toString())
         setTags(aiResult.tags)
 
-        // Use AI provided image if available (and it's a food image)
-        // If "ai_image" was passed separately, use that.
-        // Or if RecipeAIResult had imageBase64 field (it doesn't currently)
-        // The previous logic in AIAnalysisScreen sets "ai_image" if "isFoodImage" is true.
         aiImageBase64?.value?.let {
           imageBase64 = it
           savedStateHandle.remove<String>("ai_image")
         }
 
-        // Parse type
-        try {
+        runCatching {
           setType(RecipeType.valueOf(aiResult.type.uppercase()))
-        } catch (e: Exception) {
-          // Keep default if invalid
         }
-
-        // Parse difficulty
-        try {
+        runCatching {
           setDifficulty(Difficulty.valueOf(aiResult.difficulty.uppercase()))
-        } catch (e: Exception) {
-          // Keep default if invalid
         }
 
-        // Parse ingredients
         setIngredients(aiResult.ingredients.map { ing ->
-          val unit = try {
+          val unit = runCatching {
             IngredientUnit.valueOf(ing.unit.uppercase())
-          } catch (e: Exception) {
-            IngredientUnit.MODERATE
-          }
+          }.getOrDefault(IngredientUnit.MODERATE)
           IngredientInput(ing.name, ing.amount, unit)
         })
-
-        // Parse steps
         setSteps(aiResult.steps.map { StepInput(it) })
 
-        // Clear the saved state
         savedStateHandle.remove<String>("ai_result")
-
-        // Show success message
         messageState.show("AI 分析完成，已自动填充表单", MessageType.Success)
       } catch (e: Exception) {
         messageState.show("解析 AI 结果失败: ${e.message}", MessageType.Error)
@@ -268,24 +151,29 @@ fun AddRecipeScreen(
     }
   }
 
-  // Save function extracted for use in toolbar actions
   val onSave: () -> Unit = {
-    // Validation
-    if (name.value.isBlank()) {
-      messageState.show("请输入菜名", MessageType.Warning)
-    } else {
-      val time = estimatedTime.value.toIntOrNull()
-      if (time == null || time < 1 || time > 300) {
+    when {
+      name.value.isBlank() -> {
+        messageState.show("请输入菜名", MessageType.Warning)
+      }
+
+      estimatedTime.value.toIntOrNull()?.let { it in 1..300 } != true -> {
         messageState.show("预计时间必须在1-300分钟之间", MessageType.Warning)
-      } else if (ingredients.value.any { it.name.isBlank() }) {
+      }
+
+      ingredients.value.any { it.name.isBlank() } -> {
         messageState.show("请填写所有食材名称", MessageType.Warning)
-      } else if (steps.value.any { it.description.isBlank() }) {
+      }
+
+      steps.value.any { it.description.isBlank() } -> {
         messageState.show("请填写所有步骤描述", MessageType.Warning)
-      } else {
-        // Save recipe
+      }
+
+      else -> {
         scope.launch {
           setIsSaving(true)
           try {
+            val time = estimatedTime.value.toInt()
             val recipe = Recipe(
               id = recipeId ?: 0,
               syncId = java.util.UUID.randomUUID().toString(),
@@ -329,869 +217,44 @@ fun AddRecipeScreen(
     }
   }
 
-  PScaffold(
-    topBar = {
-      AppToolbar(
-        title = if (isEditMode) "编辑菜谱" else "创建新菜谱",
-        onNavigateUp = { navController.navigateUp() },
-        actions = {
-          // AI Analysis button
-          IconButton(
-            onClick = { navController.navigate(com.eatwhat.navigation.Destinations.AIAnalysis.route) }
-          ) {
-            Icon(
-              painter = painterResource(id = R.drawable.ic_ai_sparkles),
-              contentDescription = "AI 分析",
-              modifier = Modifier
-                .size(24.dp)
-                .graphicsLayer(alpha = 0.99f)
-                .drawWithCache {
-                  val brush = Brush.linearGradient(
-                    colors = listOf(
-                      Color(0xFFE040FB), // Bright Purple
-                      Color(0xFF7C4DFF)  // Deep Purple
-                    )
-                  )
-                  onDrawWithContent {
-                    drawContent()
-                    drawRect(brush, blendMode = BlendMode.SrcAtop)
-                  }
-                },
-              tint = Color.Unspecified
-            )
-          }
-
-          // Save button
-          PButton(
-            text = if (isEditMode) "保存" else "创建",
-            modifier = Modifier.padding(end = 8.dp),
-            size = ButtonSize.SMALL,
-            disabled = false,
-            loading = isSaving.value,
-            colors = ButtonColors(
-              containerColor = PrimaryOrange,
-              contentColor = MaterialTheme.colorScheme.onPrimary
-            ),
-            leadingIcon = {
-              Icon(
-                Icons.Default.Check,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-              )
-            },
-            onClick = onSave
-          )
-        }
-      )
-    },
-    colors = ScaffoldDefaults.colors(
-      containerColor = MaterialTheme.colorScheme.background
-    )
-  ) { paddingValues ->
-    LazyColumn(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(paddingValues),
-      contentPadding = PaddingValues(16.dp),
-      verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-      // Basic Info Section
-      item {
-        SectionCard(
-          title = "基本信息",
-          icon = Icons.Outlined.Restaurant,
-          iconBackgroundColor = PrimaryOrange.copy(alpha = 0.1f),
-          iconTint = PrimaryOrange
-        ) {
-          // Recipe name input with emoji decoration
-          StyledTextField(
-            value = name.value,
-            onValueChange = { setName(it) },
-            label = "菜名",
-            placeholder = "给你的美食起个名字吧",
-            leadingIcon = {
-              PText("🍳", fontSize = 20.sp)
-            }
-          )
-
-          Spacer(modifier = Modifier.height(16.dp))
-
-          // Type selector with colorful chips
-          PText(
-            "菜品类型",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-          )
-          Spacer(modifier = Modifier.height(8.dp))
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            RecipeType.entries.forEach { recipeType ->
-              RecipeTypeChip(
-                type = recipeType,
-                isSelected = type.value == recipeType,
-                onClick = { setType(recipeType) },
-                modifier = Modifier.weight(1f)
-              )
-            }
-          }
-
-          Spacer(modifier = Modifier.height(16.dp))
-
-          // Tags section
-          PText(
-            "标签",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-          )
-          Spacer(modifier = Modifier.height(8.dp))
-          PEditableTagGroup(
-            tags = tags.value,
-            onTagsChange = { setTags(it) },
-            placeholder = "标签名",
-            size = TagSize.Medium,
-            tagColors = { TagDefaults.pastelColors(it) }
-          )
-
-          Spacer(modifier = Modifier.height(16.dp))
-
-          // Icon/Image picker
-          RecipeIconPicker(
-            selectedEmoji = icon.value,
-            selectedImageBase64 = imageBase64,
-            recipeType = type.value.name,
-            onEmojiSelected = { setIcon(it) },
-            onImageSelected = { imageBase64 = it },
-            onImageCleared = { imageBase64 = null },
-            modifier = Modifier.fillMaxWidth()
-          )
-
-          Spacer(modifier = Modifier.height(16.dp))
-
-          // Difficulty selector
-          PText(
-            "难度等级",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-          )
-          Spacer(modifier = Modifier.height(8.dp))
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-          ) {
-            Difficulty.entries.forEach { diff ->
-              DifficultyChip(
-                difficulty = diff,
-                isSelected = difficulty.value == diff,
-                onClick = { setDifficulty(diff) },
-                modifier = Modifier.weight(1f)
-              )
-            }
-          }
-
-          Spacer(modifier = Modifier.height(16.dp))
-
-          // Time input
-          StyledTextField(
-            value = estimatedTime.value,
-            onValueChange = { setEstimatedTime(it) },
-            label = "预计时间",
-            placeholder = "30",
-            leadingIcon = {
-              Icon(
-                Icons.Outlined.Timer,
-                contentDescription = null,
-                tint = PrimaryOrange,
-                modifier = Modifier.size(20.dp)
-              )
-            },
-            trailingIcon = {
-              PText(
-                "分钟",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-              )
-            },
-            keyboardType = KeyboardType.Number
-          )
-        }
-      }
-
-      // Ingredients Section
-      item {
-        SectionCard(
-          title = "食材清单",
-          icon = Icons.Outlined.ShoppingCart,
-          iconBackgroundColor = SoftGreen.copy(alpha = 0.1f),
-          iconTint = SoftGreen,
-          action = {
-            AddButton(
-              onClick = { setIngredients(ingredients.value + IngredientInput()) },
-              color = SoftGreen
-            )
-          }
-        ) {
-          ingredients.value.forEachIndexed { index, ingredient ->
-            AnimatedVisibility(
-              visible = true,
-              enter = fadeIn() + expandVertically(),
-              exit = fadeOut() + shrinkVertically()
-            ) {
-              IngredientInputCard(
-                index = index,
-                ingredient = ingredient,
-                onIngredientChange = { newIngredient ->
-                  setIngredients(ingredients.value.toMutableList().apply {
-                    this[index] = newIngredient
-                  })
-                },
-                onDelete = {
-                  if (ingredients.value.size > 1) {
-                    setIngredients(ingredients.value.filterIndexed { i, _ -> i != index })
-                  }
-                },
-                canDelete = ingredients.value.size > 1
-              )
-            }
-            if (index < ingredients.value.lastIndex) {
-              Spacer(modifier = Modifier.height(12.dp))
-            }
-          }
-        }
-      }
-
-      // Cooking Steps Section
-      item {
-        SectionCard(
-          title = "烹饪步骤",
-          icon = Icons.AutoMirrored.Outlined.MenuBook,
-          iconBackgroundColor = SoftBlue.copy(alpha = 0.1f),
-          iconTint = SoftBlue,
-          action = {
-            AddButton(
-              onClick = { setSteps(steps.value + StepInput()) },
-              color = SoftBlue
-            )
-          }
-        ) {
-          val density = LocalDensity.current
-
-          steps.value.forEachIndexed { index, step ->
-            val isDragging = draggedStepIndex == index
-            val currentOffset = if (isDragging) draggedStepOffset else 0f
-
-            Row(
-              modifier = Modifier
-                .fillMaxWidth()
-                .offset { IntOffset(0, currentOffset.toInt()) }
-                .zIndex(if (isDragging) 1f else 0f),
-              horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-              // Left column: step number + connector
-              Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-              ) {
-                // Step number badge
-                Box(
-                  modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(
-                      brush = Brush.linearGradient(
-                        colors = listOf(SoftBlue, SoftBlue.copy(alpha = 0.7f))
-                      )
-                    ),
-                  contentAlignment = Alignment.Center
-                ) {
-                  PText(
-                    "${index + 1}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                  )
-                }
-
-                // Connector with insert button
-                if (index < steps.value.lastIndex) {
-                  StepConnectorWithInsert(
-                    onInsertStep = {
-                      val newList = steps.value.toMutableList()
-                      newList.add(index + 1, StepInput())
-                      setSteps(newList)
-                    }
-                  )
-                }
-              }
-
-              // Right column: step content
-              StepContentCard(
-                stepNumber = index + 1,
-                step = step,
-                onStepChange = { newStep ->
-                  setSteps(steps.value.toMutableList().apply {
-                    this[index] = newStep
-                  })
-                },
-                onDelete = {
-                  if (steps.value.size > 1) {
-                    setSteps(steps.value.filterIndexed { i, _ -> i != index })
-                  }
-                },
-                canDelete = steps.value.size > 1,
-                onDragStart = {
-                  draggedStepIndex = index
-                  draggedStepOffset = 0f
-                },
-                onDrag = { delta ->
-                  draggedStepOffset += delta
-
-                  // Calculate if we should swap with another step
-                  val stepHeight = with(density) { 120.dp.toPx() }
-                  val swapThreshold = stepHeight / 2
-
-                  if (draggedStepOffset > swapThreshold && draggedStepIndex < steps.value.lastIndex) {
-                    // Swap with next step
-                    val newList = steps.value.toMutableList()
-                    val temp = newList[draggedStepIndex]
-                    newList[draggedStepIndex] = newList[draggedStepIndex + 1]
-                    newList[draggedStepIndex + 1] = temp
-                    setSteps(newList)
-                    draggedStepIndex += 1
-                    draggedStepOffset -= stepHeight
-                  } else if (draggedStepOffset < -swapThreshold && draggedStepIndex > 0) {
-                    // Swap with previous step
-                    val newList = steps.value.toMutableList()
-                    val temp = newList[draggedStepIndex]
-                    newList[draggedStepIndex] = newList[draggedStepIndex - 1]
-                    newList[draggedStepIndex - 1] = temp
-                    setSteps(newList)
-                    draggedStepIndex -= 1
-                    draggedStepOffset += stepHeight
-                  }
-                },
-                onDragEnd = {
-                  draggedStepIndex = -1
-                  draggedStepOffset = 0f
-                },
-                modifier = Modifier.weight(1f)
-              )
-            }
-
-            if (index < steps.value.lastIndex) {
-              Spacer(modifier = Modifier.height(12.dp))
-            }
-          }
-        }
-      }
-
-      // Bottom spacing
-      item {
-        Spacer(modifier = Modifier.height(32.dp))
-      }
-    }
-  }
-}
-
-/**
- * Section card with title, icon, and content
- */
-@Composable
-private fun SectionCard(
-  title: String,
-  icon: ImageVector,
-  iconBackgroundColor: Color,
-  iconTint: Color,
-  action: (@Composable () -> Unit)? = null,
-  content: @Composable ColumnScope.() -> Unit
-) {
-  PCard(
-    modifier = Modifier
-      .fillMaxWidth(),
-    variant = CardVariant.Elevated,
-    colors = CardColors(
-      containerColor = MaterialTheme.colorScheme.surface,
-      contentColor = MaterialTheme.colorScheme.onSurface
-    )
-  ) {
-    Column(
-      modifier = Modifier.padding(4.dp)
-    ) {
-      // Header
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-          // Icon with background
-          Box(
-            modifier = Modifier
-              .size(40.dp)
-              .clip(RoundedCornerShape(12.dp))
-              .background(iconBackgroundColor),
-            contentAlignment = Alignment.Center
-          ) {
-            Icon(
-              icon,
-              contentDescription = null,
-              tint = iconTint,
-              modifier = Modifier.size(22.dp)
-            )
-          }
-          PText(
-            title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-          )
-        }
-        action?.invoke()
-      }
-
-      Spacer(modifier = Modifier.height(16.dp))
-
-      content()
-    }
-  }
-}
-
-/**
- * Add button with icon
- */
-@Composable
-private fun AddButton(
-  onClick: () -> Unit,
-  color: Color
-) {
-  PContainer(
-    onClick = onClick,
-    shape = CircleShape,
-    color = color.copy(alpha = 0.1f),
-    modifier = Modifier.size(36.dp)
-  ) {
-    Box(contentAlignment = Alignment.Center) {
-      Icon(
-        Icons.Default.Add,
-        contentDescription = "添加",
-        tint = color,
-        modifier = Modifier.size(20.dp)
+  AddRecipeContent(
+    isEditMode = isEditMode,
+    name = name.value,
+    type = type.value,
+    icon = icon.value,
+    imageBase64 = imageBase64,
+    difficulty = difficulty.value,
+    estimatedTime = estimatedTime.value,
+    ingredients = ingredients.value,
+    steps = steps.value,
+    tags = tags.value,
+    isSaving = isSaving.value,
+    draggedStepIndex = draggedStepIndex,
+    draggedStepOffset = draggedStepOffset,
+    onNameChange = { setName(it) },
+    onTypeChange = { setType(it) },
+    onIconChange = { setIcon(it) },
+    onImageChange = { imageBase64 = it },
+    onDifficultyChange = { setDifficulty(it) },
+    onEstimatedTimeChange = { setEstimatedTime(it) },
+    onIngredientsChange = { setIngredients(it) },
+    onStepsChange = { setSteps(it) },
+    onTagsChange = { setTags(it) },
+    onDraggedStepIndexChange = { draggedStepIndex = it },
+    onDraggedStepOffsetChange = { draggedStepOffset = it },
+    onNavigateUp = { navController.navigateUp() },
+    onAIAnalysisClick = { navController.navigate(com.eatwhat.navigation.Destinations.AIAnalysis.route) },
+    onSave = onSave,
+    recipeIconPicker = { selectedEmoji, selectedImageBase64, recipeType, onEmojiSelected, onImageSelected, onImageCleared, modifier ->
+      RecipeIconPicker(
+        selectedEmoji = selectedEmoji,
+        selectedImageBase64 = selectedImageBase64,
+        recipeType = recipeType,
+        onEmojiSelected = onEmojiSelected,
+        onImageSelected = onImageSelected,
+        onImageCleared = onImageCleared,
+        modifier = modifier.fillMaxWidth()
       )
     }
-  }
-}
-
-/**
- * Recipe type chip with emoji and color
- */
-@Composable
-private fun RecipeTypeChip(
-  type: RecipeType,
-  isSelected: Boolean,
-  onClick: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  val (emoji, label, color) = when (type) {
-    RecipeType.MEAT -> Triple("🥩", "荤菜", MeatRed)
-    RecipeType.VEG -> Triple("🥬", "素菜", VegGreen)
-    RecipeType.SOUP -> Triple("🍲", "汤", SoupBlue)
-    RecipeType.STAPLE -> Triple("🍚", "主食", StapleOrange)
-    RecipeType.OTHER -> Triple("🥣", "其他", OtherPurple)
-  }
-
-  PContainer(
-    onClick = onClick,
-    shape = RoundedCornerShape(12.dp),
-    color = if (isSelected) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
-    border = if (isSelected) {
-      androidx.compose.foundation.BorderStroke(2.dp, color)
-    } else null,
-    modifier = modifier
-  ) {
-    Column(
-      modifier = Modifier
-        .padding(vertical = 12.dp, horizontal = 8.dp),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-      PText(emoji, fontSize = 20.sp)
-      PText(
-        label,
-        style = MaterialTheme.typography.labelSmall,
-        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-        color = if (isSelected) color else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-      )
-    }
-  }
-}
-
-/**
- * Difficulty chip with stars
- */
-@Composable
-private fun DifficultyChip(
-  difficulty: Difficulty,
-  isSelected: Boolean,
-  onClick: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  val (label, stars, color) = when (difficulty) {
-    Difficulty.EASY -> Triple("简单", 1, SoftGreen)
-    Difficulty.MEDIUM -> Triple("中等", 2, WarmYellow)
-    Difficulty.HARD -> Triple("困难", 3, MeatRed)
-  }
-
-  PContainer(
-    onClick = onClick,
-    shape = RoundedCornerShape(12.dp),
-    color = if (isSelected) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
-    border = if (isSelected) {
-      androidx.compose.foundation.BorderStroke(2.dp, color)
-    } else null,
-    modifier = modifier
-  ) {
-    Column(
-      modifier = Modifier
-        .padding(vertical = 12.dp, horizontal = 8.dp),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-      Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-        repeat(stars) {
-          Icon(
-            Icons.Default.Star,
-            contentDescription = null,
-            tint = if (isSelected) color else Color.Gray.copy(alpha = 0.4f),
-            modifier = Modifier.size(14.dp)
-          )
-        }
-      }
-      PText(
-        label,
-        style = MaterialTheme.typography.labelSmall,
-        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-        color = if (isSelected) color else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-      )
-    }
-  }
-}
-
-/**
- * Ingredient input card with modern design
- */
-@Composable
-private fun IngredientInputCard(
-  index: Int,
-  ingredient: IngredientInput,
-  onIngredientChange: (IngredientInput) -> Unit,
-  onDelete: () -> Unit,
-  canDelete: Boolean
-) {
-  PContainer(
-    shape = RoundedCornerShape(16.dp),
-    color = MaterialTheme.colorScheme.surfaceVariant,
-    border = androidx.compose.foundation.BorderStroke(1.dp, SoftGreen.copy(alpha = 0.2f)),
-    modifier = Modifier.fillMaxWidth()
-  ) {
-    Row(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(12.dp),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-      // Index badge
-      Box(
-        modifier = Modifier
-          .size(28.dp)
-          .clip(CircleShape)
-          .background(SoftGreen.copy(alpha = 0.1f)),
-        contentAlignment = Alignment.Center
-      ) {
-        PText(
-          "${index + 1}",
-          style = MaterialTheme.typography.labelMedium,
-          fontWeight = FontWeight.Bold,
-          color = SoftGreen
-        )
-      }
-
-      // Name input
-      Column(modifier = Modifier.weight(1f)) {
-        PText(
-          "食材",
-          style = MaterialTheme.typography.labelSmall,
-          color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-        )
-        BasicTextField(
-          value = ingredient.name,
-          onValueChange = { onIngredientChange(ingredient.copy(name = it)) },
-          textStyle = MaterialTheme.typography.bodyMedium.copy(
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Medium
-          ),
-          singleLine = true,
-          decorationBox = { innerTextField ->
-            Box {
-              if (ingredient.name.isEmpty()) {
-                PText(
-                  "例如：鸡蛋",
-                  style = MaterialTheme.typography.bodyMedium,
-                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                )
-              }
-              innerTextField()
-            }
-          }
-        )
-      }
-
-      // Amount and unit row
-      Row(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        // Amount input
-        PContainer(
-          shape = RoundedCornerShape(8.dp),
-          color = MaterialTheme.colorScheme.surface,
-          border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-          ),
-          modifier = Modifier.width(50.dp)
-        ) {
-          BasicTextField(
-            value = ingredient.amount,
-            onValueChange = { onIngredientChange(ingredient.copy(amount = it)) },
-            textStyle = MaterialTheme.typography.bodyMedium.copy(
-              color = MaterialTheme.colorScheme.onSurface,
-              textAlign = TextAlign.Center
-            ),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
-            decorationBox = { innerTextField ->
-              Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxWidth()
-              ) {
-                if (ingredient.amount.isEmpty()) {
-                  PText(
-                    "数量",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                  )
-                }
-                innerTextField()
-              }
-            }
-          )
-        }
-
-        // Unit selector
-        PSelect(
-          options = IngredientUnit.entries.map { unit ->
-            SelectOption(
-              label = unit.getDisplayName(),
-              value = unit
-            )
-          },
-          value = ingredient.unit,
-          onValueChange = { unit -> onIngredientChange(ingredient.copy(unit = unit)) },
-          modifier = Modifier.width(72.dp),
-          size = ComponentSize.Small,
-          status = ComponentStatus.Success,
-          colors = SelectDefaults.colors(
-            textColor = SoftGreen,
-            placeholderColor = SoftGreen,
-            disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            containerColor = SoftGreen.copy(alpha = 0.1f),
-            dropdownContainerColor = MaterialTheme.colorScheme.surface,
-            optionTextColor = MaterialTheme.colorScheme.onSurface,
-            selectedOptionTextColor = SoftGreen,
-            selectedOptionContainerColor = SoftGreen.copy(alpha = 0.1f),
-            disabledOptionTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-          )
-        )
-      }
-
-      // Delete button
-      if (canDelete) {
-        IconButton(
-          onClick = onDelete,
-          modifier = Modifier.size(32.dp)
-        ) {
-          Icon(
-            Icons.Outlined.Close,
-            contentDescription = "删除",
-            tint = Color.Gray.copy(alpha = 0.5f),
-            modifier = Modifier.size(18.dp)
-          )
-        }
-      }
-    }
-  }
-}
-
-/**
- * Step content card with drag support
- */
-@Composable
-private fun StepContentCard(
-  stepNumber: Int,
-  step: StepInput,
-  onStepChange: (StepInput) -> Unit,
-  onDelete: () -> Unit,
-  canDelete: Boolean,
-  onDragStart: () -> Unit = {},
-  onDrag: (Float) -> Unit = {},
-  onDragEnd: () -> Unit = {},
-  modifier: Modifier = Modifier
-) {
-  val isDark = LocalDarkTheme.current
-  val stepBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else StepCardBackground
-  val focusRequester by useCreation { FocusRequester() }
-
-  PContainer(
-    shape = RoundedCornerShape(16.dp),
-    color = stepBackground,
-    border = androidx.compose.foundation.BorderStroke(1.dp, SoftBlue.copy(alpha = 0.2f)),
-    modifier = modifier
-      .pointerInput(stepNumber) {
-        detectDragGesturesAfterLongPress(
-          onDragStart = { onDragStart() },
-          onDrag = { _, dragAmount -> onDrag(dragAmount.y) },
-          onDragEnd = { onDragEnd() },
-          onDragCancel = { onDragEnd() }
-        )
-      }
-  ) {
-    Column(
-      modifier = Modifier.padding(12.dp)
-    ) {
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        PText(
-          "步骤 $stepNumber",
-          style = MaterialTheme.typography.labelMedium,
-          color = SoftBlue,
-          fontWeight = FontWeight.SemiBold
-        )
-        if (canDelete) {
-          IconButton(
-            onClick = onDelete,
-            modifier = Modifier.size(24.dp)
-          ) {
-            Icon(
-              Icons.Outlined.Close,
-              contentDescription = "删除",
-              tint = Color.Gray.copy(alpha = 0.5f),
-              modifier = Modifier.size(16.dp)
-            )
-          }
-        }
-      }
-
-      Spacer(modifier = Modifier.height(8.dp))
-
-      BasicTextField(
-        value = step.description,
-        onValueChange = { onStepChange(step.copy(description = it)) },
-        textStyle = MaterialTheme.typography.bodyMedium.copy(
-          color = MaterialTheme.colorScheme.onSurface,
-          lineHeight = 22.sp
-        ),
-        modifier = Modifier
-          .fillMaxWidth()
-          .focusRequester(focusRequester),
-        decorationBox = { innerTextField ->
-          Box {
-            if (step.description.isEmpty()) {
-              PText(
-                "描述这一步的操作...",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-              )
-            }
-            innerTextField()
-          }
-        }
-      )
-    }
-  }
-}
-
-data class IngredientInput(
-  val name: String = "",
-  val amount: String = "",
-  val unit: IngredientUnit = IngredientUnit.G
-)
-
-data class StepInput(
-  val description: String = ""
-)
-
-/**
- * Get display name for Unit enum in Chinese
- */
-private fun IngredientUnit.getDisplayName(): String {
-  return when (this) {
-    IngredientUnit.G -> "克"
-    IngredientUnit.ML -> "毫升"
-    IngredientUnit.PIECE -> "个"
-    IngredientUnit.SPOON -> "勺"
-    IngredientUnit.MODERATE -> "适量"
-  }
-}
-
-/**
- * Step connector with insert button in the center
- */
-@Composable
-fun StepConnectorWithInsert(
-  onInsertStep: () -> Unit
-) {
-  Column(
-    horizontalAlignment = Alignment.CenterHorizontally,
-    modifier = Modifier.width(40.dp)
-  ) {
-    // Top connector line
-    Box(
-      modifier = Modifier
-        .width(2.dp)
-        .height(24.dp)
-        .background(SoftBlue.copy(alpha = 0.3f))
-    )
-
-    // Insert button
-    PContainer(
-      onClick = onInsertStep,
-      shape = CircleShape,
-      color = SoftBlue.copy(alpha = 0.1f),
-      modifier = Modifier.size(32.dp)
-    ) {
-      Box(contentAlignment = Alignment.Center) {
-        Icon(
-          Icons.Default.Add,
-          contentDescription = "在此处插入步骤",
-          tint = SoftBlue,
-          modifier = Modifier.size(18.dp)
-        )
-      }
-    }
-
-    // Bottom connector line
-    Box(
-      modifier = Modifier
-        .width(2.dp)
-        .height(24.dp)
-        .background(SoftBlue.copy(alpha = 0.3f))
-    )
-  }
+  )
 }
