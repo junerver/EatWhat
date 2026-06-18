@@ -23,7 +23,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -66,6 +65,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.message.MessageType
 import xyz.junerver.compose.palette.components.message.rememberMessageState
@@ -281,7 +281,7 @@ private fun RollResultContent(
         modifier = Modifier.fillMaxSize()
     ) {
         // 顶部返回栏
-        Surface(
+        PContainer(
             color = MaterialTheme.colorScheme.surface,
             shadowElevation = 2.dp
         ) {
@@ -364,7 +364,7 @@ private fun RollResultContent(
         }
 
         // 底部操作按钮
-        Surface(
+        PContainer(
             color = MaterialTheme.colorScheme.surface,
             shadowElevation = 8.dp
         ) {
@@ -469,7 +469,7 @@ private fun DishCard(
             Spacer(modifier = Modifier.width(8.dp))
 
             // 右侧重新Roll按钮
-            Surface(
+            PContainer(
                 onClick = onReRoll,
                 shape = CircleShape,
                 color = PrimaryOrange.copy(alpha = 0.1f),
