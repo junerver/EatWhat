@@ -28,7 +28,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
@@ -56,6 +55,7 @@ import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.palette.components.text.PText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -183,7 +183,7 @@ fun RollScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(20.dp))
 
             // Title
-            Text(
+            PText(
                 text = "🍜 吃点啥",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontSize = 36.sp,
@@ -192,7 +192,7 @@ fun RollScreen(navController: NavController) {
                 color = Color.White
             )
 
-            Text(
+            PText(
                 text = "今天做什么菜？让我帮你决定",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White.copy(alpha = 0.9f),
@@ -215,9 +215,9 @@ fun RollScreen(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(text = "🎲", fontSize = 56.sp)
+                    PText(text = "🎲", fontSize = 56.sp)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
+                    PText(
                         text = "Roll 一下！",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
@@ -280,10 +280,10 @@ fun RollScreen(navController: NavController) {
                     }
 
                     // Show remaining allocation hint
-                val allocated = meatCount.value + vegCount.value + soupCount.value
-                val remaining = totalCount.value - allocated
+                    val allocated = meatCount.value + vegCount.value + soupCount.value
+                    val remaining = totalCount.value - allocated
                     if (remaining > 0) {
-                        Text(
+                        PText(
                           text = "还有 $remaining 个菜未分配,将自动随机分配",
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.8f)
@@ -363,8 +363,8 @@ private fun ConfigButton(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(emoji, fontSize = 20.sp)
-            Text(
+            PText(emoji, fontSize = 20.sp)
+            PText(
                 text = label,
                 color = Color.White,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
@@ -392,8 +392,8 @@ private fun TypeConfigChip(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(emoji, fontSize = 16.sp)
-            Text(
+            PText(emoji, fontSize = 16.sp)
+            PText(
                 text = if (count > 0) "$label$count" else label,
                 color = if (count > 0) color else Color.White,
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium)
@@ -422,9 +422,9 @@ private fun SelectorDialog(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(emoji, fontSize = 40.sp)
+                PText(emoji, fontSize = 40.sp)
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(
+                PText(
                     text = title,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
@@ -453,7 +453,7 @@ private fun SelectorDialog(
                   }
                 }
 
-                Text(
+                PText(
                   text = "${count.value}",
                   style = MaterialTheme.typography.displayMedium.copy(
                     fontWeight = FontWeight.Bold,
@@ -500,7 +500,7 @@ private fun SelectorDialog(
                       .height(48.dp)
                   ) {
                     Box(contentAlignment = Alignment.Center) {
-                      Text(
+                      PText(
                         text = "$option",
                         style = MaterialTheme.typography.titleMedium.copy(
                           fontWeight = FontWeight.Bold
@@ -525,7 +525,7 @@ private fun SelectorDialog(
                   containerColor = PrimaryOrange
                 )
               ) {
-                Text(
+                PText(
                   text = "确定",
                   style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold
@@ -557,9 +557,9 @@ private fun TypeSelectorDialog(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(emoji, fontSize = 40.sp)
+                PText(emoji, fontSize = 40.sp)
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(
+                PText(
                     text = title,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
@@ -583,7 +583,7 @@ private fun TypeSelectorDialog(
                                     border = BorderStroke(1.dp, color.copy(alpha = 0.3f)),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text(
+                                    PText(
                                         text = count.toString(),
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontWeight = FontWeight.Medium
