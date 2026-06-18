@@ -35,8 +35,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -52,7 +50,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -73,6 +70,9 @@ import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.hooks.useTimeoutFn
+import xyz.junerver.compose.palette.components.card.CardColors
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -104,7 +104,6 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
   // Dark mode support
   val isDark = com.eatwhat.ui.theme.LocalDarkTheme.current
   val pageBackground = if (isDark) MaterialTheme.colorScheme.background else Color(0xFFF5F5F5)
-  val cardBackground = if (isDark) MaterialTheme.colorScheme.surface else Color.White
   val inputBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF8F8F8)
   val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else Color.Black
   val subTextColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
@@ -283,19 +282,12 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
       verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
       // Configuration Card
-      Card(
+      PCard(
         modifier = Modifier
-          .fillMaxWidth()
-          .shadow(
-            elevation = 4.dp,
-            shape = RoundedCornerShape(20.dp),
-            spotColor = Color.Black.copy(alpha = 0.1f)
-          ),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = cardBackground)
+          .fillMaxWidth(),
+        variant = CardVariant.Elevated
       ) {
         Column(
-          modifier = Modifier.padding(20.dp),
           verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
           // Header
@@ -444,23 +436,19 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
         enter = fadeIn() + expandVertically(),
         exit = fadeOut() + shrinkVertically()
       ) {
-        Card(
+        PCard(
           modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-              elevation = 2.dp,
-              shape = RoundedCornerShape(20.dp),
-              spotColor = Color.Black.copy(alpha = 0.05f)
-            ),
-          shape = RoundedCornerShape(20.dp),
-          colors = CardDefaults.cardColors(
+            .fillMaxWidth(),
+          variant = CardVariant.Filled,
+          colors = CardColors(
             containerColor = if (testSuccess.value)
               if (isDark) Color(0xFF1E331E) else Color(0xFFF8FBF8)
             else
-              if (isDark) Color(0xFF331E1E) else Color(0xFFFFF8F8)
+              if (isDark) Color(0xFF331E1E) else Color(0xFFFFF8F8),
+            contentColor = textColor
           )
         ) {
-          Column(modifier = Modifier.padding(20.dp)) {
+          Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
               Icon(
                 imageVector = if (testSuccess.value) Icons.Default.CheckCircle else Icons.Default.Error,
@@ -493,19 +481,12 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
         enter = fadeIn() + expandVertically(),
         exit = fadeOut() + shrinkVertically()
       ) {
-        Card(
+        PCard(
           modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-              elevation = 4.dp,
-              shape = RoundedCornerShape(20.dp),
-              spotColor = Color.Black.copy(alpha = 0.1f)
-            ),
-          shape = RoundedCornerShape(20.dp),
-          colors = CardDefaults.cardColors(containerColor = cardBackground)
+            .fillMaxWidth(),
+          variant = CardVariant.Elevated
         ) {
           Column(
-            modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
           ) {
             // Header
