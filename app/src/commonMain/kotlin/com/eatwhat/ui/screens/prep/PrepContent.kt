@@ -1,0 +1,296 @@
+package com.eatwhat.ui.screens.prep
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.eatwhat.domain.usecase.PrepListItem
+import com.eatwhat.ui.components.AppToolbar
+import com.eatwhat.ui.theme.DarkProgressTrack
+import com.eatwhat.ui.theme.LightBorder
+import com.eatwhat.ui.theme.LocalDarkTheme
+import com.eatwhat.ui.theme.PrimaryOrange
+import com.eatwhat.ui.theme.SoftGreen
+import com.eatwhat.ui.theme.UnselectedBackground
+import xyz.junerver.compose.palette.components.button.ButtonColors
+import xyz.junerver.compose.palette.components.button.PButton
+import xyz.junerver.compose.palette.components.card.CardColors
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.container.PContainer
+import xyz.junerver.compose.palette.components.progress.PProgress
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
+import xyz.junerver.compose.palette.components.text.PText
+
+@Composable
+fun PrepContent(
+    prepList: List<PrepListItem>,
+    isStartDisabled: Boolean,
+    onNavigateUp: () -> Unit,
+    onCheckedChange: (index: Int, item: PrepListItem, checked: Boolean) -> Unit,
+    onStartCooking: () -> Unit
+) {
+    val checkedCount = prepList.count { it.isChecked }
+    val totalCount = prepList.size
+    val progress = if (totalCount > 0) checkedCount.toFloat() / totalCount else 0f
+
+    PScaffold(
+        topBar = {
+            PContainer(
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 2.dp
+            ) {
+                Column {
+                    AppToolbar(
+                        title = "准备食材",
+                        onNavigateUp = onNavigateUp
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            PText(
+                                text = "备菜进度",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            PText(
+                                text = "$checkedCount / $totalCount",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (checkedCount == totalCount) SoftGreen else PrimaryOrange
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val isDarkForProgress = LocalDarkTheme.current
+                        val progressTrackColor = if (isDarkForProgress) DarkProgressTrack else LightBorder
+                        PProgress(
+                            percent = progress * 100f,
+                            modifier = Modifier.fillMaxWidth(),
+                            progressColor = if (checkedCount == totalCount) SoftGreen else PrimaryOrange,
+                            trackColor = progressTrackColor,
+                            formatter = null
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        },
+        colors = ScaffoldDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                item {
+                    PCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        variant = CardVariant.Elevated,
+                        colors = CardColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(SoftGreen.copy(alpha = 0.1f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Outlined.ShoppingCart,
+                                    contentDescription = null,
+                                    tint = SoftGreen,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                            Column {
+                                PText(
+                                    text = "食材清单",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                PText(
+                                    text = "共${totalCount}种食材",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+
+                itemsIndexed(prepList, key = { _, item -> "${item.name}_${item.unit}" }) { index, item ->
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        IngredientCheckCard(
+                            index = index + 1,
+                            item = item,
+                            onCheckedChange = { checked ->
+                                onCheckedChange(index, item, checked)
+                            }
+                        )
+                    }
+                }
+            }
+
+            PContainer(
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 8.dp
+            ) {
+                PButton(
+                    text = if (checkedCount == totalCount) "✓ 开始做菜" else "开始做菜",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    disabled = isStartDisabled,
+                    colors = ButtonColors(
+                        containerColor = PrimaryOrange,
+                        contentColor = Color.White
+                    ),
+                    onClick = onStartCooking
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun IngredientCheckCard(
+    index: Int,
+    item: PrepListItem,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val isDark = LocalDarkTheme.current
+    val uncheckedBackground = if (isDark) MaterialTheme.colorScheme.surface else Color.White
+    val uncheckedCheckboxColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else UnselectedBackground
+
+    val backgroundColor = if (item.isChecked) SoftGreen.copy(alpha = 0.1f) else uncheckedBackground
+    val textDecoration = if (item.isChecked) TextDecoration.LineThrough else null
+    val textOpacity = if (item.isChecked) 0.6f else 1f
+
+    PCard(
+        modifier = Modifier.fillMaxWidth(),
+        variant = if (item.isChecked) CardVariant.Filled else CardVariant.Elevated,
+        colors = CardColors(
+            containerColor = backgroundColor,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        onClick = { onCheckedChange(!item.isChecked) }
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            PContainer(
+                shape = CircleShape,
+                color = if (item.isChecked) SoftGreen else uncheckedCheckboxColor,
+                modifier = Modifier.size(28.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    if (item.isChecked) {
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    } else {
+                        PText(
+                            "$index",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            PText(
+                text = item.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = textOpacity),
+                textDecoration = textDecoration,
+                modifier = Modifier.weight(1f)
+            )
+
+            PText(
+                text = "${item.amount}${formatPrepUnit(item.unit)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (item.isChecked) SoftGreen else MaterialTheme.colorScheme.onSurfaceVariant,
+                textDecoration = textDecoration
+            )
+        }
+    }
+}
+
+private fun formatPrepUnit(unit: String): String {
+    return when (unit) {
+        "G" -> "克"
+        "ML" -> "毫升"
+        "PIECE" -> "个"
+        "SPOON" -> "勺"
+        "MODERATE" -> ""
+        else -> unit
+    }
+}
