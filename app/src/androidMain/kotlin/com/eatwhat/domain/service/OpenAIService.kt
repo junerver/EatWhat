@@ -62,7 +62,7 @@ data class Choice(
   val message: OpenAIMessage
 )
 
-class OpenAIService {
+class OpenAIService : AIService {
   private val client = OkHttpClient.Builder()
     .connectTimeout(60, TimeUnit.SECONDS)
     .readTimeout(60, TimeUnit.SECONDS)
@@ -71,7 +71,7 @@ class OpenAIService {
 
   private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
-  suspend fun fetchModels(config: AIConfig): Result<List<String>> =
+  override suspend fun fetchModels(config: AIConfig): Result<List<String>> =
     withContext(Dispatchers.IO) {
       try {
         val request = Request.Builder()
@@ -98,7 +98,7 @@ class OpenAIService {
       }
     }
 
-  suspend fun testConnection(config: AIConfig): Result<ConnectionTestResult> =
+  override suspend fun testConnection(config: AIConfig): Result<ConnectionTestResult> =
     withContext(Dispatchers.IO) {
       try {
         val messages = listOf(createTextMessage("user", "Hello"))

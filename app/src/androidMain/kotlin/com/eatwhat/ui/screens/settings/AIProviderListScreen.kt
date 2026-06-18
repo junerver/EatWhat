@@ -49,6 +49,7 @@ import com.eatwhat.data.database.entities.AIProviderEntity
 import com.eatwhat.domain.model.AIConfig
 import com.eatwhat.data.repository.AIProviderRepository
 import com.eatwhat.domain.model.ProviderTestState
+import com.eatwhat.domain.service.AIService
 import com.eatwhat.domain.service.OpenAIService
 import com.eatwhat.navigation.Destinations
 import kotlinx.coroutines.async
@@ -72,7 +73,7 @@ fun AIProviderListScreen(navController: NavController) {
   val scope = rememberCoroutineScope()
   val database by useCreation { EatWhatDatabase.getInstance(context) }
   val repository by useCreation { AIProviderRepository(database.aiProviderDao()) }
-  val openAIService by useCreation { OpenAIService() }
+  val openAIService: AIService by useCreation { OpenAIService() }
 
   val providers by repository.allProviders.collectAsState(initial = emptyList())
 

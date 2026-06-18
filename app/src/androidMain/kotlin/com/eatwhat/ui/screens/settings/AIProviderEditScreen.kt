@@ -58,6 +58,7 @@ import com.eatwhat.data.database.EatWhatDatabase
 import com.eatwhat.data.database.entities.AIProviderEntity
 import com.eatwhat.domain.model.AIConfig
 import com.eatwhat.data.repository.AIProviderRepository
+import com.eatwhat.domain.service.AIService
 import com.eatwhat.domain.service.OpenAIService
 import com.eatwhat.ui.components.StyledTextField
 import kotlinx.coroutines.flow.first
@@ -85,7 +86,7 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
   val scope = rememberCoroutineScope()
   val database by useCreation { EatWhatDatabase.getInstance(context) }
   val repository by useCreation { AIProviderRepository(database.aiProviderDao()) }
-  val openAIService by useCreation { OpenAIService() }
+  val openAIService: AIService by useCreation { OpenAIService() }
   val focusManager = LocalFocusManager.current
 
   // Form state
