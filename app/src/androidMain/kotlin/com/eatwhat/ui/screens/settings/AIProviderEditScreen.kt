@@ -72,6 +72,10 @@ import xyz.junerver.compose.palette.components.alert.AlertType
 import xyz.junerver.compose.palette.components.alert.PAlert
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.tag.PTag
+import xyz.junerver.compose.palette.components.tag.TagColors
+import xyz.junerver.compose.palette.components.tag.TagSize
+import xyz.junerver.compose.palette.components.tag.TagVariant
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -493,35 +497,21 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
               verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
               availableModels.value.forEach { modelName ->
-                Surface(
-                  onClick = {
-                    setModel(modelName)
-                  },
-                  shape = RoundedCornerShape(12.dp),
-                  color = if (model.value == modelName)
-                    Color(0xFF2196F3).copy(alpha = 0.15f)
-                  else
-                    inputBackground,
-                  border = if (model.value == modelName)
-                    androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2196F3))
-                  else
-                    null,
-                  modifier = Modifier.padding(0.dp)
-                ) {
-                  Text(
-                    text = modelName,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (model.value == modelName)
-                      Color(0xFF2196F3)
+                val selected = model.value == modelName
+                PTag(
+                  text = modelName,
+                  size = TagSize.Large,
+                  variant = if (selected) TagVariant.Outlined else TagVariant.Default,
+                  onClick = { setModel(modelName) },
+                  colors = TagColors(
+                    containerColor = if (selected)
+                      Color(0xFF2196F3).copy(alpha = 0.15f)
                     else
-                      textColor,
-                    fontWeight = if (model.value == modelName)
-                      FontWeight.Bold
-                    else
-                      FontWeight.Normal
+                      inputBackground,
+                    contentColor = if (selected) Color(0xFF2196F3) else textColor,
+                    borderColor = if (selected) Color(0xFF2196F3) else Color.Transparent
                   )
-                }
+                )
               }
             }
           }
