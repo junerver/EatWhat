@@ -28,15 +28,11 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -47,7 +43,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -79,9 +74,13 @@ import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.palette.components.card.CardColors
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
+import xyz.junerver.compose.palette.components.text.PText
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -100,7 +99,7 @@ fun RecipeDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("菜谱详情", fontWeight = FontWeight.Bold) },
+                title = { PText("菜谱详情", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
@@ -144,19 +143,16 @@ fun RecipeDetailScreen(
             ) {
                 // Header Card
                 item {
-                    Card(
+                    PCard(
                         modifier = Modifier
-                          .fillMaxWidth()
-                          .shadow(
-                            elevation = 4.dp,
-                            shape = RoundedCornerShape(20.dp),
-                            spotColor = Color.Black.copy(alpha = 0.1f)
-                          ),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                          .fillMaxWidth(),
+                        variant = CardVariant.Elevated,
+                        colors = CardColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
                     ) {
                         Column(
-                            modifier = Modifier.padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             // Recipe Icon/Image
@@ -169,7 +165,7 @@ fun RecipeDetailScreen(
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             // Recipe Name
-                            Text(
+                            PText(
                                 text = recipeData.name,
                                 style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.Bold,
@@ -317,7 +313,7 @@ fun RecipeDetailScreen(
                     color = PrimaryOrange,
                     strokeWidth = 4.dp
                 )
-                Text(
+                PText(
                     text = "加载中...",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -340,14 +336,14 @@ fun RecipeDetailScreen(
                 )
             },
           title = {
-            Text(
+            PText(
               text = "确认删除",
               style = MaterialTheme.typography.titleLarge,
               fontWeight = FontWeight.Bold
             )
           },
           text = {
-            Text(
+            PText(
               text = "确定要删除这个菜谱吗？此操作无法撤销。",
               style = MaterialTheme.typography.bodyMedium,
               color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
@@ -363,12 +359,12 @@ fun RecipeDetailScreen(
                         }
                     }
                 ) {
-                  Text("删除", color = ErrorRed, fontWeight = FontWeight.Bold)
+                  PText("删除", color = ErrorRed, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { setShowDeleteDialog(false) }) {
-                    Text("取消")
+                    PText("取消")
                 }
             },
           containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
@@ -387,19 +383,17 @@ private fun SectionCard(
     iconTint: Color,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Card(
+    PCard(
         modifier = Modifier
-          .fillMaxWidth()
-          .shadow(
-            elevation = 4.dp,
-            shape = RoundedCornerShape(20.dp),
-            spotColor = Color.Black.copy(alpha = 0.1f)
-          ),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+          .fillMaxWidth(),
+        variant = CardVariant.Elevated,
+        colors = CardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
     ) {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier
         ) {
             // Header
             Row(
@@ -420,7 +414,7 @@ private fun SectionCard(
                         modifier = Modifier.size(22.dp)
                     )
                 }
-                Text(
+                PText(
                     title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
@@ -443,24 +437,15 @@ private fun InfoChip(
     text: String,
     color: Color
 ) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = color.copy(alpha = 0.1f)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(emoji, fontSize = 14.sp)
-            Text(
-                text,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Medium,
-                color = color
-            )
-        }
-    }
+    PTag(
+        text = "$emoji $text",
+        size = TagSize.Large,
+        colors = TagColors(
+            containerColor = color.copy(alpha = 0.1f),
+            contentColor = color,
+            borderColor = Color.Transparent
+        )
+    )
 }
 
 /**
@@ -476,15 +461,16 @@ private fun IngredientRow(
   val isDark = LocalDarkTheme.current
     val rowBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else IngredientCardBackground
 
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = rowBackground,
-        border = androidx.compose.foundation.BorderStroke(1.dp, SoftGreen.copy(alpha = 0.2f))
+    PCard(
+        variant = CardVariant.Filled,
+        colors = CardColors(
+            containerColor = rowBackground,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
     ) {
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(12.dp),
+              .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -500,21 +486,21 @@ private fun IngredientRow(
                       .background(SoftGreen.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
+                    PText(
                         "$index",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = SoftGreen
                     )
                 }
-                Text(
+                PText(
                     name,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
-            Text(
+            PText(
                 text = if (unit == "适量") "适量" else "$amount$unit",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -551,7 +537,7 @@ private fun StepRow(
               ),
             contentAlignment = Alignment.Center
         ) {
-            Text(
+            PText(
                 "$stepNumber",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
@@ -560,17 +546,18 @@ private fun StepRow(
         }
 
         // Step content
-        Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = stepBackground,
-            border = androidx.compose.foundation.BorderStroke(1.dp, SoftBlue.copy(alpha = 0.2f)),
+        PCard(
+            variant = CardVariant.Filled,
+            colors = CardColors(
+                containerColor = stepBackground,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ),
             modifier = Modifier.weight(1f)
         ) {
-            Text(
+            PText(
                 text = description,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(12.dp),
                 lineHeight = 22.sp
             )
         }
