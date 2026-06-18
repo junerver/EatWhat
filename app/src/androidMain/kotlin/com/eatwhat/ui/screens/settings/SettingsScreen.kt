@@ -33,7 +33,6 @@ import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -55,6 +54,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
@@ -78,6 +78,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.radio.PRadio
 import xyz.junerver.compose.palette.components.text.PText
@@ -446,16 +447,24 @@ private fun ExportOptionsDialog(
   val providerCount = dataCount?.third ?: 0
   val hasNoData = recipeCount == 0 && historyCount == 0 && providerCount == 0
 
-  AlertDialog(
-    onDismissRequest = onDismiss,
+  PDialog(
+    onDismiss = onDismiss,
     title = {
       PText(
         text = "选择导出内容",
-        fontWeight = FontWeight.Bold
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(top = 24.dp, start = 24.dp, end = 24.dp),
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center
       )
     },
-    text = {
+    content = {
       Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
         // 无数据警告
@@ -516,10 +525,10 @@ private fun ExportOptionsDialog(
         )
       }
     },
-    confirmButton = {},
-    dismissButton = {
+    actions = {
       PButton(
         text = "取消",
+        modifier = Modifier.weight(1f),
         size = ButtonSize.SMALL,
         type = ButtonType.PLAIN,
         onClick = onDismiss
@@ -540,16 +549,24 @@ private fun ImportPreviewDialog(
   val preview = previewResult.preview
   var selectedStrategy by useState(ConflictStrategy.UPDATE_IF_NEWER)
 
-  AlertDialog(
-    onDismissRequest = onDismiss,
+  PDialog(
+    onDismiss = onDismiss,
     title = {
       PText(
         text = "导入预览",
-        fontWeight = FontWeight.Bold
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(top = 24.dp, start = 24.dp, end = 24.dp),
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center
       )
     },
-    text = {
+    content = {
       Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
       ) {
         // 数据统计
@@ -650,19 +667,19 @@ private fun ImportPreviewDialog(
         }
       }
     },
-    confirmButton = {
-      PButton(
-        text = "开始导入",
-        size = ButtonSize.SMALL,
-        onClick = { onImport(selectedStrategy) }
-      )
-    },
-    dismissButton = {
+    actions = {
       PButton(
         text = "取消",
+        modifier = Modifier.weight(1f),
         size = ButtonSize.SMALL,
         type = ButtonType.PLAIN,
         onClick = onDismiss
+      )
+      PButton(
+        text = "开始导入",
+        modifier = Modifier.weight(1f),
+        size = ButtonSize.SMALL,
+        onClick = { onImport(selectedStrategy) }
       )
     }
   )
@@ -983,16 +1000,24 @@ private fun ThemeSelectionDialog(
   onDismiss: () -> Unit,
   onThemeModeSelect: (ThemeMode) -> Unit
 ) {
-  AlertDialog(
-    onDismissRequest = onDismiss,
+  PDialog(
+    onDismiss = onDismiss,
     title = {
       PText(
         text = "选择主题模式",
-        fontWeight = FontWeight.Bold
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(top = 24.dp, start = 24.dp, end = 24.dp),
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center
       )
     },
-    text = {
+    content = {
       Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
         ThemeModeOption(
@@ -1018,10 +1043,10 @@ private fun ThemeSelectionDialog(
         )
       }
     },
-    confirmButton = {},
-    dismissButton = {
+    actions = {
       PButton(
         text = "取消",
+        modifier = Modifier.weight(1f),
         size = ButtonSize.SMALL,
         type = ButtonType.PLAIN,
         onClick = onDismiss
