@@ -1,6 +1,5 @@
 package com.eatwhat.ui.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,11 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +20,11 @@ import com.eatwhat.ui.theme.OtherPurple
 import com.eatwhat.ui.theme.SoftGreen
 import com.eatwhat.ui.theme.SoupBlue
 import com.eatwhat.ui.theme.StapleOrange
+import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.tag.PTag
+import xyz.junerver.compose.palette.components.tag.TagDefaults
+import xyz.junerver.compose.palette.components.tag.TagSize
+import xyz.junerver.compose.palette.components.text.PText
 
 @Composable
 fun RecipeCard(
@@ -32,19 +32,14 @@ fun RecipeCard(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier
-          .fillMaxWidth()
-          .then(
-            if (onClick != null) Modifier.clickable(onClick = onClick)
-            else Modifier
-          ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    PCard(
+        modifier = modifier.fillMaxWidth(),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier
               .fillMaxWidth()
-              .padding(16.dp),
+              .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Use RecipeIcon component to display either image or emoji
@@ -58,7 +53,7 @@ fun RecipeCard(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
+                PText(
                     text = recipe.name,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
@@ -80,19 +75,13 @@ fun RecipeCard(
                     RecipeType.OTHER -> "其他" to OtherPurple
                   }
 
-                  Surface(
-                    color = typeColor.copy(alpha = 0.1f),
-                    shape = MaterialTheme.shapes.extraSmall
-                  ) {
-                    Text(
-                      text = typeLabel,
-                      style = MaterialTheme.typography.labelSmall,
-                      color = typeColor,
-                      modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                    )
-                  }
+                  PTag(
+                    text = typeLabel,
+                    size = TagSize.Small,
+                    colors = TagDefaults.colors(typeColor)
+                  )
 
-                    Text(
+                    PText(
                         text = when (recipe.difficulty.name) {
                             "EASY" -> "简单"
                             "MEDIUM" -> "中等"
@@ -103,13 +92,13 @@ fun RecipeCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    Text(
+                    PText(
                         text = "·",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    Text(
+                    PText(
                         text = "${recipe.estimatedTime}分钟",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

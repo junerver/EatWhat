@@ -1,52 +1,31 @@
 package com.eatwhat.ui.components
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.eatwhat.ui.theme.InputBackground
-import com.eatwhat.ui.theme.LocalDarkTheme
 import xyz.junerver.compose.hooks.getValue
-import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.text.PText
+import xyz.junerver.compose.palette.components.textfield.BorderTextField
 
 /**
- * 统一的文本输入框组件
- * 支持前置图标、后置图标、密码模式、键盘类型等
+ * 项目输入框兼容层，底层使用 Palette BorderTextField。
  */
 @Composable
 fun StyledTextField(
@@ -64,110 +43,44 @@ fun StyledTextField(
   placeholderColor: Color = Color.Unspecified,
   minLines: Int = 1
 ) {
-  val isDark = LocalDarkTheme.current
   val focusManager = LocalFocusManager.current
-  val focusRequester by useCreation { FocusRequester() }
-
-  // Monitor keyboard state with real-time detection
   val density = LocalDensity.current
   val imeInsets = WindowInsets.ime
   var isKeyboardVisible by useState(false)
 
-  // Track keyboard visibility changes and clear focus when keyboard is dismissed
   LaunchedEffect(Unit) {
-    snapshotFlow {
-      imeInsets.getBottom(density)
-    }.collect { imeBottom ->
+    snapshotFlow { imeInsets.getBottom(density) }.collect { imeBottom ->
       val newState = imeBottom > 0
       if (isKeyboardVisible && !newState) {
-        // Keyboard was visible and now hidden
         focusManager.clearFocus()
       }
       isKeyboardVisible = newState
     }
   }
 
-  val effectiveBackgroundColor = if (backgroundColor != Color.Unspecified) {
-    backgroundColor
-  } else {
-    if (isDark) MaterialTheme.colorScheme.surfaceVariant else InputBackground
-  }
-
-  val effectiveTextColor = if (textColor != Color.Unspecified) {
-    textColor
-  } else {
-    MaterialTheme.colorScheme.onSurface
-  }
-
-  val effectivePlaceholderColor = if (placeholderColor != Color.Unspecified) {
+  val labelColor = if (placeholderColor != Color.Unspecified) {
     placeholderColor
   } else {
-    if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
+    MaterialTheme.colorScheme.onSurfaceVariant
   }
 
   Column(modifier = modifier) {
-    Text(
+    PText(
       text = label,
       style = MaterialTheme.typography.labelMedium,
-      color = effectivePlaceholderColor,
+      color = labelColor,
       modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
     )
-    Surface(
-      shape = RoundedCornerShape(12.dp),
-      color = effectiveBackgroundColor
-    ) {
-      BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        textStyle = TextStyle(
-          fontSize = 16.sp,
-          color = effectiveTextColor
-        ),
-        modifier = Modifier.focusRequester(focusRequester),
-        singleLine = minLines == 1,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        cursorBrush = SolidColor(effectiveTextColor),
-        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-        decorationBox = { innerTextField ->
-          Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-          ) {
-            // Leading icon (前置图标)
-            leadingIcon?.invoke()
-
-            // Text field content
-            Box(modifier = Modifier.weight(1f)) {
-              if (value.isEmpty()) {
-                Text(
-                  text = placeholder,
-                  color = effectivePlaceholderColor.copy(alpha = 0.5f),
-                  fontSize = 16.sp
-                )
-              }
-              innerTextField()
-            }
-
-            // Clear button (当有内容时总是显示)
-            if (value.isNotEmpty()) {
-              Icon(
-                imageVector = Icons.Default.Clear,
-                contentDescription = "Clear",
-                tint = effectivePlaceholderColor,
-                modifier = Modifier
-                  .size(20.dp)
-                  .clickable { onValueChange("") }
-              )
-            }
-
-            // Trailing icon (后置图标，与 Clear 按钮共存)
-            trailingIcon?.invoke()
-          }
-        }
-      )
-    }
+    BorderTextField(
+      value = value,
+      onValueChange = onValueChange,
+      placeholder = placeholder,
+      leadingIcon = leadingIcon,
+      trailingIcon = trailingIcon,
+      clearable = true,
+      singleLine = minLines == 1,
+      keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+      visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
+    )
   }
 }

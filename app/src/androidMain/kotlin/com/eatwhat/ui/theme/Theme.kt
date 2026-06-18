@@ -15,6 +15,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import xyz.junerver.compose.palette.core.theme.PaletteTheme as PaletteDesignTheme
 
 val LocalDarkTheme = compositionLocalOf { false }
 
@@ -105,10 +106,12 @@ fun EatWhatTheme(
     }
 
   CompositionLocalProvider(LocalDarkTheme provides darkTheme) {
-    MaterialTheme(
-      colorScheme = colorScheme,
-      typography = Typography,
-      content = content
-    )
+    PaletteDesignTheme(darkTheme = darkTheme) {
+      MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
+      )
+    }
   }
 }
