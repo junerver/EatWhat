@@ -4,7 +4,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,8 +26,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.RadioButtonChecked
-import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -81,6 +78,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.radio.PRadio
 import xyz.junerver.compose.palette.components.text.PText
 import kotlin.time.Duration.Companion.seconds
 
@@ -531,42 +529,23 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
 
         allProviders.forEach { provider ->
           val isSelected = provider.id == activeProvider?.id
-          Row(
+          PRadio(
+            label = provider.name,
+            description = provider.model,
+            checked = isSelected,
+            checkedColor = PrimaryOrange,
+            labelColor = MaterialTheme.colorScheme.onSurface,
+            descriptionColor = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
               .fillMaxWidth()
-              .clickable {
-                scope.launch {
-                  repository.setActive(provider.id)
-                  showModelSelector = false
-                }
+              .padding(horizontal = 20.dp, vertical = 4.dp),
+            onClick = {
+              scope.launch {
+                repository.setActive(provider.id)
+                showModelSelector = false
               }
-              .padding(horizontal = 20.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Icon(
-              if (isSelected) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
-              contentDescription = null,
-              tint = if (isSelected) PrimaryOrange else MaterialTheme.colorScheme.onSurfaceVariant,
-              modifier = Modifier.size(24.dp)
-            )
-            Column(
-              modifier = Modifier.weight(1f),
-              verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-              PText(
-                provider.name,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
-                color = MaterialTheme.colorScheme.onSurface
-              )
-              PText(
-                provider.model,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-              )
             }
-          }
+          )
         }
       }
     }
