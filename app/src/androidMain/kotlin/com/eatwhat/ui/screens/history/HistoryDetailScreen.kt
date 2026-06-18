@@ -35,8 +35,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
@@ -65,6 +63,7 @@ import com.eatwhat.data.repository.PrepItemRecord
 import com.eatwhat.data.repository.RecipeSnapshot
 import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
+import com.eatwhat.ui.components.StyledTextField
 import com.eatwhat.ui.theme.DarkBorder
 import com.eatwhat.ui.theme.DarkCheckboxBorder
 import com.eatwhat.ui.theme.DarkProgressTrack
@@ -378,17 +377,12 @@ fun HistoryDetailScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
-                        OutlinedTextField(
+                        StyledTextField(
                             value = editingName,
                             onValueChange = { editingName = it },
-                            label = { PText("自定义名称") },
-                            placeholder = { PText("例如：周末家宴、快手晚餐") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = PrimaryOrange,
-                                cursorColor = PrimaryOrange
-                            )
+                            label = "自定义名称",
+                            placeholder = "例如：周末家宴、快手晚餐",
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 },

@@ -36,7 +36,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -50,8 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,6 +59,7 @@ import com.eatwhat.data.repository.SyncRepositoryImpl
 import com.eatwhat.data.sync.SyncMetadata
 import com.eatwhat.data.sync.SyncResult
 import com.eatwhat.navigation.Destinations
+import com.eatwhat.ui.components.StyledTextField
 import com.eatwhat.ui.theme.LocalDarkTheme
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks._useState
@@ -807,13 +805,11 @@ private fun PasswordInputDialog(
         )
       },
         text = {
-            OutlinedTextField(
+            StyledTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { PText("密码") },
-                singleLine = true,
-                visualTransformation = if (showPassword)
-                    VisualTransformation.None else PasswordVisualTransformation(),
+                label = "密码",
+                isPassword = !showPassword,
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
                         Icon(
@@ -823,8 +819,7 @@ private fun PasswordInputDialog(
                         )
                     }
                 },
-              modifier = Modifier.fillMaxWidth(),
-              shape = RoundedCornerShape(12.dp)
+              modifier = Modifier.fillMaxWidth()
             )
         },
         confirmButton = {
