@@ -19,7 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Delete
@@ -40,7 +40,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -74,6 +73,7 @@ import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.segmented.PSegmented
 import xyz.junerver.compose.palette.components.segmented.SegmentedOption
+import xyz.junerver.compose.palette.components.text.PText
 
 /**
  * WebDAV 配置页面 - 美化版本
@@ -128,7 +128,7 @@ fun WebDAVConfigScreen(navController: NavController) {
     topBar = {
       TopAppBar(
         title = {
-          Text(
+          PText(
             text = "WebDAV 配置",
             fontWeight = FontWeight.Bold
           )
@@ -136,7 +136,7 @@ fun WebDAVConfigScreen(navController: NavController) {
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
             Icon(
-              imageVector = Icons.Default.ArrowBack,
+              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
               contentDescription = "返回"
             )
           }
@@ -263,7 +263,7 @@ fun WebDAVConfigScreen(navController: NavController) {
               color = Color.White
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("正在测试...", fontSize = 15.sp)
+            PText("正在测试...", fontSize = 15.sp)
           } else {
             Icon(
               Icons.Default.CheckCircle,
@@ -271,7 +271,7 @@ fun WebDAVConfigScreen(navController: NavController) {
               modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("测试连接", fontSize = 15.sp, fontWeight = FontWeight.Medium)
+            PText("测试连接", fontSize = 15.sp, fontWeight = FontWeight.Medium)
           }
         }
 
@@ -299,13 +299,13 @@ fun WebDAVConfigScreen(navController: NavController) {
           verticalAlignment = Alignment.CenterVertically
         ) {
           Column(modifier = Modifier.weight(1f)) {
-            Text(
+            PText(
               text = "启用加密",
               style = MaterialTheme.typography.bodyLarge,
               fontWeight = FontWeight.Medium,
               color = textColor
             )
-            Text(
+            PText(
               text = "使用密码加密云端数据",
               style = MaterialTheme.typography.bodySmall,
               color = subTextColor
@@ -342,7 +342,7 @@ fun WebDAVConfigScreen(navController: NavController) {
 
           if (encryptionPassword.isBlank()) {
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
+            PText(
               text = "请输入加密密码",
               style = MaterialTheme.typography.bodySmall,
               color = MaterialTheme.colorScheme.error
@@ -373,13 +373,13 @@ fun WebDAVConfigScreen(navController: NavController) {
           verticalAlignment = Alignment.CenterVertically
         ) {
           Column(modifier = Modifier.weight(1f)) {
-            Text(
+            PText(
               text = "启用自动同步",
               style = MaterialTheme.typography.bodyLarge,
               fontWeight = FontWeight.Medium,
               color = textColor
             )
-            Text(
+            PText(
               text = "定期自动同步数据到云端",
               style = MaterialTheme.typography.bodySmall,
               color = subTextColor
@@ -402,7 +402,7 @@ fun WebDAVConfigScreen(navController: NavController) {
               modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
+            PText(
               text = "同步间隔",
               style = MaterialTheme.typography.bodyMedium,
               fontWeight = FontWeight.Medium,
@@ -478,7 +478,7 @@ fun WebDAVConfigScreen(navController: NavController) {
               modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("清除配置")
+            PText("清除配置")
           }
         }
       }
@@ -531,7 +531,7 @@ fun WebDAVConfigScreen(navController: NavController) {
           )
           Spacer(modifier = Modifier.width(8.dp))
         }
-        Text(
+        PText(
           text = if (isSaving) "保存中..." else "保存配置",
           fontSize = 16.sp,
           fontWeight = FontWeight.Bold
@@ -576,7 +576,7 @@ private fun SectionCard(
           )
         }
         Spacer(modifier = Modifier.width(12.dp))
-        Text(
+        PText(
           text = title,
           style = MaterialTheme.typography.titleMedium,
           fontWeight = FontWeight.Bold,
