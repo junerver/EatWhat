@@ -142,8 +142,8 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
   }
 
   // 使用 useGenerateObject 钩子
-  val (recipe, rawJson, isLoading, error, submit, _) = useGenerateObject<RecipeAIResult>(
-    schemaString = RecipeAIResult::class.jsonSchemaString,
+  val generateObject = useGenerateObject<RecipeAIResult>(
+    schema = RecipeAIResult::class.jsonSchemaString,
   ) {
     activeProvider?.let { provider ->
       this.provider = Providers.OpenAI(
@@ -167,6 +167,11 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
     """.trimIndent()
     timeout = 60.seconds
   }
+  val recipe = generateObject.object_
+  val rawJson = generateObject.rawJson
+  val isLoading = generateObject.isLoading
+  val error = generateObject.error
+  val submit = generateObject.submit
 
   // 处理分析结果
   useEffect(recipe.value) {

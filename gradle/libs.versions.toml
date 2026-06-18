@@ -1,7 +1,11 @@
 [versions]
-agp = "8.9.3"
-kotlin = "2.3.0"
-ksp = "2.3.4"
+agp = "8.13.2"
+kotlin = "2.3.21"
+ksp = "2.3.9"
+composePlugin = "1.11.1"
+composeHotReload = "1.1.1"
+composeMaterial3 = "1.9.0"
+composeMaterialIcons = "1.7.3"
 kotlinxSchemaAnnotations = "0.0.2"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -10,7 +14,8 @@ espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.12.2"
 composeBom = "2025.12.01"
-composeHooks = "2.2.2-beta-1"
+composeHooks = "2.3.0"
+palette = "0.1.0"
 room = "2.8.4"
 navigationCompose = "2.9.6"
 mockk = "1.13.8"
@@ -42,10 +47,20 @@ androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+jb-compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "composePlugin" }
+jb-compose-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "composePlugin" }
+jb-compose-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "composePlugin" }
+jb-compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMaterial3" }
+jb-compose-components-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "composePlugin" }
+jb-compose-components-ui-tooling-preview = { group = "org.jetbrains.compose.components", name = "components-ui-tooling-preview", version.ref = "composePlugin" }
+jb-compose-ui-tooling = { group = "org.jetbrains.compose.ui", name = "ui-tooling", version.ref = "composePlugin" }
 
 # ComposeHooks
 compose-hooks = { group = "xyz.junerver.compose", name = "hooks2", version.ref = "composeHooks" }
-compose-ai = { group = "xyz.junerver.compose", name = "hooks2-ai", version.ref = "composeHooks" }
+compose-ai = { group = "xyz.junerver.compose", name = "ai", version.ref = "composeHooks" }
+
+# Palette
+palette = { group = "xyz.junerver.compose", name = "palette", version.ref = "palette" }
 
 # Room
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
@@ -80,11 +95,14 @@ androidx-documentfile = { group = "androidx.documentfile", name = "documentfile"
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 androidx-work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+jb-compose-material-icons-extended = { group = "org.jetbrains.compose.material", name = "material-icons-extended", version.ref = "composeMaterialIcons" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "composePlugin" }
+compose-hot-reload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-

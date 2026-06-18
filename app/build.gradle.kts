@@ -1,14 +1,20 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
+  alias(libs.plugins.kotlin.multiplatform)
   alias(libs.plugins.android.application)
-  alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.jetbrains.compose)
   alias(libs.plugins.kotlin.compose)
   alias(libs.plugins.ksp)
   alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
+  jvmToolchain(21)
+
   compilerOptions {
-    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     freeCompilerArgs.addAll(
       listOf(
         "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
@@ -16,19 +22,97 @@ kotlin {
       )
     )
   }
-  sourceSets.main {
-    kotlin.srcDir("build/generated/ksp/main/kotlin")
+
+  androidTarget {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    compilerOptions {
+      jvmTarget.set(JvmTarget.JVM_17)
+    }
+  }
+
+  jvm("desktop") {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    compilerOptions {
+      jvmTarget.set(JvmTarget.JVM_17)
+    }
+  }
+
+  applyDefaultHierarchyTemplate()
+
+  sourceSets {
+    commonMain.dependencies {
+      implementation(libs.jb.compose.runtime)
+      implementation(libs.jb.compose.foundation)
+      implementation(libs.jb.compose.material3)
+      implementation(libs.jb.compose.ui)
+      implementation(libs.jb.compose.components.resources)
+      implementation(libs.jb.compose.components.ui.tooling.preview)
+      implementation(libs.jb.compose.material.icons.extended)
+      implementation(libs.compose.hooks)
+      implementation(libs.palette)
+    }
+
+    androidMain.dependencies {
+      implementation(project.dependencies.platform(libs.androidx.compose.bom))
+      implementation(libs.androidx.compose.ui)
+      implementation(libs.androidx.compose.ui.graphics)
+      implementation(libs.androidx.compose.ui.tooling.preview)
+      implementation(libs.androidx.compose.material3)
+      implementation(libs.androidx.compose.material.icons.extended)
+
+      implementation(libs.compose.ai)
+      implementation(libs.kotlinx.schema.annotations)
+
+      implementation(libs.androidx.room.runtime)
+      implementation(libs.androidx.room.ktx)
+
+      implementation(libs.androidx.navigation.compose)
+      implementation(libs.androidx.lifecycle.runtime.ktx)
+      implementation(libs.androidx.activity.compose)
+      implementation(libs.androidx.core.ktx)
+      implementation(libs.androidx.exifinterface)
+      implementation(libs.coil.compose)
+      implementation(libs.dav4jvm)
+      implementation(libs.okhttp)
+      implementation(libs.kotlinx.serialization.json)
+      implementation(libs.androidx.documentfile)
+      implementation(libs.androidx.security.crypto)
+      implementation(libs.androidx.work.runtime)
+      implementation(libs.androidx.datastore.preferences)
+    }
+
+    val desktopMain by getting {
+      dependencies {
+        implementation(compose.desktop.currentOs)
+      }
+    }
+
+    commonTest.dependencies {
+      implementation(kotlin("test"))
+    }
+
+    androidUnitTest.dependencies {
+      implementation(libs.junit)
+      implementation(libs.mockk)
+      implementation(libs.kotlinx.coroutines.test)
+      implementation(libs.androidx.room.testing)
+    }
   }
 }
 
 ksp {
   arg("kotlinx.schema.withSchemaObject", "true")
   arg("kotlinx.schema.rootPackage", "com.eatwhat")
+  arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 android {
   namespace = "com.eatwhat"
   compileSdk = 36
+
+  sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+  sourceSets["main"].res.srcDirs("src/androidMain/res")
+  sourceSets["main"].resources.srcDirs("src/commonMain/resources")
 
   defaultConfig {
     applicationId = "com.eatwhat"
@@ -78,75 +162,35 @@ android {
     compose = true
   }
 
-  // Kotlin 2.0+ 不再需要 composeOptions，使用 Compose Compiler 插件替代
-
   packaging {
     resources {
       excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
   }
+
+  dependencies {
+    debugImplementation(libs.jb.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+  }
+}
+
+compose.desktop {
+  application {
+    mainClass = "com.eatwhat.MainKt"
+
+    nativeDistributions {
+      targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+      packageName = "EatWhat"
+      packageVersion = "1.0.0"
+    }
+  }
 }
 
 dependencies {
-  // Compose BOM
-  implementation(platform(libs.androidx.compose.bom))
-  implementation(libs.androidx.compose.ui)
-  implementation(libs.androidx.compose.ui.graphics)
-  implementation(libs.androidx.compose.ui.tooling.preview)
-  implementation(libs.androidx.compose.material3)
-  implementation(libs.androidx.compose.material.icons.extended)
-  debugImplementation(libs.androidx.compose.ui.tooling)
-  debugImplementation(libs.androidx.compose.ui.test.manifest)
-
-  // ComposeHooks
-  implementation(libs.compose.hooks)
-  implementation(libs.compose.ai)
-
-  // kotlinx-schema
-  implementation(libs.kotlinx.schema.annotations)
-  ksp("org.jetbrains.kotlinx:kotlinx-schema-ksp:0.0.2")
-
-  // Room
-  implementation(libs.androidx.room.runtime)
-  implementation(libs.androidx.room.ktx)
-  ksp(libs.androidx.room.compiler)
-
-  // Navigation Compose
-  implementation(libs.androidx.navigation.compose)
-
-  // Lifecycle
-  implementation(libs.androidx.lifecycle.runtime.ktx)
-  implementation(libs.androidx.activity.compose)
-
-  // Core
-  implementation(libs.androidx.core.ktx)
-
-  // ExifInterface for image orientation
-  implementation(libs.androidx.exifinterface)
-
-  // Coil for image loading in Compose
-  implementation(libs.coil.compose)
-
-  // Sync & Export
-  implementation(libs.dav4jvm) {
-    exclude(group = "org.ogce", module = "xpp3")
-  }
-  implementation(libs.okhttp)
-  implementation(libs.kotlinx.serialization.json)
-  implementation(libs.androidx.documentfile)
-  implementation(libs.androidx.security.crypto)
-  implementation(libs.androidx.work.runtime)
-
-  // DataStore for preferences
-  implementation(libs.androidx.datastore.preferences)
-
-  // Testing
-  testImplementation(libs.junit)
-  testImplementation(libs.mockk)
-  testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.androidx.room.testing)
-  androidTestImplementation(libs.androidx.junit)
-  androidTestImplementation(libs.androidx.espresso.core)
-  androidTestImplementation(platform(libs.androidx.compose.bom))
-  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+  add("kspAndroid", libs.androidx.room.compiler)
+  add("kspAndroid", "org.jetbrains.kotlinx:kotlinx-schema-ksp:0.0.2")
 }
