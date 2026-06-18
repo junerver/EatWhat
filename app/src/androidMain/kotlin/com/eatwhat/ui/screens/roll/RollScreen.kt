@@ -37,9 +37,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import com.eatwhat.navigation.Destinations
@@ -55,6 +55,7 @@ import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.palette.components.button.ButtonSize
 import xyz.junerver.compose.palette.components.button.PButton
+import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.text.PText
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -412,12 +413,8 @@ private fun SelectorDialog(
 ) {
   val (count, setCount) = useGetState(default = if (initialValue > 0) initialValue else 2)
 
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.padding(16.dp)
-        ) {
+    PDialog(
+      content = {
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -512,19 +509,20 @@ private fun SelectorDialog(
                 }
               }
 
-              Spacer(modifier = Modifier.height(32.dp))
-
-              // Confirm Button
-              PButton(
-                text = "确定",
-                modifier = Modifier
-                  .fillMaxWidth(),
-                size = ButtonSize.LARGE,
-                onClick = { onSelect(count.value) }
-              )
             }
-        }
-    }
+      },
+      actions = {
+        PButton(
+          text = "确定",
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+          size = ButtonSize.LARGE,
+          onClick = { onSelect(count.value) }
+        )
+      },
+      onDismiss = onDismiss
+    )
 }
 
 @Composable
@@ -536,12 +534,8 @@ private fun TypeSelectorDialog(
     onSelect: (Int) -> Unit,
     onDismiss: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.padding(16.dp)
-        ) {
+    PDialog(
+      content = {
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -579,7 +573,7 @@ private fun TypeSelectorDialog(
                                         ),
                                         color = color,
                                         modifier = Modifier.padding(vertical = 14.dp),
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                        textAlign = TextAlign.Center
                                     )
                                 }
                             }
@@ -591,6 +585,7 @@ private fun TypeSelectorDialog(
                     }
                 }
             }
-        }
-    }
+      },
+      onDismiss = onDismiss
+    )
 }
