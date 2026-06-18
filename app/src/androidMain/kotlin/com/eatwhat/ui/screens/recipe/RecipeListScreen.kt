@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -52,7 +51,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -60,6 +58,7 @@ import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeType
+import com.eatwhat.ui.components.AppToolbar
 import com.eatwhat.ui.components.RecipeCard
 import com.eatwhat.ui.theme.InputBackground
 import com.eatwhat.ui.theme.LocalDarkTheme
@@ -113,30 +112,17 @@ fun RecipeListScreen(navController: NavController) {
             modifier = Modifier
               .fillMaxSize()
               .background(MaterialTheme.colorScheme.background)
-              .windowInsetsPadding(WindowInsets.statusBars)
               .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
             // Toolbar
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surface
+            Column(
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .background(MaterialTheme.colorScheme.surface)
             ) {
-                Column {
-                    Row(
-                        modifier = Modifier
-                          .fillMaxWidth()
-                          .height(64.dp)
-                          .padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        PText(
-                            text = "我的菜谱",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f)
-                        )
-                        // 搜索按钮
+                AppToolbar(
+                    title = "我的菜谱",
+                    actions = {
                       IconButton(onClick = { setIsSearching(!isSearching.value) }) {
                             Icon(
                               if (isSearching.value) Icons.Default.Close else Icons.Default.Search,
@@ -145,13 +131,14 @@ fun RecipeListScreen(navController: NavController) {
                             )
                         }
                     }
-                    
-                    // 搜索栏
-                    AnimatedVisibility(
+                )
+                     
+                // 搜索栏
+                AnimatedVisibility(
                       visible = isSearching.value,
                         enter = fadeIn() + expandVertically(),
                         exit = fadeOut() + shrinkVertically()
-                    ) {
+                ) {
                       val searchBackground =
                         if (darkTheme) MaterialTheme.colorScheme.surfaceVariant else InputBackground
                       val iconTint =
@@ -212,7 +199,6 @@ fun RecipeListScreen(navController: NavController) {
                                 }
                             }
                         }
-                    }
                 }
             }
             

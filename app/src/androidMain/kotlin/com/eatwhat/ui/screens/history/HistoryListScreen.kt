@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -40,7 +39,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
@@ -67,6 +65,7 @@ import com.eatwhat.EatWhatApplication
 import com.eatwhat.data.repository.HistoryRepository
 import com.eatwhat.domain.model.HistoryRecord
 import com.eatwhat.navigation.Destinations
+import com.eatwhat.ui.components.AppToolbar
 import com.eatwhat.ui.components.PaletteConfirmDialog
 import com.eatwhat.ui.theme.ErrorRed
 import com.eatwhat.ui.theme.LocalDarkTheme
@@ -150,28 +149,12 @@ fun HistoryListScreen(
         modifier = Modifier
           .fillMaxSize()
           .background(MaterialTheme.colorScheme.background)
-          .windowInsetsPadding(WindowInsets.statusBars)
           .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
         // Toolbar
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surface
-        ) {
-            Row(
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .height(64.dp)
-                  .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                PText(
-                    text = "历史记录",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f)
-                )
+        AppToolbar(
+            title = "历史记录",
+            actions = {
                 // 一键清除按钮（仅当有未锁定记录时显示）
                 if (unlockedCount > 0) {
                     IconButton(onClick = { showClearDialog = true }) {
@@ -191,7 +174,7 @@ fun HistoryListScreen(
                     )
                 }
             }
-        }
+        )
         
         // Content
         if (historyList.isEmpty()) {
