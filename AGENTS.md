@@ -24,8 +24,9 @@ This file serves as the **unified rule set** for all AI development tools workin
 
 - **Language**: Kotlin 2.1.0
 - **UI Framework**: Jetpack Compose (BOM 2025.12.01) - Pure Compose, no XML layouts
-- **State Management**: [ComposeHooks 2.2.1](https://github.com/junerver/ComposeHooks) (hooks2
+- **State Management**: [ComposeHooks 2.3.0](https://github.com/junerver/ComposeHooks) (hooks2
   package)
+- **Component Library**: [Palette 0.1.0](https://github.com/junerver/Palette)
 - **Database**: Room 2.8.4 (SQLite)
 - **Navigation**: Navigation Compose 2.9.6
 - **Design System**: Material Design 3 (Material You)
@@ -37,7 +38,8 @@ This file serves as the **unified rule set** for all AI development tools workin
 // See app/build.gradle.kts for complete dependency list
 implementation(platform("androidx.compose:compose-bom:2025.12.01"))
 implementation("androidx.room:room-runtime:2.8.4")
-implementation("xyz.junerver.compose:hooks2:2.2.1")
+implementation("xyz.junerver.compose:hooks2:2.3.0")
+implementation("xyz.junerver.compose:palette:0.1.0")
 ```
 
 ## 📁 Project Structure
@@ -406,7 +408,7 @@ Surface(
 
 ### ComposeHooks 使用规范
 
-**版本**: ComposeHooks 2.2.1 (hooks2 package)
+**版本**: ComposeHooks 2.3.0 (hooks2 package)
 
 **导入方式**:
 
@@ -809,6 +811,7 @@ data class RecipeEntity(...)
   DAOs)
 - 2025-12-30: Updated dark mode detection to use LocalDarkTheme.current for user-controlled theme
   selection
+- 2026-06-18: Updated ComposeHooks dependency to 2.3.0 and documented Palette 0.1.0 usage
 - 2025-12-29: Updated ComposeHooks usage guidelines (v2.2.1, hooks2 package)
 - 2025-12-29: Updated technology stack versions (Kotlin 2.1.0)
 - 2025-12-25: Added comprehensive dark mode adaptation guidelines
