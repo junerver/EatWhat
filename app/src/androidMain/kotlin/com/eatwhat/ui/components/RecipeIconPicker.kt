@@ -8,7 +8,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,13 +32,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.EmojiEmotions
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,7 +48,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -60,6 +56,10 @@ import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.useState
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.loading.PLoading
+import xyz.junerver.compose.palette.components.tag.PTag
+import xyz.junerver.compose.palette.components.tag.TagColors
+import xyz.junerver.compose.palette.components.tag.TagSize
+import xyz.junerver.compose.palette.components.tag.TagVariant
 import xyz.junerver.compose.palette.components.text.PText
 
 /**
@@ -295,32 +295,19 @@ private fun EmojiChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    Surface(
+    Box(
         modifier = Modifier
           .size(44.dp)
-          .clip(CircleShape)
-          .clickable(onClick = onClick),
-        shape = CircleShape,
-        color = if (isSelected) {
-            MaterialTheme.colorScheme.primaryContainer
-        } else {
-            MaterialTheme.colorScheme.surface
-        },
-        border = if (isSelected) {
-            ButtonDefaults.outlinedButtonBorder
-        } else {
-            null
-        }
+          .clip(CircleShape),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            PText(
-                text = emoji,
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
+        PTag(
+            text = emoji,
+            size = TagSize.Large,
+            variant = if (isSelected) TagVariant.Outlined else TagVariant.Default,
+            onClick = onClick,
+            colors = emojiTagColors(isSelected)
+        )
     }
 }
 
@@ -414,28 +401,36 @@ private fun EmojiGridItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    Surface(
+    Box(
         modifier = Modifier
           .aspectRatio(1f)
-          .clip(RoundedCornerShape(8.dp))
-          .clickable(onClick = onClick),
-        shape = RoundedCornerShape(8.dp),
-        color = if (isSelected) {
+          .clip(RoundedCornerShape(8.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        PTag(
+            text = emoji,
+            size = TagSize.Large,
+            variant = if (isSelected) TagVariant.Outlined else TagVariant.Default,
+            onClick = onClick,
+            colors = emojiTagColors(isSelected)
+        )
+    }
+}
+
+@Composable
+private fun emojiTagColors(isSelected: Boolean): TagColors {
+    return TagColors(
+        containerColor = if (isSelected) {
             MaterialTheme.colorScheme.primaryContainer
         } else {
             MaterialTheme.colorScheme.surface
+        },
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        borderColor = if (isSelected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
         }
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            PText(
-                text = emoji,
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
+    )
 }
 
