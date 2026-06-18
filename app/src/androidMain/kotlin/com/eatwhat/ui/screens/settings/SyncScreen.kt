@@ -42,7 +42,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -74,6 +73,7 @@ import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
 import xyz.junerver.compose.palette.components.button.ButtonSize
+import xyz.junerver.compose.palette.components.button.ButtonType
 import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
@@ -834,12 +834,12 @@ private fun PasswordInputDialog(
             )
         },
         dismissButton = {
-          TextButton(
-            onClick = onDismiss,
-            shape = RoundedCornerShape(12.dp)
-          ) {
-                PText("取消")
-            }
+          PButton(
+            text = "取消",
+            size = ButtonSize.SMALL,
+            type = ButtonType.PLAIN,
+            onClick = onDismiss
+          )
         },
       shape = RoundedCornerShape(20.dp)
     )

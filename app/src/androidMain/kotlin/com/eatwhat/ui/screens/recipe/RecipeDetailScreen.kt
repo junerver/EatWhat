@@ -23,9 +23,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -74,6 +73,9 @@ import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.palette.components.button.ButtonSize
+import xyz.junerver.compose.palette.components.button.ButtonType
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
@@ -265,7 +267,7 @@ fun RecipeDetailScreen(
                 item {
                     SectionCard(
                         title = "烹饪步骤",
-                        icon = Icons.Outlined.MenuBook,
+                        icon = Icons.AutoMirrored.Outlined.MenuBook,
                         iconBackgroundColor = SoftBlue.copy(alpha = 0.1f),
                         iconTint = SoftBlue
                     ) {
@@ -350,7 +352,10 @@ fun RecipeDetailScreen(
                 )
             },
             confirmButton = {
-                TextButton(
+                PButton(
+                    text = "删除",
+                    size = ButtonSize.SMALL,
+                    type = ButtonType.DANGER,
                     onClick = {
                       setShowDeleteDialog(false)
                         scope.launch {
@@ -358,14 +363,15 @@ fun RecipeDetailScreen(
                             navController.navigateUp()
                         }
                     }
-                ) {
-                  PText("删除", color = ErrorRed, fontWeight = FontWeight.Bold)
-                }
+                )
             },
             dismissButton = {
-                TextButton(onClick = { setShowDeleteDialog(false) }) {
-                    PText("取消")
-                }
+                PButton(
+                    text = "取消",
+                    size = ButtonSize.SMALL,
+                    type = ButtonType.PLAIN,
+                    onClick = { setShowDeleteDialog(false) }
+                )
             },
           containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
         )

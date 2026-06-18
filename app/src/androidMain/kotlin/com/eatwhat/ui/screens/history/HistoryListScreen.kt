@@ -44,7 +44,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -79,6 +78,9 @@ import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.button.ButtonSize
+import xyz.junerver.compose.palette.components.button.ButtonType
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
@@ -306,21 +308,25 @@ fun HistoryListScreen(
               )
             },
             confirmButton = {
-                TextButton(
+                PButton(
+                    text = "删除",
+                    size = ButtonSize.SMALL,
+                    type = ButtonType.DANGER,
                     onClick = {
                       showClearDialog = false
                         scope.launch {
                             repository.deleteAllUnlockedHistory()
                         }
                     }
-                ) {
-                  PText("删除", color = ErrorRed, fontWeight = FontWeight.Bold)
-                }
+                )
             },
             dismissButton = {
-                TextButton(onClick = { showClearDialog = false }) {
-                    PText("取消")
-                }
+                PButton(
+                    text = "取消",
+                    size = ButtonSize.SMALL,
+                    type = ButtonType.PLAIN,
+                    onClick = { showClearDialog = false }
+                )
             },
           containerColor = if (darkTheme) MaterialTheme.colorScheme.surface else Color.White
         )

@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,7 +39,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -83,6 +81,9 @@ import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.button.ButtonSize
+import xyz.junerver.compose.palette.components.button.ButtonType
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
@@ -392,24 +393,24 @@ fun HistoryDetailScreen(
                     }
                 },
                 confirmButton = {
-                    TextButton(
+                    PButton(
+                        text = "保存",
+                        size = ButtonSize.SMALL,
                         onClick = {
                             scope.launch {
                                 repository.updateHistoryCustomName(historyId, editingName.trim())
                             }
                             showEditNameDialog = false
-                        },
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = PrimaryOrange
-                        )
-                    ) {
-                        PText("保存")
-                    }
+                        }
+                    )
                 },
                 dismissButton = {
-                    TextButton(onClick = { showEditNameDialog = false }) {
-                        PText("取消")
-                    }
+                    PButton(
+                        text = "取消",
+                        size = ButtonSize.SMALL,
+                        type = ButtonType.PLAIN,
+                        onClick = { showEditNameDialog = false }
+                    )
                 }
             )
         }
