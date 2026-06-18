@@ -34,7 +34,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -73,6 +72,8 @@ import xyz.junerver.compose.palette.components.alert.AlertType
 import xyz.junerver.compose.palette.components.alert.PAlert
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.segmented.PSegmented
+import xyz.junerver.compose.palette.components.segmented.SegmentedOption
 
 /**
  * WebDAV 配置页面 - 美化版本
@@ -422,32 +423,22 @@ fun WebDAVConfigScreen(navController: NavController) {
           )
 
           Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(
+            PSegmented(
+              options = intervalOptions.take(3).map { (interval, label) ->
+                SegmentedOption(interval.toString(), label)
+              },
+              value = syncIntervalMinutes.toString(),
+              onValueChange = { syncIntervalMinutes = it.toInt() },
               modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-              intervalOptions.take(3).forEach { (interval, label) ->
-                FilterChip(
-                  selected = syncIntervalMinutes == interval,
-                  onClick = { syncIntervalMinutes = interval },
-                  label = { Text(label, style = MaterialTheme.typography.bodySmall) },
-                  modifier = Modifier.weight(1f)
-                )
-              }
-            }
-            Row(
+            )
+            PSegmented(
+              options = intervalOptions.drop(3).map { (interval, label) ->
+                SegmentedOption(interval.toString(), label)
+              },
+              value = syncIntervalMinutes.toString(),
+              onValueChange = { syncIntervalMinutes = it.toInt() },
               modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-              intervalOptions.drop(3).forEach { (interval, label) ->
-                FilterChip(
-                  selected = syncIntervalMinutes == interval,
-                  onClick = { syncIntervalMinutes = interval },
-                  label = { Text(label, style = MaterialTheme.typography.bodySmall) },
-                  modifier = Modifier.weight(1f)
-                )
-              }
-            }
+            )
           }
 
           Spacer(modifier = Modifier.height(10.dp))
