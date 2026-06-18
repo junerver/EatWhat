@@ -28,7 +28,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -73,6 +72,8 @@ import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.loading.PLoading
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -92,7 +93,7 @@ fun RecipeDetailScreen(
     val recipe by repository.getRecipeById(recipeId).collectAsState(initial = null)
   val (showDeleteDialog, setShowDeleteDialog) = useGetState(default = false)
 
-    Scaffold(
+    PScaffold(
         topBar = {
             AppToolbar(
                 title = "菜谱详情",
@@ -119,7 +120,9 @@ fun RecipeDetailScreen(
                 }
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        colors = ScaffoldDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
     ) { paddingValues ->
         recipe?.let { recipeData ->
             LazyColumn(

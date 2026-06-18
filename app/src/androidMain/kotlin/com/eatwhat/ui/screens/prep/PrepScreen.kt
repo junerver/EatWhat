@@ -27,7 +27,6 @@ import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -64,6 +63,8 @@ import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.progress.PProgress
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
 import xyz.junerver.compose.palette.components.text.PText
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -122,7 +123,7 @@ fun PrepScreen(
     val totalCount = prepList.size
     val progress = if (totalCount > 0) checkedCount.toFloat() / totalCount else 0f
 
-    Scaffold(
+    PScaffold(
         topBar = {
             Surface(
                 color = MaterialTheme.colorScheme.surface,
@@ -173,7 +174,9 @@ fun PrepScreen(
                 }
             }
         },
-        containerColor = MaterialTheme.colorScheme.background
+        colors = ScaffoldDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
     ) { paddingValues ->
         Column(
             modifier = Modifier

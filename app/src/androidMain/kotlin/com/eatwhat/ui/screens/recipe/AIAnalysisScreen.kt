@@ -29,7 +29,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -75,6 +74,8 @@ import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.radio.PRadio
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
 import xyz.junerver.compose.palette.components.text.PText
 import kotlin.time.Duration.Companion.seconds
 
@@ -224,14 +225,16 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
 
   val isDark = LocalDarkTheme.current
 
-  Scaffold(
+  PScaffold(
     topBar = {
       AppToolbar(
         title = "AI 菜谱分析",
         onNavigateUp = { navController.popBackStack() }
       )
     },
-    containerColor = MaterialTheme.colorScheme.background
+    colors = ScaffoldDefaults.colors(
+      containerColor = MaterialTheme.colorScheme.background
+    )
   ) { padding ->
     LazyColumn(
       modifier = Modifier

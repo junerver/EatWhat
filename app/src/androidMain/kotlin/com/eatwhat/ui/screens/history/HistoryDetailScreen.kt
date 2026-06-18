@@ -31,7 +31,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -84,6 +83,8 @@ import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.progress.PProgress
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -108,7 +109,7 @@ fun HistoryDetailScreen(
   var showEditNameDialog by useState(false)
   var editingName by useState("")
 
-    Scaffold(
+    PScaffold(
         topBar = {
             AppToolbar(
                 title = "菜单详情",
@@ -131,7 +132,9 @@ fun HistoryDetailScreen(
                 }
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        colors = ScaffoldDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
     ) { paddingValues ->
         historyWithRecipes?.let { data ->
             LazyColumn(

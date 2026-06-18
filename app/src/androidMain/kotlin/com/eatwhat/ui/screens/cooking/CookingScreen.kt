@@ -23,7 +23,6 @@ import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,6 +55,8 @@ import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.progress.PProgress
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -88,7 +89,7 @@ fun CookingScreen(
     val totalSteps = recipes.sumOf { it.steps?.size ?: 0 }
     val progress = if (totalSteps > 0) completedSteps.size.toFloat() / totalSteps else 0f
 
-    Scaffold(
+    PScaffold(
         topBar = {
             Column {
                 AppToolbar(
@@ -137,7 +138,9 @@ fun CookingScreen(
                 }
             }
         },
-        containerColor = PageBackground
+        colors = ScaffoldDefaults.colors(
+            containerColor = PageBackground
+        )
     ) { paddingValues ->
         Column(
             modifier = Modifier
