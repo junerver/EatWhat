@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -31,7 +30,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -51,8 +49,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -95,6 +91,7 @@ import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeAIResult
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.domain.model.Tag
+import com.eatwhat.ui.components.AppToolbar
 import com.eatwhat.ui.components.FoodEmojis
 import com.eatwhat.ui.components.RecipeIconPicker
 import com.eatwhat.ui.components.StyledTextField
@@ -275,7 +272,7 @@ fun AddRecipeScreen(
     }
   }
 
-  // Save function extracted for use in TopAppBar
+  // Save function extracted for use in toolbar actions
   val onSave: () -> Unit = {
     // Validation
     if (name.value.isBlank()) {
@@ -346,18 +343,9 @@ fun AddRecipeScreen(
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          PText(
-            if (isEditMode) "编辑菜谱" else "创建新菜谱",
-            fontWeight = FontWeight.Bold
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { navController.navigateUp() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
-          }
-        },
+      AppToolbar(
+        title = if (isEditMode) "编辑菜谱" else "创建新菜谱",
+        onNavigateUp = { navController.navigateUp() },
         actions = {
           // AI Analysis button
           IconButton(
@@ -405,11 +393,7 @@ fun AddRecipeScreen(
             },
             onClick = onSave
           )
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = MaterialTheme.colorScheme.surface
-        ),
-        windowInsets = WindowInsets.statusBars
+        }
       )
     },
     snackbarHost = { SnackbarHost(snackbarHostState) },

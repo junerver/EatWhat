@@ -116,7 +116,7 @@ fun RecipeListScreen(navController: NavController) {
               .windowInsetsPadding(WindowInsets.statusBars)
               .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
-            // TopAppBar
+            // Toolbar
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surface
