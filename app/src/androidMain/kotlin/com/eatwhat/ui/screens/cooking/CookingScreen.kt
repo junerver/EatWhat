@@ -25,8 +25,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -44,7 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,7 +57,14 @@ import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
 import com.eatwhat.ui.theme.UnselectedBackground
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.card.CardColors
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.progress.PProgress
+import xyz.junerver.compose.palette.components.tag.PTag
+import xyz.junerver.compose.palette.components.tag.TagColors
+import xyz.junerver.compose.palette.components.tag.TagSize
+import xyz.junerver.compose.palette.components.text.PText
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,7 +98,7 @@ fun CookingScreen(
             Column {
                 TopAppBar(
                     title = {
-                        Text(
+                        PText(
                             "做菜指导",
                             fontWeight = FontWeight.Bold
                         )
@@ -125,12 +128,12 @@ fun CookingScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
+                            PText(
                                 text = "完成进度",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = Color.Gray
                             )
-                            Text(
+                            PText(
                                 text = "${completedSteps.size} / $totalSteps 步",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.SemiBold,
@@ -207,7 +210,7 @@ fun CookingScreen(
                                             modifier = Modifier.size(16.dp)
                                         )
                                     }
-                                    Text(
+                                    PText(
                                         text = recipe.recipe.name,
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
@@ -238,21 +241,18 @@ fun CookingScreen(
                 ) {
                     // Recipe header
                     item {
-                        Card(
+                        PCard(
                             modifier = Modifier
-                              .fillMaxWidth()
-                              .shadow(
-                                elevation = 4.dp,
-                                shape = RoundedCornerShape(20.dp),
-                                spotColor = Color.Black.copy(alpha = 0.1f)
-                              ),
-                            shape = RoundedCornerShape(20.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White)
+                              .fillMaxWidth(),
+                            variant = CardVariant.Elevated,
+                            colors = CardColors(
+                                containerColor = Color.White,
+                                contentColor = DarkBackground
+                            )
                         ) {
                             Row(
                                 modifier = Modifier
-                                  .fillMaxWidth()
-                                  .padding(20.dp),
+                                  .fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
@@ -271,13 +271,13 @@ fun CookingScreen(
                                     )
                                 }
                                 Column {
-                                    Text(
+                                    PText(
                                         text = recipe.recipe.name,
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold,
                                         color = DarkBackground
                                     )
-                                    Text(
+                                    PText(
                                         text = "共${recipe.steps?.size ?: 0}个步骤",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = Color.Gray
@@ -349,7 +349,7 @@ fun CookingScreen(
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text(
+                        PText(
                             "上一步",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
@@ -380,7 +380,7 @@ fun CookingScreen(
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text(
+                        PText(
                             text = if (isFinished) "✓ 完成" else "下一步",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
@@ -431,7 +431,7 @@ private fun CookingStepCard(
                         modifier = Modifier.size(22.dp)
                     )
                 } else {
-                    Text(
+                    PText(
                         "$stepNumber",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
@@ -454,38 +454,29 @@ private fun CookingStepCard(
         }
 
         // Step content card
-        Card(
+        PCard(
             modifier = Modifier
-                .weight(1f)
-                .shadow(
-                    elevation = if (isCurrent) 4.dp else 0.dp,
-                    shape = RoundedCornerShape(16.dp),
-                    spotColor = Color.Black.copy(alpha = 0.1f)
-                ),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
+                .weight(1f),
+            variant = if (isCurrent) CardVariant.Elevated else CardVariant.Filled,
+            colors = CardColors(
                 containerColor = when {
                     isCompleted -> SoftGreen.copy(alpha = 0.1f)
                     isCurrent -> Color.White
                     else -> InputBackground
-                }
+                },
+                contentColor = DarkBackground
             ),
-            border = when {
-                isCompleted -> androidx.compose.foundation.BorderStroke(1.dp, SoftGreen.copy(alpha = 0.3f))
-                isCurrent -> androidx.compose.foundation.BorderStroke(2.dp, PrimaryOrange)
-                else -> null
-            },
             onClick = onStepClick
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    PText(
                         text = "步骤 $stepNumber",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold,
@@ -496,24 +487,21 @@ private fun CookingStepCard(
                         }
                     )
                     if (isCompleted) {
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = SoftGreen.copy(alpha = 0.1f)
-                        ) {
-                            Text(
-                                "已完成",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = SoftGreen,
-                                fontWeight = FontWeight.Medium,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        PTag(
+                            text = "已完成",
+                            size = TagSize.Small,
+                            colors = TagColors(
+                                containerColor = SoftGreen.copy(alpha = 0.1f),
+                                contentColor = SoftGreen,
+                                borderColor = Color.Transparent
                             )
-                        }
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
+                PText(
                     text = step.description,
                     style = MaterialTheme.typography.bodyMedium,
                     color = when {
