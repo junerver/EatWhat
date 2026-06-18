@@ -1,9 +1,7 @@
 package com.eatwhat.ui.screens.settings
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -27,8 +24,6 @@ import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -44,12 +39,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.data.database.EatWhatDatabase
 import com.eatwhat.data.database.entities.AIProviderEntity
@@ -66,6 +59,11 @@ import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.hooks.useMap
+import xyz.junerver.compose.palette.components.button.ButtonSize
+import xyz.junerver.compose.palette.components.button.PButton
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.empty.PEmpty
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,7 +83,6 @@ fun AIProviderListScreen(navController: NavController) {
   // Dark mode support
   val isDark = com.eatwhat.ui.theme.LocalDarkTheme.current
   val pageBackground = if (isDark) MaterialTheme.colorScheme.background else Color(0xFFF5F5F5)
-  val cardBackground = if (isDark) MaterialTheme.colorScheme.surface else Color.White
   val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else Color.Black
   val subTextColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
   val primaryColor = Color(0xFFFF6B35)
@@ -203,10 +200,8 @@ fun AIProviderListScreen(navController: NavController) {
           AIProviderItem(
             provider = provider,
             testState = testStates[provider.id] ?: ProviderTestState(),
-            isDark = isDark,
             textColor = textColor,
             subTextColor = subTextColor,
-            cardBackground = cardBackground,
             primaryColor = primaryColor,
             onActivate = {
               scope.launch { repository.setActive(provider.id) }
@@ -220,33 +215,30 @@ fun AIProviderListScreen(navController: NavController) {
 
         if (providers.isEmpty()) {
           item {
-            Box(
+            PEmpty(
               modifier = Modifier
                 .fillMaxWidth()
                 .padding(32.dp),
-              contentAlignment = Alignment.Center
-            ) {
-              Column(horizontalAlignment = Alignment.CenterHorizontally) {
+              icon = {
                 Icon(
                   Icons.Default.Settings,
                   contentDescription = null,
-                  tint = subTextColor.copy(alpha = 0.5f),
                   modifier = Modifier.size(64.dp)
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                  text = "暂无配置的供应商",
-                  color = subTextColor,
-                  fontSize = 16.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                  text = "点击右上角 + 添加",
-                  color = subTextColor.copy(alpha = 0.7f),
-                  fontSize = 14.sp
+              },
+              title = "暂无配置的供应商",
+              description = "添加一个供应商后即可进行连接测试和模型选择。",
+              iconColor = subTextColor.copy(alpha = 0.5f),
+              titleColor = subTextColor,
+              descriptionColor = subTextColor.copy(alpha = 0.7f),
+              action = {
+                PButton(
+                  text = "添加供应商",
+                  size = ButtonSize.MEDIUM,
+                  onClick = { navController.navigate(Destinations.AIProviderEdit.createRoute()) }
                 )
               }
-            }
+            )
           }
         }
       }
@@ -258,34 +250,19 @@ fun AIProviderListScreen(navController: NavController) {
 fun AIProviderItem(
   provider: AIProviderEntity,
   testState: ProviderTestState,
-  isDark: Boolean,
   textColor: Color,
   subTextColor: Color,
-  cardBackground: Color,
   primaryColor: Color,
   onActivate: () -> Unit,
   onEdit: () -> Unit,
   onTest: () -> Unit
 ) {
-  Card(
+  PCard(
     modifier = Modifier
-      .fillMaxWidth()
-      .shadow(
-        elevation = if (provider.isActive) 4.dp else 2.dp,
-        shape = RoundedCornerShape(20.dp),
-        spotColor = Color.Black.copy(alpha = 0.1f)
-      )
-      .clickable { onActivate() },
-    shape = RoundedCornerShape(20.dp),
-    colors = CardDefaults.cardColors(containerColor = cardBackground),
-    border = if (provider.isActive) androidx.compose.foundation.BorderStroke(
-      2.dp,
-      primaryColor.copy(alpha = 0.5f)
-    ) else null
+      .fillMaxWidth(),
+    variant = if (provider.isActive) CardVariant.Outlined else CardVariant.Elevated,
+    onClick = onActivate
   ) {
-    Column(
-      modifier = Modifier.padding(16.dp)
-    ) {
       Row(verticalAlignment = Alignment.CenterVertically) {
         // Active Indicator
         Icon(
@@ -380,6 +357,5 @@ fun AIProviderItem(
           }
         }
       }
-    }
   }
 }
