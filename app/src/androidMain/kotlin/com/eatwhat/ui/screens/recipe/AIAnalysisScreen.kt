@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -528,7 +527,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
           modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
         )
 
-        HorizontalDivider()
+        ModelSheetDivider()
 
         allProviders.forEach { provider ->
           val isSelected = provider.id == activeProvider?.id
@@ -572,4 +571,14 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
       }
     }
   }
+}
+
+@Composable
+private fun ModelSheetDivider() {
+  Box(
+    modifier = Modifier
+      .fillMaxWidth()
+      .height(1.dp)
+      .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f))
+  )
 }

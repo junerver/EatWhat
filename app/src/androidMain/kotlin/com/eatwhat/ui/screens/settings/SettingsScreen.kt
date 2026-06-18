@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,7 +35,6 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -280,7 +280,7 @@ fun SettingsScreen(navController: NavController) {
             } ?: "备份菜谱、历史和配置",
             onClick = { showExportDialog = true }
           )
-          HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+          SettingsDivider(modifier = Modifier.padding(horizontal = 16.dp))
           SettingsItem(
             icon = Icons.Default.FileDownload,
             title = "导入数据",
@@ -301,7 +301,7 @@ fun SettingsScreen(navController: NavController) {
             subtitle = "配置云端存储服务器",
             onClick = { navController.navigate(Destinations.WebDAVConfig.route) }
           )
-          HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+          SettingsDivider(modifier = Modifier.padding(horizontal = 16.dp))
           SettingsItem(
             icon = Icons.Default.Sync,
             title = "同步数据",
@@ -592,7 +592,7 @@ private fun ImportPreviewDialog(
                 )
               }
             }
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            SettingsDivider(modifier = Modifier.padding(vertical = 4.dp))
             Row(
               modifier = Modifier.fillMaxWidth(),
               horizontalArrangement = Arrangement.SpaceEvenly
@@ -1088,5 +1088,15 @@ private fun ThemeModeOption(
       }
     }
   }
+}
+
+@Composable
+private fun SettingsDivider(modifier: Modifier = Modifier) {
+  Box(
+    modifier = modifier
+      .fillMaxWidth()
+      .height(1.dp)
+      .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f))
+  )
 }
 
