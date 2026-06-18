@@ -30,7 +30,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -85,6 +85,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.progress.PProgress
 import xyz.junerver.compose.palette.components.tag.PTag
@@ -357,25 +358,42 @@ fun HistoryDetailScreen(
 
         // 编辑名称对话框
         if (showEditNameDialog) {
-            AlertDialog(
-                onDismissRequest = { showEditNameDialog = false },
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = null,
-                        tint = PrimaryOrange
-                    )
-                },
+            PDialog(
+                onDismiss = { showEditNameDialog = false },
                 title = {
-                    PText("编辑名称")
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 24.dp, start = 24.dp, end = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null,
+                            tint = PrimaryOrange
+                        )
+                        PText(
+                            text = "编辑名称",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 },
-                text = {
-                    Column {
+                content = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
                         PText(
                             text = "为这个菜肴搭配起个名字，方便管理收藏",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 16.dp)
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
                         StyledTextField(
                             value = editingName,
@@ -386,9 +404,17 @@ fun HistoryDetailScreen(
                         )
                     }
                 },
-                confirmButton = {
+                actions = {
+                    PButton(
+                        text = "取消",
+                        modifier = Modifier.weight(1f),
+                        size = ButtonSize.SMALL,
+                        type = ButtonType.PLAIN,
+                        onClick = { showEditNameDialog = false }
+                    )
                     PButton(
                         text = "保存",
+                        modifier = Modifier.weight(1f),
                         size = ButtonSize.SMALL,
                         onClick = {
                             scope.launch {
@@ -396,14 +422,6 @@ fun HistoryDetailScreen(
                             }
                             showEditNameDialog = false
                         }
-                    )
-                },
-                dismissButton = {
-                    PButton(
-                        text = "取消",
-                        size = ButtonSize.SMALL,
-                        type = ButtonType.PLAIN,
-                        onClick = { showEditNameDialog = false }
                     )
                 }
             )

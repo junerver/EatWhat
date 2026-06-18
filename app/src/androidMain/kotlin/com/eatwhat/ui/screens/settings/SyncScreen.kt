@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -73,6 +72,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.text.PText
 import java.text.SimpleDateFormat
@@ -795,16 +795,20 @@ private fun PasswordInputDialog(
   var password by useState("")
   var showPassword by useState(false)
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
+    PDialog(
+        onDismiss = onDismiss,
       title = {
         PText(
           "输入加密密码",
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp, start = 24.dp, end = 24.dp),
           style = MaterialTheme.typography.titleLarge,
-          fontWeight = FontWeight.Bold
+          fontWeight = FontWeight.Bold,
+          textAlign = TextAlign.Center
         )
       },
-        text = {
+        content = {
             StyledTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -819,26 +823,27 @@ private fun PasswordInputDialog(
                         )
                     }
                 },
-              modifier = Modifier.fillMaxWidth()
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
             )
         },
-        confirmButton = {
-            PButton(
-              text = "确定",
-              size = ButtonSize.SMALL,
-              disabled = password.isBlank(),
-              onClick = { onConfirm(password) }
-            )
-        },
-        dismissButton = {
+        actions = {
           PButton(
             text = "取消",
+            modifier = Modifier.weight(1f),
             size = ButtonSize.SMALL,
             type = ButtonType.PLAIN,
             onClick = onDismiss
           )
-        },
-      shape = RoundedCornerShape(20.dp)
+            PButton(
+              text = "确定",
+              modifier = Modifier.weight(1f),
+              size = ButtonSize.SMALL,
+              disabled = password.isBlank(),
+              onClick = { onConfirm(password) }
+            )
+        }
     )
 }
 
