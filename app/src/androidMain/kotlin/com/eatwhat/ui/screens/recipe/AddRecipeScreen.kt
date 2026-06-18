@@ -32,18 +32,16 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -56,7 +54,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -123,9 +120,13 @@ import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.card.CardColors
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.tag.PEditableTagGroup
 import xyz.junerver.compose.palette.components.tag.TagDefaults
 import xyz.junerver.compose.palette.components.tag.TagSize
+import xyz.junerver.compose.palette.components.text.PText
 import com.eatwhat.domain.model.Unit as IngredientUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -347,7 +348,7 @@ fun AddRecipeScreen(
     topBar = {
       TopAppBar(
         title = {
-          Text(
+          PText(
             if (isEditMode) "编辑菜谱" else "创建新菜谱",
             fontWeight = FontWeight.Bold
           )
@@ -407,7 +408,7 @@ fun AddRecipeScreen(
                 modifier = Modifier.size(18.dp)
               )
               Spacer(modifier = Modifier.width(4.dp))
-              Text(if (isEditMode) "保存" else "创建")
+              PText(if (isEditMode) "保存" else "创建")
             }
           }
         },
@@ -442,14 +443,14 @@ fun AddRecipeScreen(
             label = "菜名",
             placeholder = "给你的美食起个名字吧",
             leadingIcon = {
-              Text("🍳", fontSize = 20.sp)
+              PText("🍳", fontSize = 20.sp)
             }
           )
 
           Spacer(modifier = Modifier.height(16.dp))
 
           // Type selector with colorful chips
-          Text(
+          PText(
             "菜品类型",
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -472,7 +473,7 @@ fun AddRecipeScreen(
           Spacer(modifier = Modifier.height(16.dp))
 
           // Tags section
-          Text(
+          PText(
             "标签",
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -502,7 +503,7 @@ fun AddRecipeScreen(
           Spacer(modifier = Modifier.height(16.dp))
 
           // Difficulty selector
-          Text(
+          PText(
             "难度等级",
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -539,7 +540,7 @@ fun AddRecipeScreen(
               )
             },
             trailingIcon = {
-              Text(
+              PText(
                 "分钟",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -597,7 +598,7 @@ fun AddRecipeScreen(
       item {
         SectionCard(
           title = "烹饪步骤",
-          icon = Icons.Outlined.MenuBook,
+          icon = Icons.AutoMirrored.Outlined.MenuBook,
           iconBackgroundColor = SoftBlue.copy(alpha = 0.1f),
           iconTint = SoftBlue,
           action = {
@@ -636,7 +637,7 @@ fun AddRecipeScreen(
                     ),
                   contentAlignment = Alignment.Center
                 ) {
-                  Text(
+                  PText(
                     "${index + 1}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
@@ -737,19 +738,17 @@ private fun SectionCard(
   action: (@Composable () -> Unit)? = null,
   content: @Composable ColumnScope.() -> Unit
 ) {
-  Card(
+  PCard(
     modifier = Modifier
-      .fillMaxWidth()
-      .shadow(
-        elevation = 4.dp,
-        shape = RoundedCornerShape(20.dp),
-        spotColor = Color.Black.copy(alpha = 0.1f)
-      ),
-    shape = RoundedCornerShape(20.dp),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+      .fillMaxWidth(),
+    variant = CardVariant.Elevated,
+    colors = CardColors(
+      containerColor = MaterialTheme.colorScheme.surface,
+      contentColor = MaterialTheme.colorScheme.onSurface
+    )
   ) {
     Column(
-      modifier = Modifier.padding(20.dp)
+      modifier = Modifier.padding(4.dp)
     ) {
       // Header
       Row(
@@ -776,7 +775,7 @@ private fun SectionCard(
               modifier = Modifier.size(22.dp)
             )
           }
-          Text(
+          PText(
             title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold
@@ -850,8 +849,8 @@ private fun RecipeTypeChip(
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-      Text(emoji, fontSize = 20.sp)
-      Text(
+      PText(emoji, fontSize = 20.sp)
+      PText(
         label,
         style = MaterialTheme.typography.labelSmall,
         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
@@ -902,7 +901,7 @@ private fun DifficultyChip(
           )
         }
       }
-      Text(
+      PText(
         label,
         style = MaterialTheme.typography.labelSmall,
         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
@@ -947,7 +946,7 @@ private fun IngredientInputCard(
           .background(SoftGreen.copy(alpha = 0.1f)),
         contentAlignment = Alignment.Center
       ) {
-        Text(
+        PText(
           "${index + 1}",
           style = MaterialTheme.typography.labelMedium,
           fontWeight = FontWeight.Bold,
@@ -957,7 +956,7 @@ private fun IngredientInputCard(
 
       // Name input
       Column(modifier = Modifier.weight(1f)) {
-        Text(
+        PText(
           "食材",
           style = MaterialTheme.typography.labelSmall,
           color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -973,7 +972,7 @@ private fun IngredientInputCard(
           decorationBox = { innerTextField ->
             Box {
               if (ingredient.name.isEmpty()) {
-                Text(
+                PText(
                   "例如：鸡蛋",
                   style = MaterialTheme.typography.bodyMedium,
                   color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
@@ -1016,7 +1015,7 @@ private fun IngredientInputCard(
                 modifier = Modifier.fillMaxWidth()
               ) {
                 if (ingredient.amount.isEmpty()) {
-                  Text(
+                  PText(
                     "数量",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
@@ -1046,7 +1045,7 @@ private fun IngredientInputCard(
               verticalAlignment = Alignment.CenterVertically,
               horizontalArrangement = Arrangement.Center
             ) {
-              Text(
+              PText(
                 ingredient.unit.getDisplayName(),
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Medium,
@@ -1068,7 +1067,7 @@ private fun IngredientInputCard(
             IngredientUnit.entries.forEach { unit ->
               DropdownMenuItem(
                 text = {
-                  Text(
+                  PText(
                     unit.getDisplayName(),
                     style = MaterialTheme.typography.bodyMedium
                   )
@@ -1143,7 +1142,7 @@ private fun StepContentCard(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
-        Text(
+        PText(
           "步骤 $stepNumber",
           style = MaterialTheme.typography.labelMedium,
           color = SoftBlue,
@@ -1179,7 +1178,7 @@ private fun StepContentCard(
         decorationBox = { innerTextField ->
           Box {
             if (step.description.isEmpty()) {
-              Text(
+              PText(
                 "描述这一步的操作...",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
