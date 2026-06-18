@@ -30,14 +30,10 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.TopAppBar
@@ -69,6 +65,9 @@ import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
 import xyz.junerver.compose.palette.components.alert.AlertType
 import xyz.junerver.compose.palette.components.alert.PAlert
+import xyz.junerver.compose.palette.components.button.ButtonColors
+import xyz.junerver.compose.palette.components.button.ButtonType
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.segmented.PSegmented
@@ -219,7 +218,24 @@ fun WebDAVConfigScreen(navController: NavController) {
         )
 
         // 测试连接按钮
-        Button(
+        PButton(
+          text = if (isTesting) "正在测试..." else "测试连接",
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp),
+          disabled = !isFormValid,
+          loading = isTesting,
+          colors = ButtonColors(
+            containerColor = primaryColor,
+            contentColor = Color.White
+          ),
+          leadingIcon = {
+            Icon(
+              Icons.Default.CheckCircle,
+              contentDescription = null,
+              modifier = Modifier.size(20.dp)
+            )
+          },
           onClick = {
             if (isFormValid) {
               isTesting = true
@@ -248,32 +264,8 @@ fun WebDAVConfigScreen(navController: NavController) {
                 }
               }
             }
-          },
-          enabled = isFormValid && !isTesting,
-          modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp),
-          colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
-          shape = RoundedCornerShape(12.dp)
-        ) {
-          if (isTesting) {
-            CircularProgressIndicator(
-              modifier = Modifier.size(20.dp),
-              strokeWidth = 2.dp,
-              color = Color.White
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            PText("正在测试...", fontSize = 15.sp)
-          } else {
-            Icon(
-              Icons.Default.CheckCircle,
-              contentDescription = null,
-              modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            PText("测试连接", fontSize = 15.sp, fontWeight = FontWeight.Medium)
           }
-        }
+        )
 
         // 测试结果显示
         if (testMessage.isNotBlank()) {
@@ -460,33 +452,46 @@ fun WebDAVConfigScreen(navController: NavController) {
           iconColor = Color(0xFFFF5252),
           textColor = textColor
         ) {
-          OutlinedButton(
+          PButton(
+            text = "清除配置",
+            modifier = Modifier.fillMaxWidth(),
+            type = ButtonType.OUTLINED,
+            colors = ButtonColors(
+              containerColor = Color.Transparent,
+              contentColor = Color(0xFFFF5252),
+              borderColor = Color(0xFFFF5252)
+            ),
+            leadingIcon = {
+              Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+              )
+            },
             onClick = {
               syncRepository.clearConfig()
               SyncWorker.cancel(context)
               Toast.makeText(context, "配置已清除", Toast.LENGTH_SHORT).show()
               navController.popBackStack()
-            },
-            colors = ButtonDefaults.outlinedButtonColors(
-              contentColor = Color(0xFFFF5252)
-            ),
-            modifier = Modifier.fillMaxWidth()
-          ) {
-            Icon(
-              imageVector = Icons.Default.Delete,
-              contentDescription = null,
-              modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            PText("清除配置")
-          }
+            }
+          )
         }
       }
 
       Spacer(modifier = Modifier.weight(1f))
 
       // 保存按钮
-      Button(
+      PButton(
+        text = if (isSaving) "保存中..." else "保存配置",
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(56.dp),
+        disabled = !isFormValid || !isEncryptionValid,
+        loading = isSaving,
+        colors = ButtonColors(
+          containerColor = primaryColor,
+          contentColor = Color.White
+        ),
         onClick = {
           if (isFormValid && isEncryptionValid) {
             isSaving = true
@@ -515,28 +520,8 @@ fun WebDAVConfigScreen(navController: NavController) {
             Toast.makeText(context, "配置已保存", Toast.LENGTH_SHORT).show()
             navController.popBackStack()
           }
-        },
-        enabled = isFormValid && isEncryptionValid && !isSaving,
-        modifier = Modifier
-          .fillMaxWidth()
-          .height(56.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
-        shape = RoundedCornerShape(28.dp)
-      ) {
-        if (isSaving) {
-          CircularProgressIndicator(
-            modifier = Modifier.size(20.dp),
-            strokeWidth = 2.dp,
-            color = Color.White
-          )
-          Spacer(modifier = Modifier.width(8.dp))
         }
-        PText(
-          text = if (isSaving) "保存中..." else "保存配置",
-          fontSize = 16.sp,
-          fontWeight = FontWeight.Bold
-        )
-      }
+      )
     }
   }
 }

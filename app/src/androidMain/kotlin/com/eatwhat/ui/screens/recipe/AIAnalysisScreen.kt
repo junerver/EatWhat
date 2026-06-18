@@ -30,10 +30,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,6 +77,8 @@ import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.palette.components.button.ButtonColors
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
@@ -483,42 +482,24 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
 
       // Analyze button
       item {
-        FilledTonalButton(
-          onClick = onAnalyze,
+        PButton(
+          text = if (isLoading.value) "分析中..." else "开始分析",
           modifier = Modifier.fillMaxWidth(),
-          enabled = !isLoading.value && (prompt.value.isNotBlank() || selectedImageBase64 != null),
-          colors = ButtonDefaults.filledTonalButtonColors(
+          disabled = prompt.value.isBlank() && selectedImageBase64 == null,
+          loading = isLoading.value,
+          colors = ButtonColors(
             containerColor = PrimaryOrange,
             contentColor = Color.White
           ),
-          contentPadding = PaddingValues(vertical = 16.dp)
-        ) {
-          if (isLoading.value) {
-            CircularProgressIndicator(
-              modifier = Modifier.size(20.dp),
-              color = Color.White,
-              strokeWidth = 2.dp
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            PText(
-              "分析中...",
-              style = MaterialTheme.typography.titleMedium,
-              fontWeight = FontWeight.SemiBold
-            )
-          } else {
+          leadingIcon = {
             Icon(
               Icons.Outlined.AutoAwesome,
               contentDescription = null,
               modifier = Modifier.size(20.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            PText(
-              "开始分析",
-              style = MaterialTheme.typography.titleMedium,
-              fontWeight = FontWeight.SemiBold
-            )
-          }
-        }
+          },
+          onClick = onAnalyze
+        )
       }
 
       // Bottom spacing

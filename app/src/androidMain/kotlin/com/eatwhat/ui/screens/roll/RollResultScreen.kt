@@ -17,16 +17,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -68,6 +64,9 @@ import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.palette.components.button.ButtonColors
+import xyz.junerver.compose.palette.components.button.ButtonType
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
@@ -199,15 +198,14 @@ fun RollResultScreen(
                             style = MaterialTheme.typography.bodyLarge,
                             color = MeatRed
                         )
-                        Button(
-                            onClick = { navController.popBackStack() },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = PrimaryOrange
+                        PButton(
+                            text = "返回添加菜谱",
+                            colors = ButtonColors(
+                                containerColor = PrimaryOrange,
+                                contentColor = Color.White
                             ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            PText("返回添加菜谱")
-                        }
+                            onClick = { navController.popBackStack() }
+                        )
                     }
                 }
                 rollResult != null -> {
@@ -374,40 +372,27 @@ private fun RollResultContent(
                   .padding(horizontal = 16.dp, vertical = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                OutlinedButton(
-                    onClick = onReRoll,
+                PButton(
+                    text = "🎲 重新Roll",
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = PrimaryOrange
+                    type = ButtonType.OUTLINED,
+                    colors = ButtonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = PrimaryOrange,
+                        borderColor = PrimaryOrange
                     ),
-                    border = androidx.compose.foundation.BorderStroke(2.dp, PrimaryOrange),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    PText(
-                        text = "🎲 重新Roll",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-                }
+                    onClick = onReRoll
+                )
 
-                Button(
-                    onClick = onConfirm,
+                PButton(
+                    text = "✓ 就这些了",
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryOrange
+                    colors = ButtonColors(
+                        containerColor = PrimaryOrange,
+                        contentColor = Color.White
                     ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    PText(
-                        text = "✓ 就这些了",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-                }
+                    onClick = onConfirm
+                )
             }
         }
     }

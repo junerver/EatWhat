@@ -41,12 +41,9 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material.icons.outlined.Timer
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -120,6 +117,9 @@ import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.button.ButtonColors
+import xyz.junerver.compose.palette.components.button.ButtonSize
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
@@ -386,31 +386,25 @@ fun AddRecipeScreen(
           }
 
           // Save button
-          FilledTonalButton(
-            onClick = onSave,
-            enabled = !isSaving.value,
-            colors = ButtonDefaults.filledTonalButtonColors(
+          PButton(
+            text = if (isEditMode) "保存" else "创建",
+            modifier = Modifier.padding(end = 8.dp),
+            size = ButtonSize.SMALL,
+            disabled = false,
+            loading = isSaving.value,
+            colors = ButtonColors(
               containerColor = PrimaryOrange,
               contentColor = MaterialTheme.colorScheme.onPrimary
             ),
-            modifier = Modifier.padding(end = 8.dp)
-          ) {
-            if (isSaving.value) {
-              CircularProgressIndicator(
-                modifier = Modifier.size(16.dp),
-                color = MaterialTheme.colorScheme.onPrimary,
-                strokeWidth = 2.dp
-              )
-            } else {
+            leadingIcon = {
               Icon(
                 Icons.Default.Check,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
               )
-              Spacer(modifier = Modifier.width(4.dp))
-              PText(if (isEditMode) "保存" else "创建")
-            }
-          }
+            },
+            onClick = onSave
+          )
         },
         colors = TopAppBarDefaults.topAppBarColors(
           containerColor = MaterialTheme.colorScheme.surface

@@ -32,14 +32,11 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
@@ -72,6 +69,7 @@ import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.button.ButtonColors
 import xyz.junerver.compose.palette.components.button.ButtonSize
 import xyz.junerver.compose.palette.components.button.ButtonType
 import xyz.junerver.compose.palette.components.button.PButton
@@ -409,22 +407,24 @@ private fun NotConfiguredCard(
               textAlign = TextAlign.Center,
               lineHeight = 20.sp
             )
-          Button(
-            onClick = onConfigureClick,
+          PButton(
+            text = "配置 WebDAV",
             modifier = Modifier
               .fillMaxWidth()
               .height(48.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
-            shape = RoundedCornerShape(12.dp)
-          ) {
+            colors = ButtonColors(
+              containerColor = primaryColor,
+              contentColor = Color.White
+            ),
+            leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = null,
                   modifier = Modifier.size(20.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-            PText("配置 WebDAV", fontSize = 15.sp, fontWeight = FontWeight.Medium)
-            }
+            },
+            onClick = onConfigureClick
+          )
         }
     }
 }
@@ -626,67 +626,69 @@ private fun SyncActionsCard(
           }
 
             // 上传按钮
-            Button(
-                onClick = onUpload,
+            PButton(
+              text = "上传到云端",
               modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
-              colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
-              shape = RoundedCornerShape(12.dp)
-            ) {
+              colors = ButtonColors(
+                containerColor = primaryColor,
+                contentColor = Color.White
+              ),
+              leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.CloudUpload,
                     contentDescription = null,
                   modifier = Modifier.size(22.dp)
                 )
-              Spacer(modifier = Modifier.width(10.dp))
-              PText(
-                "上传到云端",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-              )
-                if (encryptionEnabled) {
-                    Spacer(modifier = Modifier.width(8.dp))
+              },
+              trailingIcon = if (encryptionEnabled) {
+                {
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = "加密",
                       modifier = Modifier.size(18.dp)
                     )
                 }
-            }
+              } else {
+                null
+              },
+              onClick = onUpload
+            )
 
             // 下载按钮
-            OutlinedButton(
-                onClick = onDownload,
-                enabled = cloudMetadata != null,
+            PButton(
+              text = "从云端恢复",
               modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
-              shape = RoundedCornerShape(12.dp),
-              colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = primaryColor
-              )
-            ) {
+              type = ButtonType.OUTLINED,
+              disabled = cloudMetadata == null,
+              colors = ButtonColors(
+                containerColor = Color.Transparent,
+                contentColor = primaryColor,
+                borderColor = primaryColor
+              ),
+              leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.CloudDownload,
                     contentDescription = null,
                   modifier = Modifier.size(22.dp)
                 )
-              Spacer(modifier = Modifier.width(10.dp))
-              PText(
-                "从云端恢复",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-              )
-                if (cloudMetadata?.encrypted == true) {
-                    Spacer(modifier = Modifier.width(8.dp))
+              },
+              trailingIcon = if (cloudMetadata?.encrypted == true) {
+                {
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = "需要密码",
                       modifier = Modifier.size(18.dp)
                     )
                 }
-            }
+              } else {
+                null
+              },
+              onClick = onDownload
+            )
 
             if (cloudMetadata == null) {
                 PText(

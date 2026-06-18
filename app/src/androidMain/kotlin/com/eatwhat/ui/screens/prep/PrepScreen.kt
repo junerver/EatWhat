@@ -27,8 +27,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,6 +63,8 @@ import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
+import xyz.junerver.compose.palette.components.button.ButtonColors
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
@@ -284,7 +284,16 @@ fun PrepScreen(
                 color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 8.dp
             ) {
-                Button(
+                PButton(
+                    text = if (checkedCount == totalCount) "✓ 开始做菜" else "开始做菜",
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .padding(16.dp),
+                    disabled = historyId == null,
+                    colors = ButtonColors(
+                        containerColor = PrimaryOrange,
+                        contentColor = Color.White
+                    ),
                     onClick = {
                         // 跳转到历史详情页面
                         historyId?.let { id ->
@@ -301,23 +310,8 @@ fun PrepScreen(
                             // 然后导航到 HistoryDetail
                             navController.navigate(com.eatwhat.navigation.Destinations.HistoryDetail.createRoute(id))
                         }
-                    },
-                    modifier = Modifier
-                      .fillMaxWidth()
-                      .padding(16.dp),
-                    enabled = historyId != null,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryOrange
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    PText(
-                        text = if (checkedCount == totalCount) "✓ 开始做菜" else "开始做菜",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-                }
+                    }
+                )
             }
         }
     }

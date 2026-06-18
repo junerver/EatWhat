@@ -23,13 +23,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.MenuBook
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
@@ -57,6 +54,9 @@ import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
 import com.eatwhat.ui.theme.UnselectedBackground
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.button.ButtonColors
+import xyz.junerver.compose.palette.components.button.ButtonType
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
@@ -328,7 +328,11 @@ fun CookingScreen(
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedButton(
+                    val canGoBack = currentStepIndex > 0 || currentRecipeIndex > 0
+                    OutlinedNavigationButton(
+                        text = "上一步",
+                        enabled = canGoBack,
+                        modifier = Modifier.weight(1f),
                         onClick = {
                             if (currentStepIndex > 0) {
                                 currentStepIndex--
@@ -337,32 +341,21 @@ fun CookingScreen(
                                 currentStepIndex =
                                     (recipes.getOrNull(currentRecipeIndex)?.steps?.size ?: 1) - 1
                             }
-                        },
-                        enabled = currentStepIndex > 0 || currentRecipeIndex > 0,
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = PrimaryOrange
-                        ),
-                        border = androidx.compose.foundation.BorderStroke(
-                            2.dp,
-                            if (currentStepIndex > 0 || currentRecipeIndex > 0) PrimaryOrange else Color.Gray.copy(alpha = 0.3f)
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        PText(
-                            "上一步",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
-                    }
+                        }
+                    )
 
                     val currentSteps = currentRecipe?.steps ?: emptyList()
                     val isLastStep = currentStepIndex >= currentSteps.size - 1
                     val isLastRecipe = currentRecipeIndex >= recipes.size - 1
                     val isFinished = isLastStep && isLastRecipe
 
-                    Button(
+                    PButton(
+                        text = if (isFinished) "✓ 完成" else "下一步",
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonColors(
+                            containerColor = if (isFinished) SoftGreen else PrimaryOrange,
+                            contentColor = Color.White
+                        ),
                         onClick = {
                             if (!isLastStep) {
                                 currentStepIndex++
@@ -373,24 +366,33 @@ fun CookingScreen(
                                 // All done, navigate back
                                 navController.navigateUp()
                             }
-                        },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isFinished) SoftGreen else PrimaryOrange
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        PText(
-                            text = if (isFinished) "✓ 完成" else "下一步",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun OutlinedNavigationButton(
+    text: String,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    PButton(
+        text = text,
+        modifier = modifier,
+        type = ButtonType.OUTLINED,
+        disabled = !enabled,
+        colors = ButtonColors(
+            containerColor = Color.Transparent,
+            contentColor = PrimaryOrange,
+            borderColor = if (enabled) PrimaryOrange else Color.Gray.copy(alpha = 0.3f)
+        ),
+        onClick = onClick
+    )
 }
 
 @Composable

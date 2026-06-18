@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -37,7 +36,6 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -53,6 +51,8 @@ import androidx.compose.ui.window.Dialog
 import com.eatwhat.util.ImageUtils
 import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.button.ButtonType
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.segmented.PSegmented
@@ -139,47 +139,50 @@ fun RecipeIconPicker(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Upload image button
-                OutlinedButton(
-                    onClick = { imagePickerLauncher.launch("image/*") },
+                PButton(
+                    text = if (selectedImageBase64 != null) "更换图片" else "上传图片",
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !isProcessingImage
-                ) {
-                    Icon(
-                        Icons.Default.Image,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    PText(if (selectedImageBase64 != null) "更换图片" else "上传图片")
-                }
+                    type = ButtonType.OUTLINED,
+                    disabled = isProcessingImage,
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Image,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    onClick = { imagePickerLauncher.launch("image/*") }
+                )
 
                 // Emoji picker button or clear image button
                 if (selectedImageBase64 != null) {
-                    OutlinedButton(
-                        onClick = onImageCleared,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        PText("清除图片")
-                    }
+                    PButton(
+                        text = "清除图片",
+                        modifier = Modifier.fillMaxWidth(),
+                        type = ButtonType.OUTLINED,
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
+                        onClick = onImageCleared
+                    )
                 } else {
-                    OutlinedButton(
-                        onClick = { showEmojiPicker = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            Icons.Default.EmojiEmotions,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        PText("选择图标")
-                    }
+                    PButton(
+                        text = "选择图标",
+                        modifier = Modifier.fillMaxWidth(),
+                        type = ButtonType.OUTLINED,
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.EmojiEmotions,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
+                        onClick = { showEmojiPicker = true }
+                    )
                 }
             }
         }
