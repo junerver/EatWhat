@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,23 +29,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -53,7 +49,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -68,19 +63,18 @@ import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.ui.components.RecipeCard
 import com.eatwhat.ui.theme.InputBackground
 import com.eatwhat.ui.theme.LocalDarkTheme
-import com.eatwhat.ui.theme.MeatRed
-import com.eatwhat.ui.theme.OtherPurple
-import com.eatwhat.ui.theme.Primary
 import com.eatwhat.ui.theme.PrimaryOrange
-import com.eatwhat.ui.theme.SoupBlue
-import com.eatwhat.ui.theme.StapleOrange
-import com.eatwhat.ui.theme.VegGreen
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.palette.components.floatbutton.FloatButtonDefaults
+import xyz.junerver.compose.palette.components.floatbutton.PFloatButton
+import xyz.junerver.compose.palette.components.segmented.PSegmented
+import xyz.junerver.compose.palette.components.segmented.SegmentedOption
 import xyz.junerver.compose.palette.components.text.PText
+import xyz.junerver.compose.palette.core.spec.ComponentSize
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -104,12 +98,12 @@ fun RecipeListScreen(navController: NavController) {
 
     // Tab配置 - 使用 emoji 和颜色
     val tabs = listOf(
-        null to TabInfo("全部", "📋", Primary),
-        RecipeType.MEAT to TabInfo("荤菜", "🍗", MeatRed),
-        RecipeType.VEG to TabInfo("素菜", "🥬", VegGreen),
-        RecipeType.SOUP to TabInfo("汤", "🍲", SoupBlue),
-      RecipeType.STAPLE to TabInfo("主食", "🍚", StapleOrange),
-      RecipeType.OTHER to TabInfo("其他", "🥣", OtherPurple)
+        null to TabInfo("全部", "📋"),
+        RecipeType.MEAT to TabInfo("荤菜", "🍗"),
+        RecipeType.VEG to TabInfo("素菜", "🥬"),
+        RecipeType.SOUP to TabInfo("汤", "🍲"),
+      RecipeType.STAPLE to TabInfo("主食", "🍚"),
+      RecipeType.OTHER to TabInfo("其他", "🥣")
     )
 
     val pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -227,51 +221,36 @@ fun RecipeListScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surface
             ) {
-                ScrollableTabRow(
-                    selectedTabIndex = pagerState.currentPage,
-                    modifier = Modifier.fillMaxWidth(),
-                    edgePadding = 16.dp,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = PrimaryOrange,
-                    indicator = { tabPositions ->
-                        if (pagerState.currentPage < tabPositions.size) {
-                            TabRowDefaults.Indicator(
-                                Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                                color = tabs[pagerState.currentPage].second.color
-                            )
-                        }
-                    },
-                    divider = {}
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
                 ) {
-                    tabs.forEachIndexed { index, (_, tabInfo) ->
-                        val selected = pagerState.currentPage == index
-                        Tab(
-                            selected = selected,
-                            onClick = {
+                    PSegmented(
+                        options = tabs.map { (type, tabInfo) ->
+                            SegmentedOption(
+                                value = tabKey(type),
+                                label = tabInfo.title,
+                                icon = {
+                                    PText(
+                                        text = tabInfo.emoji,
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            )
+                        },
+                        value = tabKey(tabs[pagerState.currentPage].first),
+                        onValueChange = { selectedValue ->
+                            val index = tabs.indexOfFirst { (type, _) -> tabKey(type) == selectedValue }
+                            if (index >= 0) {
                                 scope.launch {
                                     pagerState.animateScrollToPage(index)
                                 }
-                            },
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                PText(
-                                    tabInfo.emoji,
-                                    fontSize = 16.sp
-                                )
-                                PText(
-                                    tabInfo.title,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (selected) tabInfo.color else Color.Gray
-                                )
                             }
-                        }
-                    }
+                        },
+                        size = ComponentSize.Small
+                    )
                 }
             }
             
@@ -305,28 +284,30 @@ fun RecipeListScreen(navController: NavController) {
             }
         }
         
-        // FloatingActionButton
-        FloatingActionButton(
+        PFloatButton(
             onClick = { navController.navigate("recipe/add") },
-            containerColor = PrimaryOrange,
-            contentColor = Color.White,
-            shape = CircleShape,
             modifier = Modifier
               .align(Alignment.BottomEnd)
               .padding(end = 16.dp, bottom = 104.dp)
-              .windowInsetsPadding(WindowInsets.navigationBars)
-              .shadow(8.dp, CircleShape)
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "添加菜谱")
-        }
+              .windowInsetsPadding(WindowInsets.navigationBars),
+            icon = {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = "添加菜谱",
+                    tint = FloatButtonDefaults.iconColor(),
+                    modifier = Modifier.size(FloatButtonDefaults.iconSize())
+                )
+            }
+        )
     }
 }
 
 private data class TabInfo(
     val title: String,
-    val emoji: String,
-    val color: Color
+    val emoji: String
 )
+
+private fun tabKey(type: RecipeType?): String = type?.name ?: "ALL"
 
 @Composable
 private fun RecipeListContent(
