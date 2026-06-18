@@ -47,13 +47,12 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import com.eatwhat.util.ImageUtils
 import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.useState
 import xyz.junerver.compose.palette.components.button.ButtonType
 import xyz.junerver.compose.palette.components.button.PButton
-import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.segmented.PSegmented
 import xyz.junerver.compose.palette.components.segmented.SegmentedOption
@@ -326,14 +325,13 @@ private fun EmojiPickerDialog(
 ) {
   var selectedCategory by useState(FoodEmojis.categories.first())
 
-    Dialog(onDismissRequest = onDismiss) {
-        PCard(
-            modifier = Modifier
-              .fillMaxWidth()
-              .heightIn(max = 500.dp)
-        ) {
+    PDialog(
+      content = {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .heightIn(max = 500.dp)
+                  .padding(16.dp)
             ) {
                 // Header
                 Row(
@@ -392,8 +390,9 @@ private fun EmojiPickerDialog(
                     }
                 }
             }
-        }
-    }
+      },
+      onDismiss = onDismiss
+    )
 }
 
 /**
