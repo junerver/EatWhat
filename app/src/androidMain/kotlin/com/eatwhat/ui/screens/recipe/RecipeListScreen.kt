@@ -45,7 +45,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -81,6 +80,7 @@ import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.palette.components.text.PText
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -135,7 +135,7 @@ fun RecipeListScreen(navController: NavController) {
                           .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
+                        PText(
                             text = "我的菜谱",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
@@ -193,7 +193,7 @@ fun RecipeListScreen(navController: NavController) {
                                     decorationBox = { innerTextField ->
                                         Box {
                                           if (searchQuery.value.isEmpty()) {
-                                                Text(
+                                                PText(
                                                     "搜索菜谱或标签",
                                                     style = MaterialTheme.typography.bodyLarge,
                                                   color = if (darkTheme) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
@@ -259,11 +259,11 @@ fun RecipeListScreen(navController: NavController) {
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Text(
+                                PText(
                                     tabInfo.emoji,
                                     fontSize = 16.sp
                                 )
-                                Text(
+                                PText(
                                     tabInfo.title,
                                     style = MaterialTheme.typography.labelLarge,
                                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
@@ -345,17 +345,17 @@ private fun RecipeListContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
+                PText(
                     text = "🍽️",
                     fontSize = 48.sp
                 )
-                Text(
+                PText(
                     text = if (searchQuery.isNotEmpty()) "未找到相关菜谱" else "暂无菜谱",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (searchQuery.isEmpty()) {
-                    Text(
+                    PText(
                         text = "点击右下角 + 添加你的第一道菜谱",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray
