@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -64,6 +63,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.empty.PEmpty
+import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.text.PText
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -168,9 +168,8 @@ fun AIProviderListScreen(navController: NavController) {
             enabled = !isBatchTesting.value && providers.isNotEmpty()
           ) {
             if (isBatchTesting.value) {
-              CircularProgressIndicator(
-                modifier = Modifier.size(24.dp),
-                strokeWidth = 2.dp,
+              PLoading(
+                size = 24.dp,
                 color = primaryColor
               )
             } else {
@@ -304,9 +303,8 @@ fun AIProviderItem(
               Spacer(modifier = Modifier.height(8.dp))
               Row(verticalAlignment = Alignment.CenterVertically) {
                 if (testState.isTesting) {
-                  CircularProgressIndicator(
-                    modifier = Modifier.size(12.dp),
-                    strokeWidth = 2.dp,
+                  PLoading(
+                    size = 18.dp,
                     color = primaryColor
                   )
                   Spacer(modifier = Modifier.width(4.dp))

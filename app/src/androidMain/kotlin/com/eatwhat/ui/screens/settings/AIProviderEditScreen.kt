@@ -33,7 +33,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -74,6 +73,7 @@ import xyz.junerver.compose.palette.components.button.ButtonType
 import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -378,9 +378,8 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
               modifier = Modifier.weight(1f),
               trailingIcon = {
                 if (isFetchingModels.value) {
-                  CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
+                  PLoading(
+                    size = 20.dp,
                     color = Color(0xFFFF6B35)
                   )
                 } else {
@@ -417,9 +416,8 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
             ) {
               Box(contentAlignment = Alignment.Center) {
                 if (isTesting.value) {
-                  CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.dp,
+                  PLoading(
+                    size = 24.dp,
                     color = Color(0xFFFF6B35)
                   )
                 } else {
