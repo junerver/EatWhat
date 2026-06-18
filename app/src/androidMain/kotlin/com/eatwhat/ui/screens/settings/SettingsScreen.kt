@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -74,6 +73,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.radio.PRadio
@@ -680,7 +680,7 @@ private fun ConflictStrategyOption(
   selected: Boolean,
   onClick: () -> Unit
 ) {
-  Surface(
+  PContainer(
     shape = RoundedCornerShape(8.dp),
     color = if (selected)
       MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
@@ -714,7 +714,7 @@ private fun ExportOptionItem(
 ) {
   val alpha = if (enabled) 1f else 0.5f
 
-  Surface(
+  PContainer(
     onClick = { if (enabled) onClick() },
     shape = RoundedCornerShape(12.dp),
     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f * alpha)
@@ -834,7 +834,7 @@ private fun SettingsItem(
   subtitle: String,
   onClick: () -> Unit
 ) {
-  Surface(
+  PContainer(
     onClick = onClick,
     color = Color.Transparent
   ) {
@@ -902,7 +902,7 @@ private fun ThemeSettingItem(
 ) {
   var showThemeDialog by useState(false)
 
-  Surface(
+  PContainer(
     onClick = { showThemeDialog = true },
     color = Color.Transparent
   ) {
@@ -1051,7 +1051,7 @@ private fun ThemeModeOption(
   selected: Boolean,
   onClick: () -> Unit
 ) {
-  Surface(
+  PContainer(
     onClick = onClick,
     shape = RoundedCornerShape(12.dp),
     color = if (selected)
