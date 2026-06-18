@@ -12,15 +12,6 @@ import kotlinx.coroutines.flow.map
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 /**
- * 主题模式
- */
-enum class ThemeMode {
-  SYSTEM,  // 跟随系统
-  LIGHT,   // 浅色
-  DARK     // 深色
-}
-
-/**
  * 主题偏好设置管理
  */
 class ThemePreferences(private val context: Context) {
