@@ -35,7 +35,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -72,6 +71,7 @@ import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.segmented.PSegmented
 import xyz.junerver.compose.palette.components.segmented.SegmentedOption
+import xyz.junerver.compose.palette.components.switch.PSwitch
 import xyz.junerver.compose.palette.components.text.PText
 
 /**
@@ -303,9 +303,9 @@ fun WebDAVConfigScreen(navController: NavController) {
               color = subTextColor
             )
           }
-          Switch(
+          PSwitch(
             checked = encryptionEnabled,
-            onCheckedChange = { encryptionEnabled = it }
+            onChange = { encryptionEnabled = it }
           )
         }
 
@@ -377,9 +377,9 @@ fun WebDAVConfigScreen(navController: NavController) {
               color = subTextColor
             )
           }
-          Switch(
+          PSwitch(
             checked = autoSyncEnabled,
-            onCheckedChange = { autoSyncEnabled = it }
+            onChange = { autoSyncEnabled = it }
           )
         }
 
