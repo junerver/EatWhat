@@ -2,7 +2,6 @@ package com.eatwhat.ui.components
 
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
@@ -14,6 +13,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.eatwhat.R
 import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.theme.PrimaryOrange
+import xyz.junerver.compose.palette.components.text.PText
 
 /**
  * Bottom navigation bar with 3 tabs
@@ -51,14 +51,14 @@ fun BottomNavBar(navController: NavController) {
 
       NavigationBarItem(
         icon = {
-          Text(
+          PText(
             text = item.emoji,
             fontSize = 24.sp,
 
           )
         },
         label = {
-          Text(
+          PText(
             text = item.label,
             fontSize = 12.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
