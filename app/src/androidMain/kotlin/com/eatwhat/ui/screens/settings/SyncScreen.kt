@@ -17,7 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CloudDownload
@@ -34,8 +34,6 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -44,7 +42,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -76,8 +73,10 @@ import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.text.PText
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -127,7 +126,7 @@ fun SyncScreen(navController: NavController) {
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
+                    PText(
                         text = "数据同步",
                         fontWeight = FontWeight.Bold
                     )
@@ -135,7 +134,7 @@ fun SyncScreen(navController: NavController) {
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "返回"
                         )
                     }
@@ -264,11 +263,12 @@ fun SyncScreen(navController: NavController) {
                       .background(Color.Black.copy(alpha = 0.5f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Card(
-                      shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(
-                          containerColor = cardBackground
-                        )
+                    PCard(
+                      variant = CardVariant.Elevated,
+                      colors = CardColors(
+                        containerColor = cardBackground,
+                        contentColor = textColor
+                      )
                     ) {
                         Column(
                           modifier = Modifier.padding(32.dp),
@@ -279,7 +279,7 @@ fun SyncScreen(navController: NavController) {
                             color = primaryColor,
                             strokeWidth = 3.dp
                           )
-                            Text(
+                            PText(
                                 text = syncMessage,
                               style = MaterialTheme.typography.bodyLarge,
                               color = textColor,
@@ -394,13 +394,13 @@ private fun NotConfiguredCard(
               tint = subTextColor.copy(alpha = 0.5f)
             )
           }
-            Text(
+            PText(
                 text = "未配置 WebDAV",
               style = MaterialTheme.typography.titleLarge,
               fontWeight = FontWeight.Bold,
               color = textColor
             )
-            Text(
+            PText(
               text = "请先配置 WebDAV 服务器信息\n才能使用云同步功能",
                 style = MaterialTheme.typography.bodyMedium,
               color = subTextColor,
@@ -421,7 +421,7 @@ private fun NotConfiguredCard(
                   modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-            Text("配置 WebDAV", fontSize = 15.sp, fontWeight = FontWeight.Medium)
+            PText("配置 WebDAV", fontSize = 15.sp, fontWeight = FontWeight.Medium)
             }
         }
     }
@@ -463,7 +463,7 @@ private fun SyncStatusCard(
               )
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
+            PText(
               text = "同步状态",
               style = MaterialTheme.typography.titleMedium,
               fontWeight = FontWeight.Bold,
@@ -485,7 +485,7 @@ private fun SyncStatusCard(
                   horizontalArrangement = Arrangement.SpaceBetween,
                   verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    PText(
                       text = "同步结果",
                         style = MaterialTheme.typography.bodyMedium,
                       color = subTextColor
@@ -502,7 +502,7 @@ private fun SyncStatusCard(
                             tint = if (config.lastSyncStatus == "SUCCESS")
                               Color(0xFF4CAF50) else Color(0xFFFF5252)
                         )
-                        Text(
+                        PText(
                             text = if (config.lastSyncStatus == "SUCCESS") "成功" else "失败",
                           style = MaterialTheme.typography.bodyMedium,
                           color = textColor,
@@ -521,7 +521,7 @@ private fun SyncStatusCard(
           )
 
           // 云端状态标题
-            Text(
+            PText(
                 text = "云端备份",
                 style = MaterialTheme.typography.titleSmall,
               fontWeight = FontWeight.SemiBold,
@@ -540,7 +540,7 @@ private fun SyncStatusCard(
                   horizontalArrangement = Arrangement.SpaceBetween,
                   verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    PText(
                         text = "加密状态",
                         style = MaterialTheme.typography.bodyMedium,
                       color = subTextColor
@@ -556,7 +556,7 @@ private fun SyncStatusCard(
                           modifier = Modifier.size(18.dp),
                           tint = if (cloudMetadata.encrypted) Color(0xFF9C27B0) else subTextColor
                         )
-                        Text(
+                        PText(
                             text = if (cloudMetadata.encrypted) "已加密" else "未加密",
                           style = MaterialTheme.typography.bodyMedium,
                           color = textColor,
@@ -565,7 +565,7 @@ private fun SyncStatusCard(
                     }
                 }
             } else {
-                Text(
+                PText(
                     text = "云端暂无备份",
                     style = MaterialTheme.typography.bodyMedium,
                   color = subTextColor,
@@ -615,7 +615,7 @@ private fun SyncActionsCard(
               )
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
+            PText(
               text = "同步操作",
               style = MaterialTheme.typography.titleMedium,
               fontWeight = FontWeight.Bold,
@@ -638,7 +638,7 @@ private fun SyncActionsCard(
                   modifier = Modifier.size(22.dp)
                 )
               Spacer(modifier = Modifier.width(10.dp))
-              Text(
+              PText(
                 "上传到云端",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
@@ -671,7 +671,7 @@ private fun SyncActionsCard(
                   modifier = Modifier.size(22.dp)
                 )
               Spacer(modifier = Modifier.width(10.dp))
-              Text(
+              PText(
                 "从云端恢复",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
@@ -687,7 +687,7 @@ private fun SyncActionsCard(
             }
 
             if (cloudMetadata == null) {
-                Text(
+                PText(
                     text = "云端暂无备份，无法恢复",
                     style = MaterialTheme.typography.bodySmall,
                   color = subTextColor,
@@ -737,7 +737,7 @@ private fun ConfigEntryCard(
             modifier = Modifier.size(22.dp)
           )
         }
-        Text(
+        PText(
           text = "修改配置",
           style = MaterialTheme.typography.bodyLarge,
           fontWeight = FontWeight.Medium,
@@ -768,12 +768,12 @@ private fun StatusRow(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically
   ) {
-    Text(
+    PText(
       text = label,
       style = MaterialTheme.typography.bodyMedium,
       color = subTextColor
     )
-    Text(
+    PText(
       text = value,
       style = MaterialTheme.typography.bodyMedium,
       color = textColor,
@@ -796,7 +796,7 @@ private fun PasswordInputDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
       title = {
-        Text(
+        PText(
           "输入加密密码",
           style = MaterialTheme.typography.titleLarge,
           fontWeight = FontWeight.Bold
@@ -806,7 +806,7 @@ private fun PasswordInputDialog(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("密码") },
+                label = { PText("密码") },
                 singleLine = true,
                 visualTransformation = if (showPassword)
                     VisualTransformation.None else PasswordVisualTransformation(),
@@ -829,7 +829,7 @@ private fun PasswordInputDialog(
               enabled = password.isNotBlank(),
               shape = RoundedCornerShape(12.dp)
             ) {
-                Text("确定")
+                PText("确定")
             }
         },
         dismissButton = {
@@ -837,7 +837,7 @@ private fun PasswordInputDialog(
             onClick = onDismiss,
             shape = RoundedCornerShape(12.dp)
           ) {
-                Text("取消")
+                PText("取消")
             }
         },
       shape = RoundedCornerShape(20.dp)
