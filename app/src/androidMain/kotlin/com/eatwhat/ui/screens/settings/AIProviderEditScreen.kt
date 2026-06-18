@@ -27,9 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
@@ -70,7 +68,8 @@ import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.hooks.useTimeoutFn
-import xyz.junerver.compose.palette.components.card.CardColors
+import xyz.junerver.compose.palette.components.alert.AlertType
+import xyz.junerver.compose.palette.components.alert.PAlert
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import kotlin.time.Duration.Companion.seconds
@@ -436,43 +435,11 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
         enter = fadeIn() + expandVertically(),
         exit = fadeOut() + shrinkVertically()
       ) {
-        PCard(
-          modifier = Modifier
-            .fillMaxWidth(),
-          variant = CardVariant.Filled,
-          colors = CardColors(
-            containerColor = if (testSuccess.value)
-              if (isDark) Color(0xFF1E331E) else Color(0xFFF8FBF8)
-            else
-              if (isDark) Color(0xFF331E1E) else Color(0xFFFFF8F8),
-            contentColor = textColor
-          )
-        ) {
-          Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-              Icon(
-                imageVector = if (testSuccess.value) Icons.Default.CheckCircle else Icons.Default.Error,
-                contentDescription = null,
-                tint = if (testSuccess.value) Color(0xFF4CAF50) else Color(0xFFFF5252),
-                modifier = Modifier.size(20.dp)
-              )
-              Spacer(modifier = Modifier.width(8.dp))
-              Text(
-                text = if (testSuccess.value) "连接成功" else "连接失败",
-                style = MaterialTheme.typography.labelLarge,
-                color = if (testSuccess.value) Color(0xFF4CAF50) else Color(0xFFFF5252),
-                fontWeight = FontWeight.Bold
-              )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-              text = testResult.value,
-              style = MaterialTheme.typography.bodySmall,
-              fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-              color = textColor
-            )
-          }
-        }
+        PAlert(
+          message = if (testSuccess.value) "连接成功" else "连接失败",
+          description = testResult.value,
+          type = if (testSuccess.value) AlertType.Success else AlertType.Error
+        )
       }
 
       // Models Grid Card
