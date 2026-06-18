@@ -27,7 +27,6 @@ import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -62,6 +61,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.progress.PProgress
 import xyz.junerver.compose.palette.components.scaffold.PScaffold
 import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
@@ -125,7 +125,7 @@ fun PrepScreen(
 
     PScaffold(
         topBar = {
-            Surface(
+            PContainer(
                 color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 2.dp
             ) {
@@ -262,7 +262,7 @@ fun PrepScreen(
             }
 
             // 底部按钮
-            Surface(
+            PContainer(
                 color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 8.dp
             ) {
@@ -330,7 +330,7 @@ private fun IngredientCheckCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Checkbox
-            Surface(
+            PContainer(
                 shape = CircleShape,
                 color = if (item.isChecked) SoftGreen else uncheckedCheckboxColor,
                 modifier = Modifier.size(28.dp)
