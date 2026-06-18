@@ -45,7 +45,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
@@ -82,6 +81,10 @@ import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.tag.PTag
+import xyz.junerver.compose.palette.components.tag.TagColors
+import xyz.junerver.compose.palette.components.tag.TagSize
+import xyz.junerver.compose.palette.components.text.PText
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -161,7 +164,7 @@ fun HistoryListScreen(
                   .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                PText(
                     text = "历史记录",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
@@ -199,16 +202,16 @@ fun HistoryListScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
+                    PText(
                         text = "📋",
                         fontSize = 64.sp
                     )
-                    Text(
+                    PText(
                         text = "暂无历史记录",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    PText(
                         text = "Roll 一些菜谱后这里会显示记录",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -288,14 +291,14 @@ fun HistoryListScreen(
                 )
             },
             title = {
-              Text(
+              PText(
                 text = "确认删除",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
               )
             },
             text = {
-              Text(
+              PText(
                 text = "确定要删除全部 $unlockedCount 条未锁定的历史记录吗？\n\n此操作无法撤销，已锁定的记录将保留。",
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (darkTheme) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
@@ -310,12 +313,12 @@ fun HistoryListScreen(
                         }
                     }
                 ) {
-                  Text("删除", color = ErrorRed, fontWeight = FontWeight.Bold)
+                  PText("删除", color = ErrorRed, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearDialog = false }) {
-                    Text("取消")
+                    PText("取消")
                 }
             },
           containerColor = if (darkTheme) MaterialTheme.colorScheme.surface else Color.White
@@ -429,7 +432,7 @@ private fun HistoryCard(
                   .background(PrimaryOrange.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
+                PText(
                     text = "🍽️",
                     fontSize = 24.sp
                 )
@@ -441,7 +444,7 @@ private fun HistoryCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 // 主标题：优先显示自定义名称，否则显示 summary
-                Text(
+                PText(
                     text = history.customName.ifEmpty {
                         history.summary.ifEmpty { "${history.totalCount}个菜" }
                     },
@@ -452,13 +455,13 @@ private fun HistoryCard(
 
                 // 第二行：如果有自定义名称，显示配置摘要；否则显示菜名列表
                 if (history.customName.isNotEmpty()) {
-                    Text(
+                    PText(
                         text = history.summary.ifEmpty { "${history.totalCount}个菜" },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else if (history.recipes.isNotEmpty()) {
-                    Text(
+                    PText(
                         text = history.recipes.joinToString("、") { it.name },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -469,18 +472,15 @@ private fun HistoryCard(
 
                 // 时间标签
                 Spacer(modifier = Modifier.height(2.dp))
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = PrimaryOrange.copy(alpha = 0.1f)
-                ) {
-                    Text(
-                        text = formatTimestamp(history.timestamp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = PrimaryOrange,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                PTag(
+                    text = formatTimestamp(history.timestamp),
+                    size = TagSize.Small,
+                    colors = TagColors(
+                        containerColor = PrimaryOrange.copy(alpha = 0.1f),
+                        contentColor = PrimaryOrange,
+                        borderColor = Color.Transparent
                     )
-                }
+                )
             }
 
             // 右侧锁定图标
