@@ -29,7 +29,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -73,6 +72,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.radio.PRadio
 import xyz.junerver.compose.palette.components.scaffold.PScaffold
 import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
@@ -345,7 +345,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
             )
 
             // Multi-line input
-            Surface(
+            PContainer(
               shape = RoundedCornerShape(12.dp),
               color = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF8F8F8)
             ) {
@@ -422,7 +422,7 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
                 }
               }
             } else {
-              Surface(
+              PContainer(
                 onClick = { launcher.launch("image/*") },
                 shape = RoundedCornerShape(12.dp),
                 color = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF8F8F8),
