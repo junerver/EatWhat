@@ -65,7 +65,6 @@ import com.eatwhat.data.repository.PrepItemRecord
 import com.eatwhat.data.repository.RecipeSnapshot
 import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
-import com.eatwhat.ui.components.SimpleCircularProgressIndicator
 import com.eatwhat.ui.theme.DarkBorder
 import com.eatwhat.ui.theme.DarkCheckboxBorder
 import com.eatwhat.ui.theme.DarkProgressTrack
@@ -87,6 +86,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.progress.PProgress
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
@@ -344,9 +344,9 @@ fun HistoryDetailScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                SimpleCircularProgressIndicator(
+                PLoading(
+                    size = 48.dp,
                     color = PrimaryOrange,
-                    strokeWidth = 4.dp
                 )
                 PText(
                     text = "加载中...",

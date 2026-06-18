@@ -51,7 +51,6 @@ import com.eatwhat.domain.usecase.RollRecipesUseCase
 import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
-import com.eatwhat.ui.components.SimpleCircularProgressIndicator
 import com.eatwhat.ui.theme.MeatRed
 import com.eatwhat.ui.theme.OtherPurple
 import com.eatwhat.ui.theme.PrimaryOrange
@@ -70,6 +69,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -174,9 +174,9 @@ fun RollResultScreen(
                             style = MaterialTheme.typography.titleMedium,
                             color = Color.Gray
                         )
-                        SimpleCircularProgressIndicator(
+                        PLoading(
+                            size = 48.dp,
                             color = PrimaryOrange,
-                            strokeWidth = 4.dp
                         )
                     }
                 }

@@ -54,7 +54,6 @@ import com.eatwhat.EatWhatApplication
 import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.components.IconSize
 import com.eatwhat.ui.components.RecipeIcon
-import com.eatwhat.ui.components.SimpleCircularProgressIndicator
 import com.eatwhat.ui.theme.ErrorRed
 import com.eatwhat.ui.theme.IngredientCardBackground
 import com.eatwhat.ui.theme.LocalDarkTheme
@@ -79,6 +78,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -311,9 +311,9 @@ fun RecipeDetailScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                SimpleCircularProgressIndicator(
+                PLoading(
+                    size = 48.dp,
                     color = PrimaryOrange,
-                    strokeWidth = 4.dp
                 )
                 PText(
                     text = "加载中...",
