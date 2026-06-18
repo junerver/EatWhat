@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,16 +31,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material.icons.outlined.Timer
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -121,13 +116,17 @@ import xyz.junerver.compose.palette.components.message.MessageType
 import xyz.junerver.compose.palette.components.message.rememberMessageState
 import xyz.junerver.compose.palette.components.scaffold.PScaffold
 import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
+import xyz.junerver.compose.palette.components.select.PSelect
+import xyz.junerver.compose.palette.components.select.SelectDefaults
+import xyz.junerver.compose.palette.components.select.SelectOption
 import xyz.junerver.compose.palette.components.tag.PEditableTagGroup
 import xyz.junerver.compose.palette.components.tag.TagDefaults
 import xyz.junerver.compose.palette.components.tag.TagSize
 import xyz.junerver.compose.palette.components.text.PText
+import xyz.junerver.compose.palette.core.spec.ComponentSize
+import xyz.junerver.compose.palette.core.spec.ComponentStatus
 import com.eatwhat.domain.model.Unit as IngredientUnit
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddRecipeScreen(
   navController: NavController,
@@ -882,7 +881,6 @@ private fun DifficultyChip(
 /**
  * Ingredient input card with modern design
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun IngredientInputCard(
   index: Int,
@@ -891,8 +889,6 @@ private fun IngredientInputCard(
   onDelete: () -> Unit,
   canDelete: Boolean
 ) {
-  var unitExpanded by useState(false)
-
   PContainer(
     shape = RoundedCornerShape(16.dp),
     color = MaterialTheme.colorScheme.surfaceVariant,
@@ -996,59 +992,30 @@ private fun IngredientInputCard(
         }
 
         // Unit selector
-        ExposedDropdownMenuBox(
-          expanded = unitExpanded,
-          onExpandedChange = { unitExpanded = it }
-        ) {
-          PContainer(
-            shape = RoundedCornerShape(8.dp),
-            color = SoftGreen.copy(alpha = 0.1f),
-            modifier = Modifier
-              .menuAnchor()
-              .width(56.dp)
-              .clickable { unitExpanded = true }
-          ) {
-            Row(
-              modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.Center
-            ) {
-              PText(
-                ingredient.unit.getDisplayName(),
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Medium,
-                color = SoftGreen
-              )
-              Icon(
-                Icons.Default.ArrowDropDown,
-                contentDescription = null,
-                tint = SoftGreen,
-                modifier = Modifier.size(16.dp)
-              )
-            }
-          }
-
-          ExposedDropdownMenu(
-            expanded = unitExpanded,
-            onDismissRequest = { unitExpanded = false }
-          ) {
-            IngredientUnit.entries.forEach { unit ->
-              DropdownMenuItem(
-                text = {
-                  PText(
-                    unit.getDisplayName(),
-                    style = MaterialTheme.typography.bodyMedium
-                  )
-                },
-                onClick = {
-                  onIngredientChange(ingredient.copy(unit = unit))
-                  unitExpanded = false
-                },
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-              )
-            }
-          }
-        }
+        PSelect(
+          options = IngredientUnit.entries.map { unit ->
+            SelectOption(
+              label = unit.getDisplayName(),
+              value = unit
+            )
+          },
+          value = ingredient.unit,
+          onValueChange = { unit -> onIngredientChange(ingredient.copy(unit = unit)) },
+          modifier = Modifier.width(72.dp),
+          size = ComponentSize.Small,
+          status = ComponentStatus.Success,
+          colors = SelectDefaults.colors(
+            textColor = SoftGreen,
+            placeholderColor = SoftGreen,
+            disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            containerColor = SoftGreen.copy(alpha = 0.1f),
+            dropdownContainerColor = MaterialTheme.colorScheme.surface,
+            optionTextColor = MaterialTheme.colorScheme.onSurface,
+            selectedOptionTextColor = SoftGreen,
+            selectedOptionContainerColor = SoftGreen.copy(alpha = 0.1f),
+            disabledOptionTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+          )
+        )
       }
 
       // Delete button
