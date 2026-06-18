@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Cloud
@@ -34,18 +34,15 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -57,7 +54,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -80,8 +76,10 @@ import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.text.PText
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -219,7 +217,7 @@ fun SettingsScreen(navController: NavController) {
     topBar = {
       TopAppBar(
         title = {
-          Text(
+          PText(
             text = "设置",
             fontWeight = FontWeight.Bold
           )
@@ -227,7 +225,7 @@ fun SettingsScreen(navController: NavController) {
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
             Icon(
-              imageVector = Icons.Default.ArrowBack,
+              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
               contentDescription = "返回"
             )
           }
@@ -281,7 +279,7 @@ fun SettingsScreen(navController: NavController) {
             } ?: "备份菜谱、历史和配置",
             onClick = { showExportDialog = true }
           )
-          Divider(modifier = Modifier.padding(horizontal = 16.dp))
+          HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
           SettingsItem(
             icon = Icons.Default.FileDownload,
             title = "导入数据",
@@ -302,7 +300,7 @@ fun SettingsScreen(navController: NavController) {
             subtitle = "配置云端存储服务器",
             onClick = { navController.navigate(Destinations.WebDAVConfig.route) }
           )
-          Divider(modifier = Modifier.padding(horizontal = 16.dp))
+          HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
           SettingsItem(
             icon = Icons.Default.Sync,
             title = "同步数据",
@@ -348,10 +346,11 @@ fun SettingsScreen(navController: NavController) {
             .background(Color.Black.copy(alpha = 0.3f)),
           contentAlignment = Alignment.Center
         ) {
-          Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-              containerColor = MaterialTheme.colorScheme.surface
+          PCard(
+            variant = CardVariant.Elevated,
+            colors = CardColors(
+              containerColor = MaterialTheme.colorScheme.surface,
+              contentColor = MaterialTheme.colorScheme.onSurface
             )
           ) {
             Column(
@@ -360,7 +359,7 @@ fun SettingsScreen(navController: NavController) {
               verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
               CircularProgressIndicator()
-              Text(
+              PText(
                 text = loadingMessage,
                 style = MaterialTheme.typography.bodyMedium
               )
@@ -449,7 +448,7 @@ private fun ExportOptionsDialog(
   AlertDialog(
     onDismissRequest = onDismiss,
     title = {
-      Text(
+      PText(
         text = "选择导出内容",
         fontWeight = FontWeight.Bold
       )
@@ -460,11 +459,12 @@ private fun ExportOptionsDialog(
       ) {
         // 无数据警告
         if (hasNoData) {
-          Card(
-            colors = CardDefaults.cardColors(
-              containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-            ),
-            shape = RoundedCornerShape(8.dp)
+          PCard(
+            variant = CardVariant.Filled,
+            colors = CardColors(
+              containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+              contentColor = MaterialTheme.colorScheme.onErrorContainer
+            )
           ) {
             Row(
               modifier = Modifier.padding(12.dp),
@@ -477,7 +477,7 @@ private fun ExportOptionsDialog(
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(20.dp)
               )
-              Text(
+              PText(
                 text = "没有数据可导出，请先添加菜谱或历史记录",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onErrorContainer
@@ -518,7 +518,7 @@ private fun ExportOptionsDialog(
     confirmButton = {},
     dismissButton = {
       TextButton(onClick = onDismiss) {
-        Text("取消")
+        PText("取消")
       }
     }
   )
@@ -539,7 +539,7 @@ private fun ImportPreviewDialog(
   AlertDialog(
     onDismissRequest = onDismiss,
     title = {
-      Text(
+      PText(
         text = "导入预览",
         fontWeight = FontWeight.Bold
       )
@@ -549,11 +549,12 @@ private fun ImportPreviewDialog(
         verticalArrangement = Arrangement.spacedBy(16.dp)
       ) {
         // 数据统计
-        Card(
-          colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-          ),
-          shape = RoundedCornerShape(12.dp)
+        PCard(
+          variant = CardVariant.Filled,
+          colors = CardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            contentColor = MaterialTheme.colorScheme.onSurface
+          )
         ) {
           Column(
             modifier = Modifier
@@ -561,7 +562,7 @@ private fun ImportPreviewDialog(
               .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
           ) {
-            Text(
+            PText(
               text = "文件内容",
               style = MaterialTheme.typography.titleSmall,
               fontWeight = FontWeight.SemiBold
@@ -571,44 +572,44 @@ private fun ImportPreviewDialog(
               horizontalArrangement = Arrangement.SpaceBetween
             ) {
               Column {
-                Text("菜谱", style = MaterialTheme.typography.bodySmall)
-                Text(
+                PText("菜谱", style = MaterialTheme.typography.bodySmall)
+                PText(
                   "${preview.recipeCount} 个",
                   style = MaterialTheme.typography.bodyLarge,
                   fontWeight = FontWeight.Medium
                 )
               }
               Column(horizontalAlignment = Alignment.End) {
-                Text("历史记录", style = MaterialTheme.typography.bodySmall)
-                Text(
+                PText("历史记录", style = MaterialTheme.typography.bodySmall)
+                PText(
                   "${preview.historyCount} 条",
                   style = MaterialTheme.typography.bodyLarge,
                   fontWeight = FontWeight.Medium
                 )
               }
             }
-            Divider(modifier = Modifier.padding(vertical = 4.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             Row(
               modifier = Modifier.fillMaxWidth(),
               horizontalArrangement = Arrangement.SpaceEvenly
             ) {
               Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
+                PText(
                   "${preview.newRecipes + preview.newHistory}",
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.Bold,
                   color = MaterialTheme.colorScheme.primary
                 )
-                Text("新增", style = MaterialTheme.typography.bodySmall)
+                PText("新增", style = MaterialTheme.typography.bodySmall)
               }
               Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
+                PText(
                   "${preview.updatedRecipes + preview.updatedHistory}",
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.Bold,
                   color = MaterialTheme.colorScheme.tertiary
                 )
-                Text("更新", style = MaterialTheme.typography.bodySmall)
+                PText("更新", style = MaterialTheme.typography.bodySmall)
               }
             }
           }
@@ -616,7 +617,7 @@ private fun ImportPreviewDialog(
 
         // 冲突处理策略选择
         if (preview.updatedRecipes + preview.updatedHistory > 0) {
-          Text(
+          PText(
             text = "冲突处理",
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold
@@ -649,12 +650,12 @@ private fun ImportPreviewDialog(
       Button(
         onClick = { onImport(selectedStrategy) }
       ) {
-        Text("开始导入")
+        PText("开始导入")
       }
     },
     dismissButton = {
       TextButton(onClick = onDismiss) {
-        Text("取消")
+        PText("取消")
       }
     }
   )
@@ -690,12 +691,12 @@ private fun ConflictStrategyOption(
         onClick = onClick
       )
       Column {
-        Text(
+        PText(
           text = title,
           style = MaterialTheme.typography.bodyMedium,
           fontWeight = FontWeight.Medium
         )
-        Text(
+        PText(
           text = description,
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -747,13 +748,13 @@ private fun ExportOptionItem(
         )
       }
       Column(modifier = Modifier.weight(1f)) {
-        Text(
+        PText(
           text = title,
           style = MaterialTheme.typography.bodyLarge,
           fontWeight = FontWeight.Medium,
           color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha)
         )
-        Text(
+        PText(
           text = subtitle,
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha)
@@ -807,7 +808,7 @@ private fun SettingsCard(
           modifier = Modifier.size(20.dp)
         )
       }
-      Text(
+      PText(
         text = title,
         style = MaterialTheme.typography.titleSmall,
         fontWeight = FontWeight.SemiBold,
@@ -873,13 +874,13 @@ private fun SettingsItem(
         modifier = Modifier.weight(1f),
         verticalArrangement = Arrangement.spacedBy(2.dp)
       ) {
-        Text(
+        PText(
           text = title,
           style = MaterialTheme.typography.bodyLarge,
           fontWeight = FontWeight.Medium,
           color = MaterialTheme.colorScheme.onSurface
         )
-        Text(
+        PText(
           text = subtitle,
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -941,13 +942,13 @@ private fun ThemeSettingItem(
         modifier = Modifier.weight(1f),
         verticalArrangement = Arrangement.spacedBy(2.dp)
       ) {
-        Text(
+        PText(
           text = "主题模式",
           style = MaterialTheme.typography.bodyLarge,
           fontWeight = FontWeight.Medium,
           color = MaterialTheme.colorScheme.onSurface
         )
-        Text(
+        PText(
           text = when (currentThemeMode) {
             ThemeMode.SYSTEM -> "跟随系统"
             ThemeMode.LIGHT -> "浅色"
@@ -993,7 +994,7 @@ private fun ThemeSelectionDialog(
   AlertDialog(
     onDismissRequest = onDismiss,
     title = {
-      Text(
+      PText(
         text = "选择主题模式",
         fontWeight = FontWeight.Bold
       )
@@ -1028,7 +1029,7 @@ private fun ThemeSelectionDialog(
     confirmButton = {},
     dismissButton = {
       TextButton(onClick = onDismiss) {
-        Text("取消")
+        PText("取消")
       }
     }
   )
@@ -1070,13 +1071,13 @@ private fun ThemeModeOption(
         modifier = Modifier.size(24.dp)
       )
       Column(modifier = Modifier.weight(1f)) {
-        Text(
+        PText(
           text = title,
           style = MaterialTheme.typography.bodyLarge,
           fontWeight = FontWeight.Medium,
           color = MaterialTheme.colorScheme.onSurface
         )
-        Text(
+        PText(
           text = description,
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
