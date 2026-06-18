@@ -24,16 +24,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,7 +40,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -56,7 +53,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -87,7 +83,14 @@ import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.card.CardColors
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.progress.PProgress
+import xyz.junerver.compose.palette.components.tag.PTag
+import xyz.junerver.compose.palette.components.tag.TagColors
+import xyz.junerver.compose.palette.components.tag.TagSize
+import xyz.junerver.compose.palette.components.text.PText
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -112,7 +115,7 @@ fun HistoryDetailScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
+                    PText(
                         "菜单详情",
                         fontWeight = FontWeight.Bold
                     )
@@ -161,29 +164,27 @@ fun HistoryDetailScreen(
             ) {
                 // Header Card
                 item {
-                    Card(
+                    PCard(
                         modifier = Modifier
-                          .fillMaxWidth()
-                          .shadow(
-                            elevation = 4.dp,
-                            shape = RoundedCornerShape(20.dp),
-                            spotColor = Color.Black.copy(alpha = 0.1f)
-                          ),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                          .fillMaxWidth(),
+                        variant = CardVariant.Elevated,
+                        colors = CardColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
                     ) {
                         Column(
                             modifier = Modifier
                               .fillMaxWidth()
-                              .padding(20.dp),
+                              .padding(4.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
+                            PText(
                                 text = "🍽️",
                                 fontSize = 48.sp
                             )
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text(
+                            PText(
                                 text = data.history.customName.ifEmpty {
                                     data.history.summary.ifEmpty { "${data.history.totalCount}个菜" }
                                 },
@@ -195,7 +196,7 @@ fun HistoryDetailScreen(
                             // 如果有自定义名称，显示配置摘要作为副标题
                             if (data.history.customName.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text(
+                                PText(
                                     text = data.history.summary.ifEmpty { "${data.history.totalCount}个菜" },
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -205,18 +206,15 @@ fun HistoryDetailScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             // 时间标签
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = PrimaryOrange.copy(alpha = 0.1f)
-                            ) {
-                                Text(
-                                    text = formatTimestamp(data.history.timestamp),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = PrimaryOrange,
-                                    fontWeight = FontWeight.Medium,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            PTag(
+                                text = formatTimestamp(data.history.timestamp),
+                                size = TagSize.Large,
+                                colors = TagColors(
+                                    containerColor = PrimaryOrange.copy(alpha = 0.1f),
+                                    contentColor = PrimaryOrange,
+                                    borderColor = Color.Transparent
                                 )
-                            }
+                            )
                         }
                     }
                 }
@@ -275,19 +273,17 @@ fun HistoryDetailScreen(
 
                 // 菜谱卡片列表
                 item {
-                    Card(
+                    PCard(
                         modifier = Modifier
-                          .fillMaxWidth()
-                          .shadow(
-                            elevation = 4.dp,
-                            shape = RoundedCornerShape(20.dp),
-                            spotColor = Color.Black.copy(alpha = 0.1f)
-                          ),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                          .fillMaxWidth(),
+                        variant = CardVariant.Elevated,
+                        colors = CardColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
                     ) {
                         Column(
-                            modifier = Modifier.padding(20.dp)
+                            modifier = Modifier.padding(4.dp)
                         ) {
                             // Header
                             Row(
@@ -302,13 +298,13 @@ fun HistoryDetailScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
-                                        Icons.Outlined.MenuBook,
+                                        Icons.AutoMirrored.Outlined.MenuBook,
                                         contentDescription = null,
                                         tint = SoftBlue,
                                         modifier = Modifier.size(22.dp)
                                     )
                                 }
-                                Text(
+                                PText(
                                     "菜谱列表",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold
@@ -351,7 +347,7 @@ fun HistoryDetailScreen(
                     color = PrimaryOrange,
                     strokeWidth = 4.dp
                 )
-                Text(
+                PText(
                     text = "加载中...",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -371,11 +367,11 @@ fun HistoryDetailScreen(
                     )
                 },
                 title = {
-                    Text("编辑名称")
+                    PText("编辑名称")
                 },
                 text = {
                     Column {
-                        Text(
+                        PText(
                             text = "为这个菜肴搭配起个名字，方便管理收藏",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -384,8 +380,8 @@ fun HistoryDetailScreen(
                         OutlinedTextField(
                             value = editingName,
                             onValueChange = { editingName = it },
-                            label = { Text("自定义名称") },
-                            placeholder = { Text("例如：周末家宴、快手晚餐") },
+                            label = { PText("自定义名称") },
+                            placeholder = { PText("例如：周末家宴、快手晚餐") },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
@@ -407,12 +403,12 @@ fun HistoryDetailScreen(
                             contentColor = PrimaryOrange
                         )
                     ) {
-                        Text("保存")
+                        PText("保存")
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showEditNameDialog = false }) {
-                        Text("取消")
+                        PText("取消")
                     }
                 }
             )
@@ -432,19 +428,17 @@ private fun SectionCard(
     progress: Float,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Card(
+    PCard(
         modifier = Modifier
-          .fillMaxWidth()
-          .shadow(
-            elevation = 4.dp,
-            shape = RoundedCornerShape(20.dp),
-            spotColor = Color.Black.copy(alpha = 0.1f)
-          ),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+          .fillMaxWidth(),
+        variant = CardVariant.Elevated,
+        colors = CardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
     ) {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(4.dp)
         ) {
             // Header - clickable
             Row(
@@ -473,12 +467,12 @@ private fun SectionCard(
                         )
                     }
                     Column {
-                        Text(
+                        PText(
                             title,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
-                        Text(
+                        PText(
                             subtitle,
                             style = MaterialTheme.typography.bodySmall,
                             color = if (progress >= 1f) SoftGreen else MaterialTheme.colorScheme.onSurfaceVariant
@@ -562,7 +556,7 @@ private fun PrepItemCheckRow(
                 }
             }
 
-            Text(
+            PText(
                 text = item.name,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
@@ -582,12 +576,14 @@ private fun RecipeSnapshotCard(
   val isDark = LocalDarkTheme.current
     val cardBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else InputBackground
 
-    Card(
+    PCard(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = cardBackground),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        variant = CardVariant.Filled,
+        colors = CardColors(
+            containerColor = cardBackground,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
     ) {
         Row(
             modifier = Modifier
@@ -606,7 +602,7 @@ private fun RecipeSnapshotCard(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
+                PText(
                     text = snapshot.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
@@ -647,18 +643,15 @@ private fun RecipeSnapshotCard(
 
 @Composable
 private fun InfoTag(text: String, color: Color) {
-    Surface(
-        shape = RoundedCornerShape(6.dp),
-        color = color.copy(alpha = 0.1f)
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = color,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+    PTag(
+        text = text,
+        size = TagSize.Small,
+        colors = TagColors(
+            containerColor = color.copy(alpha = 0.1f),
+            contentColor = color,
+            borderColor = Color.Transparent
         )
-    }
+    )
 }
 
 private fun formatTimestamp(timestamp: Long): String {
