@@ -35,7 +35,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -68,6 +67,7 @@ import xyz.junerver.compose.palette.components.alert.PAlert
 import xyz.junerver.compose.palette.components.button.ButtonType
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.scaffold.PScaffold
 import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
@@ -393,7 +393,7 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
             )
 
             // Test Button
-            Surface(
+            PContainer(
               onClick = { testConnection() },
               shape = RoundedCornerShape(12.dp),
               color = inputBackground, // Same as input background
