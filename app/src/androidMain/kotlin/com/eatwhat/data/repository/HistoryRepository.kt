@@ -5,6 +5,7 @@ import com.eatwhat.data.database.entities.*
 import com.eatwhat.data.database.relations.HistoryWithDetails
 import com.eatwhat.domain.model.Difficulty
 import com.eatwhat.domain.model.HistoryRecord
+import com.eatwhat.domain.model.PrepItem
 import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.domain.model.RollConfig
@@ -26,8 +27,8 @@ class HistoryRepository(private val database: EatWhatDatabase) : HistorySaver {
         }
     }
 
-    fun getHistoryById(historyId: Long): Flow<HistoryWithRecipes?> {
-        return historyDao.getHistoryWithDetails(historyId).map { it?.toDomain() }
+    fun getHistoryById(historyId: Long): Flow<HistoryRecord?> {
+        return historyDao.getHistoryWithDetails(historyId).map { it?.toHistoryRecord() }
     }
 
     override suspend fun insertHistory(
@@ -116,7 +117,8 @@ class HistoryRepository(private val database: EatWhatDatabase) : HistorySaver {
             summary = history.summary,
             customName = history.customName,
             isLocked = history.isLocked,
-            recipes = recipeSnapshots.map { it.toDomainSnapshot() }
+            recipes = recipeSnapshots.map { it.toDomainSnapshot() },
+            prepItems = prepItems.map { it.toDomainPrepItem() }
         )
     }
 
@@ -132,31 +134,12 @@ class HistoryRepository(private val database: EatWhatDatabase) : HistorySaver {
         )
     }
 
-    private fun HistoryWithDetails.toDomain(): HistoryWithRecipes {
-        return HistoryWithRecipes(
-            history = history.toDomain(),
-            recipes = recipeSnapshots.map { it.toDomain() },
-            prepItems = prepItems.map { it.toDomain() }
-        )
-    }
-
-    private fun HistoryRecipeCrossRef.toDomain(): RecipeSnapshot {
-        return RecipeSnapshot(
-            recipeId = recipeId,
-            name = recipeName,
-            type = recipeType,
-            icon = recipeIcon,
-            imageBase64 = recipeImageBase64,
-            difficulty = recipeDifficulty,
-            estimatedTime = recipeTime
-        )
-    }
-
-    private fun PrepItemEntity.toDomain(): PrepItemRecord {
-        return PrepItemRecord(
+    private fun PrepItemEntity.toDomainPrepItem(): PrepItem {
+        return PrepItem(
             id = id,
-            name = ingredientName,
-            isChecked = isChecked
+            ingredientName = ingredientName,
+            isChecked = isChecked,
+            orderIndex = orderIndex
         )
     }
 
@@ -195,29 +178,3 @@ class HistoryRepository(private val database: EatWhatDatabase) : HistorySaver {
         return historyDao.getPrepItemsByHistoryId(historyId)
     }
 }
-
-data class HistoryWithRecipes(
-    val history: HistoryRecord,
-    val recipes: List<RecipeSnapshot>,
-    val prepItems: List<PrepItemRecord>
-)
-
-/**
- * Recipe snapshot for history records
- * @property imageBase64 Base64 encoded WebP image (optional, takes precedence over icon)
- */
-data class RecipeSnapshot(
-    val recipeId: Long,
-    val name: String,
-    val type: String,
-    val icon: String,
-    val imageBase64: String? = null,
-    val difficulty: String,
-    val estimatedTime: Int
-)
-
-data class PrepItemRecord(
-    val id: Long,
-    val name: String,
-    val isChecked: Boolean
-)
