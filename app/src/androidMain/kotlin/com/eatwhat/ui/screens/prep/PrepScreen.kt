@@ -34,7 +34,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -71,6 +70,7 @@ import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
+import xyz.junerver.compose.palette.components.progress.PProgress
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -182,14 +182,13 @@ fun PrepScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                       val isDarkForProgress = LocalDarkTheme.current
                         val progressTrackColor = if (isDarkForProgress) DarkProgressTrack else LightBorder
-                        LinearProgressIndicator(
-                            progress = progress,
+                        PProgress(
+                            percent = progress * 100f,
                             modifier = Modifier
-                              .fillMaxWidth()
-                              .height(8.dp)
-                              .clip(RoundedCornerShape(4.dp)),
-                            color = if (checkedCount == totalCount) SoftGreen else PrimaryOrange,
-                            trackColor = progressTrackColor
+                                .fillMaxWidth(),
+                            progressColor = if (checkedCount == totalCount) SoftGreen else PrimaryOrange,
+                            trackColor = progressTrackColor,
+                            formatter = null
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))

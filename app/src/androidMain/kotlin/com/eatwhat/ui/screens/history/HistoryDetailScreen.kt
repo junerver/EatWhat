@@ -37,7 +37,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -88,6 +87,7 @@ import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.progress.PProgress
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -497,14 +497,13 @@ private fun SectionCard(
             Spacer(modifier = Modifier.height(12.dp))
           val isDark = LocalDarkTheme.current
             val trackColor = if (isDark) DarkProgressTrack else LightBorder
-            LinearProgressIndicator(
-                progress = progress,
+            PProgress(
+                percent = progress * 100f,
                 modifier = Modifier
-                  .fillMaxWidth()
-                  .height(6.dp)
-                  .clip(RoundedCornerShape(3.dp)),
-                color = if (progress >= 1f) SoftGreen else PrimaryOrange,
-                trackColor = trackColor
+                    .fillMaxWidth(),
+                progressColor = if (progress >= 1f) SoftGreen else PrimaryOrange,
+                trackColor = trackColor,
+                formatter = null
             )
 
             Spacer(modifier = Modifier.height(16.dp))

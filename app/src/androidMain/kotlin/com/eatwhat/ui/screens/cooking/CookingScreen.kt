@@ -30,7 +30,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -62,6 +61,7 @@ import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
 import com.eatwhat.ui.theme.UnselectedBackground
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.progress.PProgress
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -138,14 +138,13 @@ fun CookingScreen(
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        LinearProgressIndicator(
-                            progress = progress,
+                        PProgress(
+                            percent = progress * 100f,
                             modifier = Modifier
-                              .fillMaxWidth()
-                              .height(8.dp)
-                              .clip(RoundedCornerShape(4.dp)),
-                            color = if (completedSteps.size == totalSteps) SoftGreen else PrimaryOrange,
-                            trackColor = LightBorder
+                                .fillMaxWidth(),
+                            progressColor = if (completedSteps.size == totalSteps) SoftGreen else PrimaryOrange,
+                            trackColor = LightBorder,
+                            formatter = null
                         )
                     }
                 }
