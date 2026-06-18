@@ -38,7 +38,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
@@ -80,6 +79,7 @@ import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.loading.PLoading
+import xyz.junerver.compose.palette.components.radio.PRadio
 import xyz.junerver.compose.palette.components.text.PText
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -679,37 +679,22 @@ private fun ConflictStrategyOption(
   onClick: () -> Unit
 ) {
   Surface(
-    onClick = onClick,
     shape = RoundedCornerShape(8.dp),
     color = if (selected)
       MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
     else
       Color.Transparent
   ) {
-    Row(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(8.dp),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-      RadioButton(
-        selected = selected,
-        onClick = onClick
-      )
-      Column {
-        PText(
-          text = title,
-          style = MaterialTheme.typography.bodyMedium,
-          fontWeight = FontWeight.Medium
-        )
-        PText(
-          text = description,
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-      }
-    }
+    PRadio(
+      label = title,
+      description = description,
+      checked = selected,
+      onClick = onClick,
+      modifier = Modifier.fillMaxWidth(),
+      labelColor = MaterialTheme.colorScheme.onSurface,
+      descriptionColor = MaterialTheme.colorScheme.onSurfaceVariant,
+      checkedColor = MaterialTheme.colorScheme.primary
+    )
   }
 }
 
