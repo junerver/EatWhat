@@ -32,8 +32,6 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -71,6 +69,8 @@ import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.alert.AlertType
+import xyz.junerver.compose.palette.components.alert.PAlert
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 
@@ -277,33 +277,11 @@ fun WebDAVConfigScreen(navController: NavController) {
         // 测试结果显示
         if (testMessage.isNotBlank()) {
           Spacer(modifier = Modifier.height(12.dp))
-          Card(
-            colors = CardDefaults.cardColors(
-              containerColor = if (testSuccess)
-                if (isDark) Color(0xFF1E331E) else Color(0xFFF8FBF8)
-              else
-                if (isDark) Color(0xFF331E1E) else Color(0xFFFFF8F8)
-            ),
-            shape = RoundedCornerShape(12.dp)
-          ) {
-            Row(
-              modifier = Modifier.padding(12.dp),
-              horizontalArrangement = Arrangement.spacedBy(8.dp),
-              verticalAlignment = Alignment.CenterVertically
-            ) {
-              Icon(
-                imageVector = if (testSuccess) Icons.Default.CheckCircle else Icons.Default.Warning,
-                contentDescription = null,
-                tint = if (testSuccess) Color(0xFF4CAF50) else Color(0xFFFF5252),
-                modifier = Modifier.size(20.dp)
-              )
-              Text(
-                text = testMessage,
-                style = MaterialTheme.typography.bodySmall,
-                color = if (testSuccess) Color(0xFF4CAF50) else Color(0xFFFF5252)
-              )
-            }
-          }
+          PAlert(
+            message = if (testSuccess) "连接成功" else "连接失败",
+            description = testMessage,
+            type = if (testSuccess) AlertType.Success else AlertType.Error
+          )
         }
       }
 
@@ -373,32 +351,11 @@ fun WebDAVConfigScreen(navController: NavController) {
           Spacer(modifier = Modifier.height(10.dp))
 
           // 警告提示
-          Card(
-            colors = CardDefaults.cardColors(
-              containerColor = if (isDark)
-                Color(0xFF4D2600).copy(alpha = 0.3f)
-              else
-                Color(0xFFFFF3E0)
-            ),
-            shape = RoundedCornerShape(12.dp)
-          ) {
-            Row(
-              modifier = Modifier.padding(12.dp),
-              horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-              Icon(
-                imageVector = Icons.Default.Warning,
-                contentDescription = null,
-                tint = Color(0xFFFFC107),
-                modifier = Modifier.size(20.dp)
-              )
-              Text(
-                text = "请牢记加密密码！忘记密码将无法恢复云端数据。",
-                style = MaterialTheme.typography.bodySmall,
-                color = textColor
-              )
-            }
-          }
+          PAlert(
+            message = "请牢记加密密码",
+            description = "忘记密码将无法恢复云端数据。",
+            type = AlertType.Warning
+          )
         }
       }
 
@@ -496,32 +453,11 @@ fun WebDAVConfigScreen(navController: NavController) {
           Spacer(modifier = Modifier.height(10.dp))
 
           // 智能合并说明
-          Card(
-            colors = CardDefaults.cardColors(
-              containerColor = if (isDark)
-                Color(0xFF1A2F1A)
-              else
-                Color(0xFFE8F5E9)
-            ),
-            shape = RoundedCornerShape(12.dp)
-          ) {
-            Row(
-              modifier = Modifier.padding(12.dp),
-              horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-              Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = null,
-                tint = Color(0xFF4CAF50),
-                modifier = Modifier.size(20.dp)
-              )
-              Text(
-                text = "自动同步采用智能合并策略，根据时间戳自动合并本地与云端数据。",
-                style = MaterialTheme.typography.bodySmall,
-                color = textColor
-              )
-            }
-          }
+          PAlert(
+            message = "智能合并",
+            description = "自动同步会根据时间戳合并本地与云端数据。",
+            type = AlertType.Info
+          )
         }
       }
 
