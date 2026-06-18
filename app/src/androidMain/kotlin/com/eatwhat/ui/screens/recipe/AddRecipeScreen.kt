@@ -45,7 +45,6 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -117,6 +116,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.message.MessageType
 import xyz.junerver.compose.palette.components.message.rememberMessageState
 import xyz.junerver.compose.palette.components.scaffold.PScaffold
@@ -767,7 +767,7 @@ private fun AddButton(
   onClick: () -> Unit,
   color: Color
 ) {
-  Surface(
+  PContainer(
     onClick = onClick,
     shape = CircleShape,
     color = color.copy(alpha = 0.1f),
@@ -802,7 +802,7 @@ private fun RecipeTypeChip(
     RecipeType.OTHER -> Triple("🥣", "其他", OtherPurple)
   }
 
-  Surface(
+  PContainer(
     onClick = onClick,
     shape = RoundedCornerShape(12.dp),
     color = if (isSelected) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
@@ -844,7 +844,7 @@ private fun DifficultyChip(
     Difficulty.HARD -> Triple("困难", 3, MeatRed)
   }
 
-  Surface(
+  PContainer(
     onClick = onClick,
     shape = RoundedCornerShape(12.dp),
     color = if (isSelected) color.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant,
@@ -893,7 +893,7 @@ private fun IngredientInputCard(
 ) {
   var unitExpanded by useState(false)
 
-  Surface(
+  PContainer(
     shape = RoundedCornerShape(16.dp),
     color = MaterialTheme.colorScheme.surfaceVariant,
     border = androidx.compose.foundation.BorderStroke(1.dp, SoftGreen.copy(alpha = 0.2f)),
@@ -958,7 +958,7 @@ private fun IngredientInputCard(
         verticalAlignment = Alignment.CenterVertically
       ) {
         // Amount input
-        Surface(
+        PContainer(
           shape = RoundedCornerShape(8.dp),
           color = MaterialTheme.colorScheme.surface,
           border = androidx.compose.foundation.BorderStroke(
@@ -1000,7 +1000,7 @@ private fun IngredientInputCard(
           expanded = unitExpanded,
           onExpandedChange = { unitExpanded = it }
         ) {
-          Surface(
+          PContainer(
             shape = RoundedCornerShape(8.dp),
             color = SoftGreen.copy(alpha = 0.1f),
             modifier = Modifier
@@ -1088,7 +1088,7 @@ private fun StepContentCard(
   val stepBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else StepCardBackground
   val focusRequester by useCreation { FocusRequester() }
 
-  Surface(
+  PContainer(
     shape = RoundedCornerShape(16.dp),
     color = stepBackground,
     border = androidx.compose.foundation.BorderStroke(1.dp, SoftBlue.copy(alpha = 0.2f)),
@@ -1203,7 +1203,7 @@ fun StepConnectorWithInsert(
     )
 
     // Insert button
-    Surface(
+    PContainer(
       onClick = onInsertStep,
       shape = CircleShape,
       color = SoftBlue.copy(alpha = 0.1f),
