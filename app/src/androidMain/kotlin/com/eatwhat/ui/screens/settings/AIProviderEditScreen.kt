@@ -32,7 +32,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,6 +56,7 @@ import com.eatwhat.domain.model.AIConfig
 import com.eatwhat.data.repository.AIProviderRepository
 import com.eatwhat.domain.service.AIService
 import com.eatwhat.domain.service.OpenAIService
+import com.eatwhat.ui.components.PaletteConfirmDialog
 import com.eatwhat.ui.components.StyledTextField
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -68,9 +68,7 @@ import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.hooks.useTimeoutFn
 import xyz.junerver.compose.palette.components.alert.AlertType
 import xyz.junerver.compose.palette.components.alert.PAlert
-import xyz.junerver.compose.palette.components.button.ButtonSize
 import xyz.junerver.compose.palette.components.button.ButtonType
-import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.loading.PLoading
@@ -525,50 +523,18 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
 
     // Delete Confirmation Dialog
     if (showDeleteDialog.value) {
-      AlertDialog(
-        onDismissRequest = { setShowDeleteDialog(false) },
-        icon = {
-          Icon(
-            Icons.Default.Delete,
-            contentDescription = null,
-            tint = Color.Red,
-            modifier = Modifier.size(32.dp)
-          )
-        },
-        title = {
-          PText(
-            text = "确认删除",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-          )
-        },
-        text = {
-          PText(
-            text = "确定要删除此模型供应商吗？此操作无法撤销。",
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
-          )
-        },
-        confirmButton = {
-          PButton(
-            text = "删除",
-            size = ButtonSize.SMALL,
-            type = ButtonType.DANGER,
-            onClick = {
-              setShowDeleteDialog(false)
-              onDelete()
-            }
-          )
-        },
-        dismissButton = {
-          PButton(
-            text = "取消",
-            size = ButtonSize.SMALL,
-            type = ButtonType.PLAIN,
-            onClick = { setShowDeleteDialog(false) }
-          )
-        },
-        containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
+      PaletteConfirmDialog(
+        title = "确认删除",
+        message = "确定要删除此模型供应商吗？此操作无法撤销。",
+        confirmText = "删除",
+        confirmType = ButtonType.DANGER,
+        icon = Icons.Default.Delete,
+        iconTint = Color.Red,
+        onDismiss = { setShowDeleteDialog(false) },
+        onConfirm = {
+          setShowDeleteDialog(false)
+          onDelete()
+        }
       )
     }
   }

@@ -27,7 +27,6 @@ import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,6 +52,7 @@ import androidx.navigation.NavController
 import com.eatwhat.EatWhatApplication
 import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.components.IconSize
+import com.eatwhat.ui.components.PaletteConfirmDialog
 import com.eatwhat.ui.components.RecipeIcon
 import com.eatwhat.ui.theme.ErrorRed
 import com.eatwhat.ui.theme.IngredientCardBackground
@@ -72,9 +72,7 @@ import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
-import xyz.junerver.compose.palette.components.button.ButtonSize
 import xyz.junerver.compose.palette.components.button.ButtonType
-import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
@@ -326,55 +324,22 @@ fun RecipeDetailScreen(
 
     // Delete confirmation dialog
   if (showDeleteDialog.value) {
-    val isDark = LocalDarkTheme.current
-        AlertDialog(
-            onDismissRequest = { setShowDeleteDialog(false) },
-            icon = {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = null,
-                  tint = ErrorRed,
-                  modifier = Modifier.size(32.dp)
-                )
-            },
-          title = {
-            PText(
-              text = "确认删除",
-              style = MaterialTheme.typography.titleLarge,
-              fontWeight = FontWeight.Bold
-            )
-          },
-          text = {
-            PText(
-              text = "确定要删除这个菜谱吗？此操作无法撤销。",
-              style = MaterialTheme.typography.bodyMedium,
-              color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
-                )
-            },
-            confirmButton = {
-                PButton(
-                    text = "删除",
-                    size = ButtonSize.SMALL,
-                    type = ButtonType.DANGER,
-                    onClick = {
-                      setShowDeleteDialog(false)
-                        scope.launch {
-                            repository.deleteRecipe(recipeId)
-                            navController.navigateUp()
-                        }
-                    }
-                )
-            },
-            dismissButton = {
-                PButton(
-                    text = "取消",
-                    size = ButtonSize.SMALL,
-                    type = ButtonType.PLAIN,
-                    onClick = { setShowDeleteDialog(false) }
-                )
-            },
-          containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
-        )
+    PaletteConfirmDialog(
+      title = "确认删除",
+      message = "确定要删除这个菜谱吗？此操作无法撤销。",
+      confirmText = "删除",
+      confirmType = ButtonType.DANGER,
+      icon = Icons.Default.Delete,
+      iconTint = ErrorRed,
+      onDismiss = { setShowDeleteDialog(false) },
+      onConfirm = {
+        setShowDeleteDialog(false)
+        scope.launch {
+          repository.deleteRecipe(recipeId)
+          navController.navigateUp()
+        }
+      }
+    )
     }
 }
 
