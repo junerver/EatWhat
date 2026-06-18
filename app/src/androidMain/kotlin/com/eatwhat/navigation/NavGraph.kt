@@ -1,6 +1,5 @@
 package com.eatwhat.navigation
 
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,6 +16,7 @@ import com.eatwhat.ui.screens.history.HistoryListScreen
 import com.eatwhat.ui.screens.recipe.RecipeListScreen
 import com.eatwhat.ui.screens.roll.RollResultScreen
 import com.eatwhat.ui.screens.roll.RollScreen
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
 
 /**
  * Main navigation graph for the app
@@ -70,7 +70,7 @@ fun EatWhatApp(
         currentRoute?.startsWith(route.substringBefore("{")) == true
     }
 
-    Scaffold(
+    PScaffold(
         bottomBar = {
             if (!shouldHideBottomBar) {
                 BottomNavBar(navController)
