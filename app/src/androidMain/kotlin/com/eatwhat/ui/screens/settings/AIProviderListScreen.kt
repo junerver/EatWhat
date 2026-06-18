@@ -30,7 +30,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -65,6 +64,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.empty.PEmpty
+import xyz.junerver.compose.palette.components.text.PText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -154,7 +154,7 @@ fun AIProviderListScreen(navController: NavController) {
     topBar = {
       TopAppBar(
         title = {
-          Text("AI 模型供应商", fontWeight = FontWeight.Bold)
+          PText("AI 模型供应商", fontWeight = FontWeight.Bold)
         },
         navigationIcon = {
           IconButton(onClick = { navController.popBackStack() }) {
@@ -277,20 +277,20 @@ fun AIProviderItem(
 
         // Info
         Column(modifier = Modifier.weight(1f)) {
-          Text(
+          PText(
             text = provider.name,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = textColor
           )
           Spacer(modifier = Modifier.height(4.dp))
-          Text(
+          PText(
             text = provider.model,
             style = MaterialTheme.typography.bodyMedium,
             color = subTextColor
           )
           Spacer(modifier = Modifier.height(2.dp))
-          Text(
+          PText(
             text = provider.baseUrl,
             style = MaterialTheme.typography.labelSmall,
             color = subTextColor.copy(alpha = 0.7f),
@@ -310,7 +310,7 @@ fun AIProviderItem(
                     color = primaryColor
                   )
                   Spacer(modifier = Modifier.width(4.dp))
-                  Text(
+                  PText(
                     "Testing...",
                     style = MaterialTheme.typography.labelSmall,
                     color = subTextColor
@@ -323,7 +323,7 @@ fun AIProviderItem(
                     modifier = Modifier.size(14.dp)
                   )
                   Spacer(modifier = Modifier.width(4.dp))
-                  Text(
+                  PText(
                     text = if (testState.isSuccess) "${testState.latency}ms" else "Failed",
                     style = MaterialTheme.typography.labelSmall,
                     color = if (testState.isSuccess) Color(0xFF4CAF50) else Color(0xFFFF5252)

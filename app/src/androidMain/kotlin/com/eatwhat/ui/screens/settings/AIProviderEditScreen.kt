@@ -40,7 +40,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -77,6 +76,7 @@ import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
 import xyz.junerver.compose.palette.components.tag.TagVariant
+import xyz.junerver.compose.palette.components.text.PText
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -250,7 +250,7 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
     topBar = {
       TopAppBar(
         title = {
-          Text(
+          PText(
             if (providerId == null) "添加模型供应商" else "编辑模型供应商",
             fontWeight = FontWeight.Bold
           )
@@ -309,7 +309,7 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
               )
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
+            PText(
               text = "供应商配置",
               style = MaterialTheme.typography.titleMedium,
               fontWeight = FontWeight.Bold,
@@ -477,13 +477,13 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
               }
               Spacer(modifier = Modifier.width(12.dp))
               Column {
-                Text(
+                PText(
                   text = "可用模型列表",
                   style = MaterialTheme.typography.titleMedium,
                   fontWeight = FontWeight.Bold,
                   color = textColor
                 )
-                Text(
+                PText(
                   text = "共 ${availableModels.value.size} 个模型",
                   style = MaterialTheme.typography.bodySmall,
                   color = subTextColor
@@ -536,14 +536,14 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
           )
         },
         title = {
-          Text(
+          PText(
             text = "确认删除",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
           )
         },
         text = {
-          Text(
+          PText(
             text = "确定要删除此模型供应商吗？此操作无法撤销。",
             style = MaterialTheme.typography.bodyMedium,
             color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
@@ -556,12 +556,12 @@ fun AIProviderEditScreen(navController: NavController, providerId: Long? = null)
               onDelete()
             }
           ) {
-            Text("删除", color = Color.Red, fontWeight = FontWeight.Bold)
+            PText("删除", color = Color.Red, fontWeight = FontWeight.Bold)
           }
         },
         dismissButton = {
           TextButton(onClick = { setShowDeleteDialog(false) }) {
-            Text("取消")
+            PText("取消")
           }
         },
         containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
