@@ -45,7 +45,6 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -120,6 +119,8 @@ import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.message.MessageType
 import xyz.junerver.compose.palette.components.message.rememberMessageState
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
 import xyz.junerver.compose.palette.components.tag.PEditableTagGroup
 import xyz.junerver.compose.palette.components.tag.TagDefaults
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -329,7 +330,7 @@ fun AddRecipeScreen(
     }
   }
 
-  Scaffold(
+  PScaffold(
     topBar = {
       AppToolbar(
         title = if (isEditMode) "编辑菜谱" else "创建新菜谱",
@@ -384,7 +385,9 @@ fun AddRecipeScreen(
         }
       )
     },
-    containerColor = MaterialTheme.colorScheme.background
+    colors = ScaffoldDefaults.colors(
+      containerColor = MaterialTheme.colorScheme.background
+    )
   ) { paddingValues ->
     LazyColumn(
       modifier = Modifier

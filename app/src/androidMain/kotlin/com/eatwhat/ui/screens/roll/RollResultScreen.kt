@@ -23,7 +23,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -70,6 +69,8 @@ import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.message.MessageType
 import xyz.junerver.compose.palette.components.message.rememberMessageState
+import xyz.junerver.compose.palette.components.scaffold.PScaffold
+import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -149,8 +150,10 @@ fun RollResultScreen(
         executeRoll()
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
+    PScaffold(
+        colors = ScaffoldDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -208,7 +211,7 @@ fun RollResultScreen(
                     }
                 }
                 rollResult != null -> {
-                  val currentRollResult = rollResult ?: return@Scaffold
+                  val currentRollResult = rollResult ?: return@PScaffold
                     RollResultContent(
                       recipes = currentRollResult.recipes,
                         config = config,
