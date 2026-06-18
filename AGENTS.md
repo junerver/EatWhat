@@ -39,7 +39,7 @@ This file serves as the **unified rule set** for all AI development tools workin
 implementation(platform("androidx.compose:compose-bom:2025.12.01"))
 implementation("androidx.room:room-runtime:2.8.4")
 implementation("xyz.junerver.compose:hooks2:2.3.0")
-implementation("xyz.junerver.compose:palette:0.1.3")
+implementation("xyz.junerver.compose:palette:0.1.4")
 ```
 
 ## 📁 Project Structure

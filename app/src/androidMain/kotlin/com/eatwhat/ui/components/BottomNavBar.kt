@@ -1,18 +1,18 @@
 package com.eatwhat.ui.components
 
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.eatwhat.R
 import com.eatwhat.navigation.Destinations
 import com.eatwhat.ui.theme.PrimaryOrange
+import xyz.junerver.compose.palette.components.bottomnavigation.BottomNavigationDefaults
+import xyz.junerver.compose.palette.components.bottomnavigation.BottomNavigationItem
+import xyz.junerver.compose.palette.components.bottomnavigation.PBottomNavigation
 import xyz.junerver.compose.palette.components.text.PText
 
 /**
@@ -45,44 +45,46 @@ fun BottomNavBar(navController: NavController) {
     )
   )
 
-  NavigationBar {
-    items.forEach { item ->
-      val isSelected = currentRoute?.startsWith(item.route.substringBefore("?")) == true
+  val selectedKey = items
+    .firstOrNull { item -> currentRoute?.startsWith(item.route.substringBefore("?")) == true }
+    ?.route
 
-      NavigationBarItem(
+  PBottomNavigation(
+    items = items.map { item ->
+      BottomNavigationItem(
+        key = item.route,
+        label = item.label,
         icon = {
           PText(
             text = item.emoji,
             fontSize = 24.sp,
-
           )
         },
-        label = {
-          PText(
-            text = item.label,
-            fontSize = 12.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            color = if (isSelected) PrimaryOrange else Color.Gray
-          )
-        },
-        selected = isSelected,
-        onClick = {
-          if (!isSelected) {
-            navController.navigate(item.navigateRoute) {
-              // Pop up to the start destination to avoid building up a large stack
-              popUpTo(Destinations.Roll.route) {
-                saveState = true
-              }
-              // Avoid multiple copies of the same destination
-              launchSingleTop = true
-              // Restore state when reselecting a previously selected item
-              restoreState = true
-            }
-          }
-        }
       )
+    },
+    selectedKey = selectedKey,
+    colors = BottomNavigationDefaults.colors(
+      selectedContentColor = PrimaryOrange,
+      contentColor = Color.Gray,
+      selectedIndicatorColor = PrimaryOrange.copy(alpha = 0.12f)
+    ),
+    onItemClick = { selectedRoute ->
+      val item = items.firstOrNull { it.route == selectedRoute } ?: return@PBottomNavigation
+      val isSelected = currentRoute?.startsWith(item.route.substringBefore("?")) == true
+      if (!isSelected) {
+        navController.navigate(item.navigateRoute) {
+          // Pop up to the start destination to avoid building up a large stack
+          popUpTo(Destinations.Roll.route) {
+            saveState = true
+          }
+          // Avoid multiple copies of the same destination
+          launchSingleTop = true
+          // Restore state when reselecting a previously selected item
+          restoreState = true
+        }
+      }
     }
-  }
+  )
 }
 
 private data class BottomNavItem(
