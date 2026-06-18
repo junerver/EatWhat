@@ -34,8 +34,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.EmojiEmotions
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,7 +41,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -61,6 +58,9 @@ import androidx.compose.ui.window.Dialog
 import com.eatwhat.util.ImageUtils
 import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.loading.PLoading
+import xyz.junerver.compose.palette.components.text.PText
 
 /**
  * Recipe icon picker component
@@ -112,7 +112,7 @@ fun RecipeIconPicker(
     }
 
     Column(modifier = modifier) {
-        Text(
+        PText(
             text = "菜谱图标",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -149,7 +149,7 @@ fun RecipeIconPicker(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text(if (selectedImageBase64 != null) "更换图片" else "上传图片")
+                    PText(if (selectedImageBase64 != null) "更换图片" else "上传图片")
                 }
 
                 // Emoji picker button or clear image button
@@ -164,7 +164,7 @@ fun RecipeIconPicker(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text("清除图片")
+                        PText("清除图片")
                     }
                 } else {
                     OutlinedButton(
@@ -177,7 +177,7 @@ fun RecipeIconPicker(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text("选择图标")
+                        PText("选择图标")
                     }
                 }
             }
@@ -186,7 +186,7 @@ fun RecipeIconPicker(
         // Error message
         errorMessage?.let { error ->
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
+            PText(
                 text = error,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error
@@ -196,7 +196,7 @@ fun RecipeIconPicker(
         // Suggested emojis row
         if (selectedImageBase64 == null) {
             Spacer(modifier = Modifier.height(12.dp))
-            Text(
+            PText(
                 text = "推荐图标",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -253,10 +253,7 @@ private fun IconPreview(
     ) {
         when {
             isLoading -> {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(32.dp),
-                    strokeWidth = 3.dp
-                )
+                PLoading(size = 32.dp)
             }
             imageBase64 != null -> {
                 val bitmap = remember(imageBase64) {
@@ -274,13 +271,13 @@ private fun IconPreview(
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
-                } ?: Text(
+                } ?: PText(
                     text = emoji,
                     style = MaterialTheme.typography.headlineLarge
                 )
             }
             else -> {
-                Text(
+                PText(
                     text = emoji,
                     style = MaterialTheme.typography.headlineLarge
                 )
@@ -319,7 +316,7 @@ private fun EmojiChip(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
         ) {
-            Text(
+            PText(
                 text = emoji,
                 style = MaterialTheme.typography.titleLarge
             )
@@ -339,11 +336,10 @@ private fun EmojiPickerDialog(
   var selectedCategory by useState(FoodEmojis.categories.first())
 
     Dialog(onDismissRequest = onDismiss) {
-        Card(
+        PCard(
             modifier = Modifier
               .fillMaxWidth()
-              .heightIn(max = 500.dp),
-            shape = RoundedCornerShape(16.dp)
+              .heightIn(max = 500.dp)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
@@ -354,7 +350,7 @@ private fun EmojiPickerDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    PText(
                         text = "选择图标",
                         style = MaterialTheme.typography.titleMedium
                     )
@@ -375,7 +371,7 @@ private fun EmojiPickerDialog(
                             selected = category == selectedCategory,
                             onClick = { selectedCategory = category },
                             text = {
-                                Text(
+                                PText(
                                     text = category.name,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
@@ -434,7 +430,7 @@ private fun EmojiGridItem(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
         ) {
-            Text(
+            PText(
                 text = emoji,
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
