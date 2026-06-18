@@ -52,7 +52,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -72,6 +71,8 @@ import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
 
 /**
  * WebDAV 配置页面 - 美化版本
@@ -117,7 +118,6 @@ fun WebDAVConfigScreen(navController: NavController) {
 
   // 主题颜色
   val pageBackground = if (isDark) MaterialTheme.colorScheme.background else Color(0xFFF5F5F5)
-  val cardBackground = if (isDark) MaterialTheme.colorScheme.surface else Color.White
   val inputBackground = if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color(0xFFF8F8F8)
   val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else Color.Black
   val subTextColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
@@ -160,7 +160,6 @@ fun WebDAVConfigScreen(navController: NavController) {
         title = "服务器设置",
         icon = Icons.Default.Cloud,
         iconColor = Color(0xFF2196F3),
-        cardBackground = cardBackground,
         textColor = textColor
       ) {
         // 服务器地址
@@ -313,7 +312,6 @@ fun WebDAVConfigScreen(navController: NavController) {
         title = "数据加密",
         icon = Icons.Default.Security,
         iconColor = Color(0xFF9C27B0),
-        cardBackground = cardBackground,
         textColor = textColor
       ) {
         Row(
@@ -409,7 +407,6 @@ fun WebDAVConfigScreen(navController: NavController) {
         title = "自动同步",
         icon = Icons.Default.Sync,
         iconColor = Color(0xFF4CAF50),
-        cardBackground = cardBackground,
         textColor = textColor
       ) {
         Row(
@@ -534,7 +531,6 @@ fun WebDAVConfigScreen(navController: NavController) {
           title = "危险操作",
           icon = Icons.Default.Delete,
           iconColor = Color(0xFFFF5252),
-          cardBackground = cardBackground,
           textColor = textColor
         ) {
           OutlinedButton(
@@ -626,23 +622,15 @@ private fun SectionCard(
   title: String,
   icon: ImageVector,
   iconColor: Color,
-  cardBackground: Color,
   textColor: Color,
   content: @Composable () -> Unit
 ) {
-  Card(
+  PCard(
     modifier = Modifier
-      .fillMaxWidth()
-      .shadow(
-        elevation = 4.dp,
-        shape = RoundedCornerShape(20.dp),
-        spotColor = Color.Black.copy(alpha = 0.1f)
-      ),
-    shape = RoundedCornerShape(20.dp),
-    colors = CardDefaults.cardColors(containerColor = cardBackground)
+      .fillMaxWidth(),
+    variant = CardVariant.Elevated
   ) {
     Column(
-      modifier = Modifier.padding(20.dp),
       verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
       // Header
