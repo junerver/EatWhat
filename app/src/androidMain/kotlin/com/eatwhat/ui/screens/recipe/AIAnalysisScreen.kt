@@ -10,19 +10,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Close
@@ -34,8 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -58,6 +53,7 @@ import com.eatwhat.data.database.EatWhatDatabase
 import com.eatwhat.data.repository.AIProviderRepository
 import com.eatwhat.domain.model.RecipeAIResult
 import com.eatwhat.domain.model.jsonSchemaString
+import com.eatwhat.ui.components.AppToolbar
 import com.eatwhat.ui.theme.LocalDarkTheme
 import com.eatwhat.ui.theme.PrimaryOrange
 import com.eatwhat.ui.theme.SoftPurple
@@ -230,22 +226,9 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          PText(
-            "AI 菜谱分析",
-            fontWeight = FontWeight.Bold
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { navController.popBackStack() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
-          }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = MaterialTheme.colorScheme.surface
-        ),
-        windowInsets = WindowInsets.statusBars
+      AppToolbar(
+        title = "AI 菜谱分析",
+        onNavigateUp = { navController.popBackStack() }
       )
     },
     containerColor = MaterialTheme.colorScheme.background
