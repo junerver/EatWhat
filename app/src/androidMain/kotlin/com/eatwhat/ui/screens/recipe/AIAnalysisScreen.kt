@@ -28,8 +28,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -73,6 +71,7 @@ import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.container.PContainer
+import xyz.junerver.compose.palette.components.popup.PPopup
 import xyz.junerver.compose.palette.components.radio.PRadio
 import xyz.junerver.compose.palette.components.scaffold.PScaffold
 import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
@@ -92,7 +91,6 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
 
   // 模型选择器状态
   var showModelSelector by _useState(false)
-  val sheetState = rememberModalBottomSheetState()
 
   val (prompt, setPrompt) = useGetState(initialPrompt ?: "")
   val (localError, setLocalError) = _useGetState<String?>(null)
@@ -493,12 +491,12 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
   }
 
   // 模型选择底部弹窗
-  if (showModelSelector) {
-    ModalBottomSheet(
-      onDismissRequest = { showModelSelector = false },
-      sheetState = sheetState,
-      containerColor = MaterialTheme.colorScheme.surface
-    ) {
+  PPopup(
+    visible = showModelSelector,
+    onClose = { showModelSelector = false },
+    containerColor = MaterialTheme.colorScheme.surface,
+    contentPadding = 0.dp
+  ) {
       Column(
         modifier = Modifier
           .fillMaxWidth()
@@ -534,7 +532,6 @@ fun AIAnalysisScreen(navController: NavController, initialPrompt: String? = null
           )
         }
       }
-    }
   }
 }
 
