@@ -8,9 +8,9 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,10 +34,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,7 +56,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -81,6 +79,9 @@ import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.card.CardColors
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -243,7 +244,7 @@ fun HistoryListScreen(
                             onClick = {
                                 navController.navigate("history/${history.id}")
                             },
-                            onLongClick = {
+                            onLockToggle = {
                                 scope.launch {
                                     repository.toggleHistoryLocked(history.id, false)
                                 }
@@ -265,7 +266,7 @@ fun HistoryListScreen(
                                 onClick = {
                                     navController.navigate("history/${history.id}")
                                 },
-                                onLongClick = {
+                                onLockToggle = {
                                     scope.launch {
                                         repository.toggleHistoryLocked(history.id, true)
                                     }
@@ -367,14 +368,13 @@ private fun SwipeToDeleteItem(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun HistoryCard(
     history: HistoryRecord,
     isHighlighted: Boolean = false,
     zebraBackground: Color = Color.White,
     onClick: () -> Unit,
-    onLongClick: () -> Unit
+    onLockToggle: () -> Unit
 ) {
     // 闪烁动画：在2秒内从 1f 到 0f 到 1f 重复
     val infiniteTransition = rememberInfiniteTransition(label = "highlight")
@@ -396,31 +396,27 @@ private fun HistoryCard(
     }
     
     val borderWidth = if (isHighlighted) 3.dp else if (history.isLocked) 2.dp else 0.dp
+    val cardShape = RoundedCornerShape(12.dp)
+    val cardModifier = if (borderWidth > 0.dp) {
+        Modifier
+            .fillMaxWidth()
+            .border(BorderStroke(borderWidth, borderColor), cardShape)
+    } else {
+        Modifier.fillMaxWidth()
+    }
     
-    Card(
-        modifier = Modifier
-          .fillMaxWidth()
-          .shadow(
-            elevation = if (isHighlighted) 8.dp else 2.dp,
-            shape = RoundedCornerShape(16.dp),
-            spotColor = Color.Black.copy(alpha = 0.08f)
-          )
-          .combinedClickable(
-            onClick = onClick,
-            onLongClick = onLongClick
-          ),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = zebraBackground
-        ),
-        border = if (borderWidth > 0.dp) {
-            androidx.compose.foundation.BorderStroke(borderWidth, borderColor)
-        } else null
+    PCard(
+        modifier = cardModifier,
+        variant = CardVariant.Elevated,
+        onClick = onClick,
+        colors = CardColors(
+            containerColor = zebraBackground,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
     ) {
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(16.dp),
+              .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -483,19 +479,28 @@ private fun HistoryCard(
                 )
             }
 
-            // 右侧锁定图标
-            if (history.isLocked) {
+            // 右侧锁定/解锁操作
+            IconButton(
+                onClick = onLockToggle,
+                modifier = Modifier.size(40.dp)
+            ) {
                 Box(
                     modifier = Modifier
                       .size(36.dp)
                       .clip(CircleShape)
-                      .background(SoftPurple.copy(alpha = 0.15f)),
+                      .background(
+                          if (history.isLocked) {
+                              SoftPurple.copy(alpha = 0.15f)
+                          } else {
+                              MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                          }
+                      ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "已锁定",
-                        tint = SoftPurple,
+                        imageVector = if (history.isLocked) Icons.Default.Lock else Icons.Default.LockOpen,
+                        contentDescription = if (history.isLocked) "解除锁定" else "锁定",
+                        tint = if (history.isLocked) SoftPurple else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )
                 }
