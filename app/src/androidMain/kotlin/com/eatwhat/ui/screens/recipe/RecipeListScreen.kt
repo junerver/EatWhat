@@ -39,7 +39,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -68,6 +67,7 @@ import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.floatbutton.FloatButtonDefaults
 import xyz.junerver.compose.palette.components.floatbutton.PFloatButton
 import xyz.junerver.compose.palette.components.segmented.PSegmented
@@ -143,7 +143,7 @@ fun RecipeListScreen(navController: NavController) {
                         if (darkTheme) MaterialTheme.colorScheme.surfaceVariant else InputBackground
                       val iconTint =
                         if (darkTheme) MaterialTheme.colorScheme.onSurfaceVariant else Color.Gray
-                        Surface(
+                        PContainer(
                             modifier = Modifier
                               .fillMaxWidth()
                               .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -203,7 +203,7 @@ fun RecipeListScreen(navController: NavController) {
             }
             
             // 类型选择器 - 卡片式设计
-            Surface(
+            PContainer(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surface
             ) {
