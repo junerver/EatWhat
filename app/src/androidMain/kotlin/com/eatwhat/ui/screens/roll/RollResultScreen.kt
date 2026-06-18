@@ -22,8 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,7 +31,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,7 +39,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -72,6 +68,13 @@ import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.palette.components.card.CardColors
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.tag.PTag
+import xyz.junerver.compose.palette.components.tag.TagColors
+import xyz.junerver.compose.palette.components.tag.TagSize
+import xyz.junerver.compose.palette.components.text.PText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -163,11 +166,11 @@ fun RollResultScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Text(
+                        PText(
                             text = "🎲",
                             fontSize = 64.sp
                         )
-                        Text(
+                        PText(
                             text = "正在为你挑选...",
                             style = MaterialTheme.typography.titleMedium,
                             color = Color.Gray
@@ -187,11 +190,11 @@ fun RollResultScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Text(
+                        PText(
                             text = "😅",
                             fontSize = 64.sp
                         )
-                        Text(
+                        PText(
                           text = errorMessage,
                             style = MaterialTheme.typography.bodyLarge,
                             color = MeatRed
@@ -203,7 +206,7 @@ fun RollResultScreen(
                             ),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("返回添加菜谱")
+                            PText("返回添加菜谱")
                         }
                     }
                 }
@@ -295,7 +298,7 @@ private fun RollResultContent(
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                Text(
+                PText(
                     text = "今日菜单",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
@@ -314,29 +317,26 @@ private fun RollResultContent(
         ) {
             // 标题和摘要
             item {
-                Card(
+                PCard(
                     modifier = Modifier
-                      .fillMaxWidth()
-                      .shadow(
-                        elevation = 4.dp,
-                        shape = RoundedCornerShape(20.dp),
-                        spotColor = Color.Black.copy(alpha = 0.1f)
-                      ),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                      .fillMaxWidth(),
+                    variant = CardVariant.Elevated,
+                    colors = CardColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
                 ) {
                     Column(
                         modifier = Modifier
-                          .fillMaxWidth()
-                          .padding(20.dp),
+                          .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
+                        PText(
                             text = "🎉",
                             fontSize = 40.sp
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
+                        PText(
                             text = "今天就做这些！",
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontWeight = FontWeight.Bold
@@ -344,7 +344,7 @@ private fun RollResultContent(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(
+                        PText(
                             text = buildSummary(config),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -383,7 +383,7 @@ private fun RollResultContent(
                     border = androidx.compose.foundation.BorderStroke(2.dp, PrimaryOrange),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(
+                    PText(
                         text = "🎲 重新Roll",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.SemiBold
@@ -400,7 +400,7 @@ private fun RollResultContent(
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(
+                    PText(
                         text = "✓ 就这些了",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.SemiBold
@@ -419,21 +419,18 @@ private fun DishCard(
     onClick: () -> Unit,
     onReRoll: () -> Unit
 ) {
-    Card(
+    PCard(
         modifier = Modifier
-          .fillMaxWidth()
-          .shadow(
-            elevation = 4.dp,
-            shape = RoundedCornerShape(16.dp),
-            spotColor = Color.Black.copy(alpha = 0.1f)
-          ),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+          .fillMaxWidth(),
+        variant = CardVariant.Elevated,
+        colors = CardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
     ) {
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(16.dp),
+              .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 左侧图标 - 使用菜谱的图片或emoji
@@ -453,7 +450,7 @@ private fun DishCard(
                   .weight(1f)
                   .clickable(onClick = onClick)
             ) {
-                Text(
+                PText(
                     text = recipe.name,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold
@@ -492,7 +489,7 @@ private fun DishCard(
                 modifier = Modifier.size(44.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text(
+                    PText(
                         text = "🎲",
                         fontSize = 22.sp
                     )
@@ -504,18 +501,15 @@ private fun DishCard(
 
 @Composable
 private fun InfoTag(text: String, color: Color) {
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = color.copy(alpha = 0.1f)
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = color,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+    PTag(
+        text = text,
+        size = TagSize.Small,
+        colors = TagColors(
+            containerColor = color.copy(alpha = 0.1f),
+            contentColor = color,
+            borderColor = Color.Transparent
         )
-    }
+    )
 }
 
 private fun buildSummary(config: RollConfig): String {
