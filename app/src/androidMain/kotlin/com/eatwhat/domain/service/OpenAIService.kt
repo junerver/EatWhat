@@ -1,6 +1,6 @@
 package com.eatwhat.domain.service
 
-import com.eatwhat.data.preferences.AIConfig
+import com.eatwhat.domain.model.AIConfig
 import com.eatwhat.domain.model.ConnectionTestResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

@@ -13,7 +13,7 @@ import com.eatwhat.data.database.entities.RecipeEntity
 import com.eatwhat.data.database.entities.RecipeTagCrossRef
 import com.eatwhat.data.database.relations.HistoryWithDetails
 import com.eatwhat.data.database.relations.RecipeWithDetails
-import com.eatwhat.data.preferences.AIConfig
+import com.eatwhat.domain.model.AIConfig
 import com.eatwhat.data.preferences.AIPreferences
 import com.eatwhat.data.sync.AIConfigExport
 import com.eatwhat.data.sync.AIProviderExport

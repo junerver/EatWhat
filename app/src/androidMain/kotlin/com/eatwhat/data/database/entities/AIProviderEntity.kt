@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.eatwhat.data.preferences.AIConfig
+import com.eatwhat.domain.model.AIConfig
 import java.util.UUID
 
 @Entity(

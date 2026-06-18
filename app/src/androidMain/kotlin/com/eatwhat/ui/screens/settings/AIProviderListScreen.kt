@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.eatwhat.data.database.EatWhatDatabase
 import com.eatwhat.data.database.entities.AIProviderEntity
-import com.eatwhat.data.preferences.AIConfig
+import com.eatwhat.domain.model.AIConfig
 import com.eatwhat.data.repository.AIProviderRepository
 import com.eatwhat.domain.model.ProviderTestState
 import com.eatwhat.domain.service.OpenAIService

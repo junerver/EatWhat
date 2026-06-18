@@ -3,17 +3,9 @@ package com.eatwhat.data.preferences
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.eatwhat.domain.model.AIConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-
-/**
- * AI Configuration
- */
-data class AIConfig(
-  val baseUrl: String = "https://api.openai.com/v1",
-  val apiKey: String = "",
-  val model: String = "gpt-3.5-turbo"
-)
 
 /**
  * AI Preferences Management
