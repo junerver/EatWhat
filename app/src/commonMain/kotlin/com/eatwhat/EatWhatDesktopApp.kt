@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eatwhat.domain.model.CookingStep
 import com.eatwhat.domain.model.Difficulty
+import com.eatwhat.domain.model.AIProviderSummary
 import com.eatwhat.domain.model.Ingredient
 import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeType
@@ -32,10 +33,25 @@ import com.eatwhat.domain.model.RollConfig
 import com.eatwhat.domain.model.Unit as IngredientUnit
 import com.eatwhat.domain.usecase.GeneratePrepListUseCase
 import com.eatwhat.domain.usecase.PrepListItem
+import com.eatwhat.data.preferences.ThemeMode
+import com.eatwhat.data.sync.ConnectionResult
+import com.eatwhat.data.sync.SyncMetadata
+import com.eatwhat.data.sync.SyncResult
+import com.eatwhat.data.sync.WebDAVConfig
 import com.eatwhat.ui.screens.cooking.CookingContent
 import com.eatwhat.ui.screens.prep.PrepContent
+import com.eatwhat.ui.screens.recipe.AIAnalysisContent
+import com.eatwhat.ui.screens.recipe.AddRecipeContent
+import com.eatwhat.ui.screens.recipe.IngredientInput
+import com.eatwhat.ui.screens.recipe.StepInput
 import com.eatwhat.ui.screens.roll.RollPlannerContent
 import com.eatwhat.ui.screens.roll.RollResultContent
+import com.eatwhat.ui.screens.settings.SettingsContent
+import com.eatwhat.ui.screens.settings.SettingsDataCount
+import com.eatwhat.ui.screens.settings.SyncContent
+import com.eatwhat.ui.screens.settings.WebDAVConfigContent
+import xyz.junerver.compose.hooks._useGetState
+import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useState
 import xyz.junerver.compose.palette.components.alert.AlertType
 import xyz.junerver.compose.palette.components.alert.PAlert
@@ -63,6 +79,11 @@ private const val VIEW_ROLL_PLANNER = "roll_planner"
 private const val VIEW_ROLL_RESULT = "roll_result"
 private const val VIEW_PREP = "prep"
 private const val VIEW_COOKING = "cooking"
+private const val VIEW_SETTINGS = "settings"
+private const val VIEW_WEBDAV = "webdav"
+private const val VIEW_SYNC = "sync"
+private const val VIEW_AI_ANALYSIS = "ai_analysis"
+private const val VIEW_ADD_RECIPE = "add_recipe"
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -76,6 +97,29 @@ fun EatWhatDesktopApp() {
       val (lastConfig, setLastConfig) = useState(RollConfig(meatCount = 1, vegCount = 1, soupCount = 1))
       val (selectedRecipes, setSelectedRecipes) = useState(sampleRecipes().take(3))
       val (prepItems, setPrepItems) = useState(emptyList<PrepListItem>())
+      val (themeMode, setThemeMode) = useState(ThemeMode.SYSTEM)
+      val (recipeName, setRecipeName) = useState("香菇滑鸡")
+      val (recipeType, setRecipeType) = useState(RecipeType.MEAT)
+      val (recipeIcon, setRecipeIcon) = useState("🍗")
+      val (recipeImage, setRecipeImage) = _useGetState<String?>(null)
+      val (recipeDifficulty, setRecipeDifficulty) = useState(Difficulty.MEDIUM)
+      val (recipeTime, setRecipeTime) = useState("28")
+      val (recipeIngredients, setRecipeIngredients) = useState(
+        listOf(
+          IngredientInput("鸡腿肉", "300", IngredientUnit.G),
+          IngredientInput("香菇", "6", IngredientUnit.PIECE)
+        )
+      )
+      val (recipeSteps, setRecipeSteps) = useState(
+        listOf(
+          StepInput("鸡腿肉切块，用生抽和少量淀粉抓匀。"),
+          StepInput("香菇切片，与鸡肉一起大火翻炒。")
+        )
+      )
+      val (recipeTags, setRecipeTags) = useState(listOf("家常", "下饭"))
+      val (draggedStepIndex, setDraggedStepIndex) = useState(-1)
+      val (draggedStepOffset, setDraggedStepOffset) = useState(0f)
+      val (aiPrompt, setAiPrompt) = useState("根据冰箱里的鸡腿肉和香菇，生成一道适合晚餐的家常菜。")
       val progress = when (mode) {
         "quick" -> 75f
         "balanced" -> 55f
@@ -147,6 +191,118 @@ fun EatWhatDesktopApp() {
           )
         }
 
+        VIEW_SETTINGS -> {
+          SettingsContent(
+            currentThemeMode = themeMode,
+            dataCount = SettingsDataCount(
+              recipeCount = sampleRecipes().size,
+              historyCount = 12,
+              aiProviderCount = sampleProviders().size
+            ),
+            isLoading = false,
+            loadingMessage = "",
+            onNavigateUp = { setActiveView(VIEW_DASHBOARD) },
+            onThemeModeChange = setThemeMode,
+            onExportClick = {},
+            onImportClick = {},
+            onWebDavConfigClick = { setActiveView(VIEW_WEBDAV) },
+            onSyncClick = { setActiveView(VIEW_SYNC) },
+            onAIConfigClick = { setActiveView(VIEW_AI_ANALYSIS) }
+          )
+        }
+
+        VIEW_WEBDAV -> {
+          WebDAVConfigContent(
+            existingConfig = sampleWebDAVConfig(),
+            onNavigateUp = { setActiveView(VIEW_SETTINGS) },
+            onTestConnection = { ConnectionResult.Success },
+            onSaveConfig = { setActiveView(VIEW_SETTINGS) },
+            onClearConfig = { setActiveView(VIEW_SETTINGS) }
+          )
+        }
+
+        VIEW_SYNC -> {
+          SyncContent(
+            config = sampleWebDAVConfig(),
+            formatTimestamp = { "2026-06-19 20:30" },
+            onNavigateUp = { setActiveView(VIEW_SETTINGS) },
+            onConfigureClick = { setActiveView(VIEW_WEBDAV) },
+            onLoadCloudMetadata = { sampleSyncMetadata() },
+            onUploadToCloud = { SyncResult.Success(0L) },
+            onDownloadFromCloud = { SyncResult.Success(0L) },
+            onSyncComplete = { _, _ -> }
+          )
+        }
+
+        VIEW_AI_ANALYSIS -> {
+          AIAnalysisContent(
+            prompt = aiPrompt,
+            selectedImageBase64 = null,
+            activeProvider = sampleProviders().first(),
+            providers = sampleProviders(),
+            isLoading = false,
+            displayError = null,
+            onPromptChange = setAiPrompt,
+            onPickImage = {},
+            onRemoveImage = {},
+            onAnalyze = { setActiveView(VIEW_ADD_RECIPE) },
+            onNavigateUp = { setActiveView(VIEW_DASHBOARD) },
+            onConfigureAI = { setActiveView(VIEW_SETTINGS) },
+            onProviderSelected = {},
+            selectedImagePreview = {}
+          )
+        }
+
+        VIEW_ADD_RECIPE -> {
+          AddRecipeContent(
+            isEditMode = false,
+            name = recipeName,
+            type = recipeType,
+            icon = recipeIcon,
+            imageBase64 = recipeImage.value,
+            difficulty = recipeDifficulty,
+            estimatedTime = recipeTime,
+            ingredients = recipeIngredients,
+            steps = recipeSteps,
+            tags = recipeTags,
+            isSaving = false,
+            draggedStepIndex = draggedStepIndex,
+            draggedStepOffset = draggedStepOffset,
+            onNameChange = setRecipeName,
+            onTypeChange = setRecipeType,
+            onIconChange = setRecipeIcon,
+            onImageChange = { setRecipeImage(it) },
+            onDifficultyChange = setRecipeDifficulty,
+            onEstimatedTimeChange = setRecipeTime,
+            onIngredientsChange = setRecipeIngredients,
+            onStepsChange = setRecipeSteps,
+            onTagsChange = setRecipeTags,
+            onDraggedStepIndexChange = setDraggedStepIndex,
+            onDraggedStepOffsetChange = setDraggedStepOffset,
+            onNavigateUp = { setActiveView(VIEW_DASHBOARD) },
+            onAIAnalysisClick = { setActiveView(VIEW_AI_ANALYSIS) },
+            onSave = { setActiveView(VIEW_DASHBOARD) },
+            recipeIconPicker = { selectedEmoji, _, _, onEmojiSelected, _, _, modifier ->
+              PCard(
+                modifier = modifier,
+                variant = CardVariant.Filled,
+                onClick = { onEmojiSelected(if (selectedEmoji == "🍗") "🍄" else "🍗") }
+              ) {
+                PText(
+                  text = "图标：$selectedEmoji",
+                  style = MaterialTheme.typography.bodyMedium,
+                  color = MaterialTheme.colorScheme.onSurface
+                )
+                PText(
+                  text = "桌面样例使用同一表单内容，图片选择由平台层提供。",
+                  style = MaterialTheme.typography.bodySmall,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+              }
+            }
+          )
+        }
+
         else -> {
           DesktopDashboard(
             mode = mode,
@@ -156,6 +312,9 @@ fun EatWhatDesktopApp() {
             onModeChange = setMode,
             onPantryTagsChange = setPantryTags,
             onStartRoll = { setActiveView(VIEW_ROLL_PLANNER) },
+            onOpenSettings = { setActiveView(VIEW_SETTINGS) },
+            onOpenAIAnalysis = { setActiveView(VIEW_AI_ANALYSIS) },
+            onOpenAddRecipe = { setActiveView(VIEW_ADD_RECIPE) },
             onClear = {
               setLastRollSummary("尚未 Roll")
               setSelectedRecipes(sampleRecipes().take(3))
@@ -178,6 +337,9 @@ private fun DesktopDashboard(
   onModeChange: (String) -> Unit,
   onPantryTagsChange: (List<String>) -> Unit,
   onStartRoll: () -> Unit,
+  onOpenSettings: () -> Unit,
+  onOpenAIAnalysis: () -> Unit,
+  onOpenAddRecipe: () -> Unit,
   onClear: () -> Unit
 ) {
   Box(
@@ -250,6 +412,27 @@ private fun DesktopDashboard(
               size = ButtonSize.MEDIUM,
               type = ButtonType.PLAIN,
               onClick = onClear
+            )
+          }
+          Spacer(modifier = Modifier.height(12.dp))
+          Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            PButton(
+              text = "设置样例",
+              size = ButtonSize.SMALL,
+              type = ButtonType.OUTLINED,
+              onClick = onOpenSettings
+            )
+            PButton(
+              text = "AI 分析",
+              size = ButtonSize.SMALL,
+              type = ButtonType.OUTLINED,
+              onClick = onOpenAIAnalysis
+            )
+            PButton(
+              text = "新增菜谱",
+              size = ButtonSize.SMALL,
+              type = ButtonType.OUTLINED,
+              onClick = onOpenAddRecipe
             )
           }
         }
@@ -418,6 +601,51 @@ private fun replacementRecipeFor(recipe: Recipe, selectedRecipes: List<Recipe>):
         selectedRecipes.none { it.id == candidate.id }
     }
     ?: recipe
+}
+
+private fun sampleProviders(): List<AIProviderSummary> {
+  return listOf(
+    AIProviderSummary(
+      id = 1,
+      name = "Palette Demo OpenAI",
+      baseUrl = "https://api.example.com/v1",
+      model = "gpt-4o-mini",
+      isActive = true
+    ),
+    AIProviderSummary(
+      id = 2,
+      name = "Kitchen Vision",
+      baseUrl = "https://vision.example.com/v1",
+      model = "vision-recipe",
+      isActive = false
+    )
+  )
+}
+
+private fun sampleWebDAVConfig(): WebDAVConfig {
+  return WebDAVConfig(
+    serverUrl = "https://dav.example.com",
+    username = "demo",
+    password = "password",
+    remotePath = "/EatWhat/",
+    encryptionEnabled = true,
+    encryptionPassword = "demo-password",
+    lastSyncTime = 1781872200000L,
+    lastSyncStatus = "SUCCESS",
+    autoSyncEnabled = true,
+    syncIntervalMinutes = 60
+  )
+}
+
+private fun sampleSyncMetadata(): SyncMetadata {
+  return SyncMetadata(
+    syncId = "desktop-sync",
+    deviceId = "desktop-sample",
+    uploadTime = 1781872200000L,
+    dataHash = "sample",
+    appVersion = "desktop",
+    encrypted = true
+  )
 }
 
 private fun sampleRecipes(): List<Recipe> {
