@@ -23,7 +23,6 @@ import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,6 +53,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.progress.PProgress
 import xyz.junerver.compose.palette.components.scaffold.PScaffold
 import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
@@ -100,7 +100,7 @@ fun CookingScreen(
                 )
                 
                 // Progress bar
-                Surface(
+                PContainer(
                     color = Color.White
                 ) {
                     Column(
@@ -149,7 +149,7 @@ fun CookingScreen(
         ) {
             // Recipe selector (if multiple recipes)
             if (recipes.size > 1) {
-                Surface(
+                PContainer(
                     color = Color.White,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -167,7 +167,7 @@ fun CookingScreen(
                             }
                             val isComplete = recipeCompletedSteps == recipeSteps.size && recipeSteps.isNotEmpty()
 
-                            Surface(
+                            PContainer(
                                 onClick = { 
                                     currentRecipeIndex = index
                                     currentStepIndex = 0
@@ -305,7 +305,7 @@ fun CookingScreen(
             }
 
             // Navigation buttons
-            Surface(
+            PContainer(
                 color = Color.White,
                 shadowElevation = 8.dp
             ) {
