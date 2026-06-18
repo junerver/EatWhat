@@ -75,12 +75,13 @@ import com.eatwhat.domain.usecase.ExportDataUseCase
 import com.eatwhat.domain.usecase.ImportDataUseCase
 import com.eatwhat.domain.usecase.ImportPreviewResult
 import com.eatwhat.navigation.Destinations
-import com.eatwhat.ui.theme.LocalDarkTheme
 import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -781,8 +782,6 @@ private fun SettingsCard(
   iconColor: Color,
   content: @Composable ColumnScope.() -> Unit
 ) {
-  val isDark = LocalDarkTheme.current
-
   Column(
     modifier = Modifier.fillMaxWidth(),
     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -816,19 +815,10 @@ private fun SettingsCard(
       )
     }
 
-    // 卡片内容
-    Card(
+    PCard(
       modifier = Modifier
-        .fillMaxWidth()
-        .shadow(
-          elevation = 2.dp,
-          shape = RoundedCornerShape(16.dp),
-          spotColor = Color.Black.copy(alpha = 0.08f)
-        ),
-      shape = RoundedCornerShape(16.dp),
-      colors = CardDefaults.cardColors(
-        containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White
-      )
+        .fillMaxWidth(),
+      variant = CardVariant.Elevated
     ) {
       Column(
         modifier = Modifier.fillMaxWidth()
