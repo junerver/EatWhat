@@ -5,18 +5,20 @@ import com.eatwhat.domain.model.Recipe
 import com.eatwhat.domain.model.RecipeType
 import com.eatwhat.domain.model.RollConfig
 import com.eatwhat.domain.model.RollResult
+import com.eatwhat.domain.usecase.RollRecipeProvider
+import com.eatwhat.domain.usecase.ValidationResult
 
 /**
  * Repository for Roll operations
  * Handles random recipe selection logic
  */
-class RollRepository(private val recipeRepository: RecipeRepository) {
+class RollRepository(private val recipeRepository: RecipeRepository) : RollRecipeProvider {
 
     /**
      * Roll recipes based on configuration
      * Returns randomly selected recipes matching the config
      */
-    suspend fun rollRecipes(config: RollConfig): RollResult {
+    override suspend fun rollRecipes(config: RollConfig): RollResult {
       Log.d("RollRepository", "开始 Roll，配置: $config")
         val effectiveConfig = if (config.autoBalance) config.withAutoBalance() else config
       Log.d("RollRepository", "有效配置: $effectiveConfig")
@@ -127,7 +129,7 @@ class RollRepository(private val recipeRepository: RecipeRepository) {
     /**
      * Validate if there are enough recipes for the config
      */
-    suspend fun validateConfig(config: RollConfig): ValidationResult {
+    override suspend fun validateConfig(config: RollConfig): ValidationResult {
         val effectiveConfig = if (config.autoBalance) config.withAutoBalance() else config
 
         val errors = mutableListOf<String>()
@@ -194,9 +196,4 @@ class RollRepository(private val recipeRepository: RecipeRepository) {
             ValidationResult.Error(errors)
         }
     }
-}
-
-sealed class ValidationResult {
-    object Success : ValidationResult()
-    data class Error(val messages: List<String>) : ValidationResult()
 }
