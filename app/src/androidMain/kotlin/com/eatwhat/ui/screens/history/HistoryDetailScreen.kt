@@ -31,7 +31,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -80,6 +79,7 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.progress.PProgress
@@ -518,7 +518,7 @@ private fun PrepItemCheckRow(
     val textDecoration = if (item.isChecked) TextDecoration.LineThrough else null
     val textOpacity = if (item.isChecked) 0.6f else 1f
 
-    Surface(
+    PContainer(
         shape = RoundedCornerShape(12.dp),
         color = backgroundColor,
         border = androidx.compose.foundation.BorderStroke(1.dp, borderColor),
@@ -532,7 +532,7 @@ private fun PrepItemCheckRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Checkbox
-            Surface(
+            PContainer(
                 shape = CircleShape,
                 color = if (item.isChecked) SoftGreen else uncheckedCheckboxColor,
                 border = if (!item.isChecked) androidx.compose.foundation.BorderStroke(2.dp, uncheckedCheckboxBorderColor) else null,
