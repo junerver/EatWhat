@@ -22,8 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Remove
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +53,8 @@ import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.palette.components.button.ButtonSize
+import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.text.PText
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -515,24 +515,13 @@ private fun SelectorDialog(
               Spacer(modifier = Modifier.height(32.dp))
 
               // Confirm Button
-              Button(
-                onClick = { onSelect(count.value) },
+              PButton(
+                text = "确定",
                 modifier = Modifier
-                  .fillMaxWidth()
-                  .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                  containerColor = PrimaryOrange
-                )
-              ) {
-                PText(
-                  text = "确定",
-                  style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold
-                  ),
-                  fontSize = 18.sp
-                )
-                }
+                  .fillMaxWidth(),
+                size = ButtonSize.LARGE,
+                onClick = { onSelect(count.value) }
+              )
             }
         }
     }
