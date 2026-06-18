@@ -29,15 +29,12 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -50,7 +47,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -59,7 +55,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.eatwhat.domain.usecase.GeneratePrepListUseCase
 import com.eatwhat.domain.usecase.PrepListItem
-import com.eatwhat.ui.theme.DarkBorder
 import com.eatwhat.ui.theme.DarkProgressTrack
 import com.eatwhat.ui.theme.LightBorder
 import com.eatwhat.ui.theme.LocalDarkTheme
@@ -70,7 +65,11 @@ import kotlinx.coroutines.launch
 import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
+import xyz.junerver.compose.palette.components.card.CardColors
+import xyz.junerver.compose.palette.components.card.CardVariant
+import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.progress.PProgress
+import xyz.junerver.compose.palette.components.text.PText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,7 +136,7 @@ fun PrepScreen(
                 Column {
                     TopAppBar(
                         title = {
-                            Text(
+                            PText(
                                 "准备食材",
                                 fontWeight = FontWeight.Bold
                             )
@@ -167,12 +166,12 @@ fun PrepScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
+                            PText(
                                 text = "备菜进度",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Text(
+                            PText(
                                 text = "$checkedCount / $totalCount",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.SemiBold,
@@ -212,21 +211,18 @@ fun PrepScreen(
             ) {
                 // Header card
                 item {
-                    Card(
+                    PCard(
                         modifier = Modifier
-                          .fillMaxWidth()
-                          .shadow(
-                            elevation = 4.dp,
-                            shape = RoundedCornerShape(20.dp),
-                            spotColor = Color.Black.copy(alpha = 0.1f)
-                          ),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                          .fillMaxWidth(),
+                        variant = CardVariant.Elevated,
+                        colors = CardColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
                     ) {
                         Row(
                             modifier = Modifier
-                              .fillMaxWidth()
-                              .padding(20.dp),
+                              .fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
@@ -245,12 +241,12 @@ fun PrepScreen(
                                 )
                             }
                             Column {
-                                Text(
+                                PText(
                                     text = "食材清单",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold
                                 )
-                                Text(
+                                PText(
                                     text = "共${totalCount}种食材",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -315,7 +311,7 @@ fun PrepScreen(
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(
+                    PText(
                         text = if (checkedCount == totalCount) "✓ 开始做菜" else "开始做菜",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -333,33 +329,27 @@ private fun IngredientCheckCard(
     item: PrepListItem,
     onCheckedChange: (Boolean) -> Unit
 ) {
-  val isDark = LocalDarkTheme.current
+    val isDark = LocalDarkTheme.current
     val uncheckedBackground = if (isDark) MaterialTheme.colorScheme.surface else Color.White
-    val uncheckedBorderColor = if (isDark) DarkBorder else LightBorder
     val uncheckedCheckboxColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else UnselectedBackground
 
     val backgroundColor = if (item.isChecked) SoftGreen.copy(alpha = 0.1f) else uncheckedBackground
-    val borderColor = if (item.isChecked) SoftGreen.copy(alpha = 0.3f) else uncheckedBorderColor
     val textDecoration = if (item.isChecked) TextDecoration.LineThrough else null
     val textOpacity = if (item.isChecked) 0.6f else 1f
 
-    Card(
+    PCard(
         modifier = Modifier
-          .fillMaxWidth()
-          .shadow(
-            elevation = if (item.isChecked) 0.dp else 2.dp,
-            shape = RoundedCornerShape(12.dp),
-            spotColor = Color.Black.copy(alpha = 0.05f)
-          ),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        border = androidx.compose.foundation.BorderStroke(1.dp, borderColor),
+          .fillMaxWidth(),
+        variant = if (item.isChecked) CardVariant.Filled else CardVariant.Elevated,
+        colors = CardColors(
+            containerColor = backgroundColor,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
         onClick = { onCheckedChange(!item.isChecked) }
     ) {
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(12.dp),
+              .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -378,7 +368,7 @@ private fun IngredientCheckCard(
                             modifier = Modifier.size(16.dp)
                         )
                     } else {
-                        Text(
+                        PText(
                             "$index",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
@@ -389,7 +379,7 @@ private fun IngredientCheckCard(
             }
 
             // Ingredient name
-            Text(
+            PText(
                 text = item.name,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
@@ -399,7 +389,7 @@ private fun IngredientCheckCard(
             )
 
             // Amount
-            Text(
+            PText(
                 text = "${item.amount}${
                     when (item.unit) {
                         "G" -> "克"
