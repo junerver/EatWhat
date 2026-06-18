@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,14 +29,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.MenuBook
@@ -89,7 +85,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -118,7 +113,6 @@ import com.eatwhat.ui.theme.SoftGreen
 import com.eatwhat.ui.theme.SoupBlue
 import com.eatwhat.ui.theme.StapleOrange
 import com.eatwhat.ui.theme.StepCardBackground
-import com.eatwhat.ui.theme.TagPastelColors
 import com.eatwhat.ui.theme.VegGreen
 import com.eatwhat.ui.theme.WarmYellow
 import kotlinx.coroutines.launch
@@ -129,10 +123,9 @@ import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.hooks.useState
-import xyz.junerver.compose.palette.components.tag.PTag
-import xyz.junerver.compose.palette.components.tag.TagColors
+import xyz.junerver.compose.palette.components.tag.PEditableTagGroup
+import xyz.junerver.compose.palette.components.tag.TagDefaults
 import xyz.junerver.compose.palette.components.tag.TagSize
-import kotlin.random.Random
 import com.eatwhat.domain.model.Unit as IngredientUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -179,18 +172,11 @@ fun AddRecipeScreen(
   val (ingredients, setIngredients) = useGetState(default = listOf(IngredientInput()))
   val (steps, setSteps) = useGetState(default = listOf(StepInput()))
   val (tags, setTags) = useGetState(default = emptyList<String>())
-  val (newTag, setNewTag) = useGetState(default = "")
   val (isSaving, setIsSaving) = useGetState(default = false)
-  val (showTagInput, setShowTagInput) = useGetState(default = false)
 
   // Drag and drop state for steps
   var draggedStepIndex by useState(-1)
   var draggedStepOffset by useState(0f)
-
-  // Generate stable random colors for tags
-  val tagColors = remember(tags.value) {
-    tags.value.associateWith { generatePastelColor() }
-  }
 
   // Load existing recipe if editing
   useEffect(recipeId ?: 0L) {
@@ -492,25 +478,12 @@ fun AddRecipeScreen(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
           )
           Spacer(modifier = Modifier.height(8.dp))
-          TagsFlowRow(
+          PEditableTagGroup(
             tags = tags.value,
-            tagColors = tagColors,
-            showTagInput = showTagInput.value,
-            newTag = newTag.value,
-            onNewTagChange = { setNewTag(it) },
-            onAddTag = {
-              if (newTag.value.isNotBlank() && !tags.value.contains(newTag.value)) {
-                setTags(tags.value + newTag.value)
-                setNewTag("")
-              }
-              setShowTagInput(false)
-            },
-            onRemoveTag = { tag -> setTags(tags.value.filter { it != tag }) },
-            onShowInput = { setShowTagInput(true) },
-            onHideInput = {
-              setShowTagInput(false)
-              setNewTag("")
-            }
+            onTagsChange = { setTags(it) },
+            placeholder = "标签名",
+            size = TagSize.Medium,
+            tagColors = { TagDefaults.pastelColors(it) }
           )
 
           Spacer(modifier = Modifier.height(16.dp))
@@ -1240,159 +1213,6 @@ private fun IngredientUnit.getDisplayName(): String {
     IngredientUnit.PIECE -> "个"
     IngredientUnit.SPOON -> "勺"
     IngredientUnit.MODERATE -> "适量"
-  }
-}
-
-/**
- * Generate a random pastel (light) color for tags
- */
-private fun generatePastelColor(): Color {
-  return TagPastelColors[Random.nextInt(TagPastelColors.size)]
-}
-
-/**
- * FlowRow-like layout for tags with add button
- */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun TagsFlowRow(
-  tags: List<String>,
-  tagColors: Map<String, Color>,
-  showTagInput: Boolean,
-  newTag: String,
-  onNewTagChange: (String) -> Unit,
-  onAddTag: () -> Unit,
-  onRemoveTag: (String) -> Unit,
-  onShowInput: () -> Unit,
-  onHideInput: () -> Unit
-) {
-  val focusManager = LocalFocusManager.current
-
-  FlowRow(
-    modifier = Modifier.fillMaxWidth(),
-    horizontalArrangement = Arrangement.spacedBy(8.dp),
-    verticalArrangement = Arrangement.spacedBy(8.dp)
-  ) {
-    // Existing tags
-    tags.forEach { tag ->
-      val backgroundColor = tagColors[tag] ?: generatePastelColor()
-      val contentColor = Color.Black.copy(alpha = 0.8f)
-
-      PTag(
-        text = tag,
-        size = TagSize.Medium,
-        closable = true,
-        onClose = { onRemoveTag(tag) },
-        colors = TagColors(
-          containerColor = backgroundColor,
-          contentColor = contentColor,
-          borderColor = Color.Transparent
-        )
-      )
-    }
-
-    // Add tag button or input field
-    if (showTagInput) {
-      Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        modifier = Modifier.height(32.dp)
-      ) {
-        Row(
-          modifier = Modifier.padding(start = 12.dp, end = 4.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          BasicTextField(
-            value = newTag,
-            onValueChange = onNewTagChange,
-            modifier = Modifier
-              .width(80.dp)
-              .padding(vertical = 6.dp),
-            textStyle = MaterialTheme.typography.labelMedium.copy(
-              color = MaterialTheme.colorScheme.onSurface
-            ),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(
-              onDone = {
-                onAddTag()
-                focusManager.clearFocus()
-              }
-            ),
-            decorationBox = { innerTextField ->
-              Box(
-                contentAlignment = Alignment.CenterStart
-              ) {
-                if (newTag.isEmpty()) {
-                  Text(
-                    text = "标签名",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                  )
-                }
-                innerTextField()
-              }
-            }
-          )
-          IconButton(
-            onClick = {
-              onAddTag()
-              focusManager.clearFocus()
-            },
-            modifier = Modifier.size(24.dp)
-          ) {
-            Icon(
-              Icons.Default.Check,
-              contentDescription = "确认添加",
-              modifier = Modifier.size(16.dp),
-              tint = PrimaryOrange
-            )
-          }
-          IconButton(
-            onClick = {
-              onHideInput()
-              focusManager.clearFocus()
-            },
-            modifier = Modifier.size(24.dp)
-          ) {
-            Icon(
-              Icons.Default.Close,
-              contentDescription = "取消",
-              modifier = Modifier.size(14.dp),
-              tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          }
-        }
-      }
-    } else {
-      // Add tag button - always at the end
-      Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = PrimaryOrange.copy(alpha = 0.1f),
-        modifier = Modifier
-          .height(32.dp)
-          .clip(RoundedCornerShape(20.dp))
-          .clickable { onShowInput() }
-      ) {
-        Row(
-          modifier = Modifier.padding(horizontal = 12.dp),
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-          Icon(
-            Icons.Default.Add,
-            contentDescription = "添加标签",
-            modifier = Modifier.size(16.dp),
-            tint = PrimaryOrange
-          )
-          Text(
-            text = "添加",
-            style = MaterialTheme.typography.labelMedium,
-            color = PrimaryOrange
-          )
-        }
-      }
-    }
   }
 }
 
