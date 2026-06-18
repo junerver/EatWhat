@@ -129,6 +129,9 @@ import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useEffect
 import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.hooks.useState
+import xyz.junerver.compose.palette.components.tag.PTag
+import xyz.junerver.compose.palette.components.tag.TagColors
+import xyz.junerver.compose.palette.components.tag.TagSize
 import kotlin.random.Random
 import com.eatwhat.domain.model.Unit as IngredientUnit
 
@@ -1275,34 +1278,17 @@ private fun TagsFlowRow(
       val backgroundColor = tagColors[tag] ?: generatePastelColor()
       val contentColor = Color.Black.copy(alpha = 0.8f)
 
-      Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = backgroundColor,
-        modifier = Modifier.height(32.dp)
-      ) {
-        Row(
-          modifier = Modifier.padding(start = 12.dp, end = 4.dp),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Text(
-            text = tag,
-            style = MaterialTheme.typography.labelMedium,
-            color = contentColor,
-            maxLines = 1
-          )
-          IconButton(
-            onClick = { onRemoveTag(tag) },
-            modifier = Modifier.size(24.dp)
-          ) {
-            Icon(
-              Icons.Default.Close,
-              contentDescription = "删除标签",
-              modifier = Modifier.size(14.dp),
-              tint = contentColor
-            )
-          }
-        }
-      }
+      PTag(
+        text = tag,
+        size = TagSize.Medium,
+        closable = true,
+        onClose = { onRemoveTag(tag) },
+        colors = TagColors(
+          containerColor = backgroundColor,
+          contentColor = contentColor,
+          borderColor = Color.Transparent
+        )
+      )
     }
 
     // Add tag button or input field

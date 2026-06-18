@@ -79,6 +79,9 @@ import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useGetState
+import xyz.junerver.compose.palette.components.tag.PTag
+import xyz.junerver.compose.palette.components.tag.TagColors
+import xyz.junerver.compose.palette.components.tag.TagSize
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -581,15 +584,13 @@ private fun StepRow(
 private fun TagChip(text: String) {
     val backgroundColor = TagPastelColors[text.hashCode().mod(TagPastelColors.size).let { if (it < 0) -it else it }]
 
-    Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = backgroundColor
-    ) {
-        Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            style = MaterialTheme.typography.labelMedium,
-            color = Color.Black.copy(alpha = 0.8f)
+    PTag(
+        text = text,
+        size = TagSize.Medium,
+        colors = TagColors(
+            containerColor = backgroundColor,
+            contentColor = Color.Black.copy(alpha = 0.8f),
+            borderColor = Color.Transparent
         )
-    }
+    )
 }
