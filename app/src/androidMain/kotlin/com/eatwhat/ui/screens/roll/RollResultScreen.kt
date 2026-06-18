@@ -24,8 +24,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -70,6 +68,8 @@ import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.loading.PLoading
+import xyz.junerver.compose.palette.components.message.MessageType
+import xyz.junerver.compose.palette.components.message.rememberMessageState
 import xyz.junerver.compose.palette.components.tag.PTag
 import xyz.junerver.compose.palette.components.tag.TagColors
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -89,7 +89,7 @@ fun RollResultScreen(
     val app = context.applicationContext as EatWhatApplication
   val useCase by useCreation { RollRecipesUseCase(app.rollRepository) }
     val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
+    val messageState = rememberMessageState()
 
   var rollResult by _useState<RollResult?>(null)
   val (isLoading, setIsLoading) = useGetState(default = true)
@@ -150,7 +150,6 @@ fun RollResultScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Box(
@@ -244,10 +243,10 @@ fun RollResultScreen(
                                             }
                                         }
                                     } else {
-                                        snackbarHostState.showSnackbar("该类型没有更多菜品了")
+                                        messageState.show("该类型没有更多菜品了", MessageType.Warning)
                                     }
                                 } catch (e: Exception) {
-                                    snackbarHostState.showSnackbar("重新Roll失败: ${e.message}")
+                                    messageState.show("重新Roll失败: ${e.message}", MessageType.Error)
                                 }
                             }
                         },

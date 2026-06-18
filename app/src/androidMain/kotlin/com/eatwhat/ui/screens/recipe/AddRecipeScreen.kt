@@ -46,8 +46,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -120,6 +118,8 @@ import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
+import xyz.junerver.compose.palette.components.message.MessageType
+import xyz.junerver.compose.palette.components.message.rememberMessageState
 import xyz.junerver.compose.palette.components.tag.PEditableTagGroup
 import xyz.junerver.compose.palette.components.tag.TagDefaults
 import xyz.junerver.compose.palette.components.tag.TagSize
@@ -136,7 +136,7 @@ fun AddRecipeScreen(
   val app = context.applicationContext as EatWhatApplication
   val recipeRepository by useCreation { app.recipeRepository }
   val scope = rememberCoroutineScope()
-  val snackbarHostState by useCreation { SnackbarHostState() }
+  val messageState = rememberMessageState()
   val focusManager = LocalFocusManager.current
 
   // Monitor keyboard state with real-time detection
@@ -261,13 +261,9 @@ fun AddRecipeScreen(
         savedStateHandle.remove<String>("ai_result")
 
         // Show success message
-        scope.launch {
-          snackbarHostState.showSnackbar("AI 分析完成，已自动填充表单")
-        }
+        messageState.show("AI 分析完成，已自动填充表单", MessageType.Success)
       } catch (e: Exception) {
-        scope.launch {
-          snackbarHostState.showSnackbar("解析 AI 结果失败: ${e.message}")
-        }
+        messageState.show("解析 AI 结果失败: ${e.message}", MessageType.Error)
       }
     }
   }
@@ -276,23 +272,15 @@ fun AddRecipeScreen(
   val onSave: () -> Unit = {
     // Validation
     if (name.value.isBlank()) {
-      scope.launch {
-        snackbarHostState.showSnackbar("请输入菜名")
-      }
+      messageState.show("请输入菜名", MessageType.Warning)
     } else {
       val time = estimatedTime.value.toIntOrNull()
       if (time == null || time < 1 || time > 300) {
-        scope.launch {
-          snackbarHostState.showSnackbar("预计时间必须在1-300分钟之间")
-        }
+        messageState.show("预计时间必须在1-300分钟之间", MessageType.Warning)
       } else if (ingredients.value.any { it.name.isBlank() }) {
-        scope.launch {
-          snackbarHostState.showSnackbar("请填写所有食材名称")
-        }
+        messageState.show("请填写所有食材名称", MessageType.Warning)
       } else if (steps.value.any { it.description.isBlank() }) {
-        scope.launch {
-          snackbarHostState.showSnackbar("请填写所有步骤描述")
-        }
+        messageState.show("请填写所有步骤描述", MessageType.Warning)
       } else {
         // Save recipe
         scope.launch {
@@ -332,7 +320,7 @@ fun AddRecipeScreen(
 
             navController.navigateUp()
           } catch (e: Exception) {
-            snackbarHostState.showSnackbar("保存失败: ${e.message}")
+            messageState.show("保存失败: ${e.message}", MessageType.Error)
           } finally {
             setIsSaving(false)
           }
@@ -396,7 +384,6 @@ fun AddRecipeScreen(
         }
       )
     },
-    snackbarHost = { SnackbarHost(snackbarHostState) },
     containerColor = MaterialTheme.colorScheme.background
   ) { paddingValues ->
     LazyColumn(
