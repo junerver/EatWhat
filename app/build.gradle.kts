@@ -40,16 +40,21 @@ kotlin {
   applyDefaultHierarchyTemplate()
 
   sourceSets {
-    commonMain.dependencies {
-      implementation(libs.jb.compose.runtime)
-      implementation(libs.jb.compose.foundation)
-      implementation(libs.jb.compose.material3)
-      implementation(libs.jb.compose.ui)
-      implementation(libs.jb.compose.components.resources)
-      implementation(libs.jb.compose.components.ui.tooling.preview)
-      implementation(libs.jb.compose.material.icons.extended)
-      implementation(libs.compose.hooks)
-      implementation(libs.palette)
+    commonMain {
+      kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
+      dependencies {
+        implementation(libs.jb.compose.runtime)
+        implementation(libs.jb.compose.foundation)
+        implementation(libs.jb.compose.material3)
+        implementation(libs.jb.compose.ui)
+        implementation(libs.jb.compose.components.resources)
+        implementation(libs.jb.compose.components.ui.tooling.preview)
+        implementation(libs.jb.compose.material.icons.extended)
+        implementation(libs.compose.hooks)
+        implementation(libs.palette)
+        implementation(libs.kotlinx.serialization.json)
+        implementation(libs.kotlinx.schema.annotations)
+      }
     }
 
     androidMain.dependencies {
@@ -61,8 +66,6 @@ kotlin {
       implementation(libs.androidx.compose.material.icons.extended)
 
       implementation(libs.compose.ai)
-      implementation(libs.kotlinx.schema.annotations)
-
       implementation(libs.androidx.room.runtime)
       implementation(libs.androidx.room.ktx)
 
@@ -191,6 +194,18 @@ compose.desktop {
 }
 
 dependencies {
+  add("kspCommonMainMetadata", "org.jetbrains.kotlinx:kotlinx-schema-ksp:0.0.2")
   add("kspAndroid", libs.androidx.room.compiler)
-  add("kspAndroid", "org.jetbrains.kotlinx:kotlinx-schema-ksp:0.0.2")
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+  if (name != "kspCommonMainKotlinMetadata") {
+    dependsOn("kspCommonMainKotlinMetadata")
+  }
+}
+
+tasks.matching {
+  it.name.startsWith("ksp") && it.name != "kspCommonMainKotlinMetadata"
+}.configureEach {
+  dependsOn("kspCommonMainKotlinMetadata")
 }
