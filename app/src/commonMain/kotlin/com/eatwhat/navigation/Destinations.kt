@@ -1,8 +1,5 @@
 package com.eatwhat.navigation
 
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-
 /**
  * Navigation destinations for the app
  * Sealed class ensures type safety for routes
@@ -68,10 +65,35 @@ sealed class Destinations(val route: String) {
   object AIAnalysis : Destinations("ai/analysis?initialPrompt={initialPrompt}") {
     fun createRoute(initialPrompt: String? = null): String {
       return if (initialPrompt != null) {
-        val encodedPrompt = URLEncoder.encode(initialPrompt, StandardCharsets.UTF_8.toString())
+        val encodedPrompt = encodeRouteComponent(initialPrompt)
         "ai/analysis?initialPrompt=$encodedPrompt"
       } else {
         "ai/analysis"
+      }
+    }
+  }
+}
+
+private fun encodeRouteComponent(value: String): String {
+  val hex = "0123456789ABCDEF"
+  return buildString {
+    value.encodeToByteArray().forEach { byte ->
+      val code = byte.toInt() and 0xFF
+      val char = code.toChar()
+      if (
+        char in 'A'..'Z' ||
+        char in 'a'..'z' ||
+        char in '0'..'9' ||
+        char == '-' ||
+        char == '_' ||
+        char == '.' ||
+        char == '~'
+      ) {
+        append(char)
+      } else {
+        append('%')
+        append(hex[code shr 4])
+        append(hex[code and 0x0F])
       }
     }
   }
