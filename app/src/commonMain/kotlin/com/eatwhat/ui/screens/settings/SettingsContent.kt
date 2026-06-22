@@ -41,13 +41,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eatwhat.data.preferences.ThemeMode
 import com.eatwhat.ui.components.AppToolbar
-import com.eatwhat.ui.components.PaletteDialogCancelAction
 import xyz.junerver.compose.hooks.useState
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.dialog.PDialog
+import xyz.junerver.compose.palette.components.dialog.PDialogCancelAction
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.scaffold.PScaffold
 import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
@@ -449,7 +449,7 @@ private fun ThemeSelectionDialog(
             }
         },
         actions = {
-            PaletteDialogCancelAction(onClick = onDismiss)
+            PDialogCancelAction(onClick = onDismiss)
         }
     )
 }

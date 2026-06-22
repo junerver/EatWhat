@@ -48,9 +48,6 @@ import com.eatwhat.data.sync.SyncMetadata
 import com.eatwhat.data.sync.SyncResult
 import com.eatwhat.data.sync.WebDAVConfig
 import com.eatwhat.ui.components.AppToolbar
-import com.eatwhat.ui.components.PaletteDialogActionDivider
-import com.eatwhat.ui.components.PaletteDialogCancelAction
-import com.eatwhat.ui.components.PaletteDialogConfirmAction
 import com.eatwhat.ui.components.StyledTextField
 import com.eatwhat.ui.theme.LocalDarkTheme
 import com.eatwhat.ui.theme.PrimaryOrange
@@ -66,6 +63,9 @@ import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.dialog.PDialog
+import xyz.junerver.compose.palette.components.dialog.PDialogActionDivider
+import xyz.junerver.compose.palette.components.dialog.PDialogCancelAction
+import xyz.junerver.compose.palette.components.dialog.PDialogConfirmAction
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.scaffold.PScaffold
 import xyz.junerver.compose.palette.components.scaffold.ScaffoldDefaults
@@ -790,18 +790,12 @@ private fun PasswordInputDialog(
             )
         },
         actions = {
-            PaletteDialogCancelAction(onClick = onDismiss)
-            PaletteDialogActionDivider()
-            PaletteDialogConfirmAction(
-                color = if (password.isBlank()) {
-                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-                } else {
-                    null
-                },
+            PDialogCancelAction(onClick = onDismiss)
+            PDialogActionDivider()
+            PDialogConfirmAction(
+                enabled = password.isNotBlank(),
                 onClick = {
-                    if (password.isNotBlank()) {
-                        onConfirm(password)
-                    }
+                    onConfirm(password)
                 }
             )
         }

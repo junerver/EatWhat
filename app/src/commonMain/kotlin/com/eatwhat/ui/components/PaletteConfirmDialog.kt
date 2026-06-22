@@ -16,7 +16,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import xyz.junerver.compose.palette.components.button.ButtonType
+import xyz.junerver.compose.palette.components.dialog.DialogDefaults
 import xyz.junerver.compose.palette.components.dialog.PDialog
+import xyz.junerver.compose.palette.components.dialog.PDialogActionDivider
+import xyz.junerver.compose.palette.components.dialog.PDialogCancelAction
+import xyz.junerver.compose.palette.components.dialog.PDialogConfirmAction
 import xyz.junerver.compose.palette.components.text.PText
 
 @Composable
@@ -71,18 +75,18 @@ fun PaletteConfirmDialog(
             )
         },
         actions = {
-            PaletteDialogCancelAction(
+            PDialogCancelAction(
                 text = cancelText,
                 onClick = onDismiss
             )
-            PaletteDialogActionDivider()
-            PaletteDialogConfirmAction(
+            PDialogActionDivider()
+            PDialogConfirmAction(
                 text = confirmText,
                 color = when (confirmType) {
                     ButtonType.DANGER -> MaterialTheme.colorScheme.error
                     ButtonType.PLAIN -> MaterialTheme.colorScheme.onSurfaceVariant
                     ButtonType.PRIMARY,
-                    ButtonType.OUTLINED -> null
+                    ButtonType.OUTLINED -> DialogDefaults.okColor()
                 },
                 onClick = onConfirm
             )

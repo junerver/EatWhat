@@ -35,7 +35,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eatwhat.domain.model.RollConfig
-import com.eatwhat.ui.components.PaletteDialogConfirmAction
 import com.eatwhat.ui.theme.DarkGradientEnd
 import com.eatwhat.ui.theme.DarkGradientStart
 import com.eatwhat.ui.theme.LocalDarkTheme
@@ -48,6 +47,7 @@ import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.dialog.PDialog
+import xyz.junerver.compose.palette.components.dialog.PDialogConfirmAction
 import xyz.junerver.compose.palette.components.text.PText
 
 @Composable
@@ -503,7 +503,7 @@ private fun SelectorDialog(
             }
       },
       actions = {
-        PaletteDialogConfirmAction(
+        PDialogConfirmAction(
           onClick = { onSelect(count.value) }
         )
       },
