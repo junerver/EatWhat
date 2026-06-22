@@ -4,12 +4,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.eatwhat.R
@@ -18,7 +25,6 @@ import com.eatwhat.ui.theme.PrimaryOrange
 import xyz.junerver.compose.palette.components.bottomnavigation.BottomNavigationDefaults
 import xyz.junerver.compose.palette.components.bottomnavigation.BottomNavigationItem
 import xyz.junerver.compose.palette.components.bottomnavigation.PBottomNavigation
-import xyz.junerver.compose.palette.components.text.PText
 
 /**
  * Bottom navigation bar with 3 tabs
@@ -33,19 +39,19 @@ fun BottomNavBar(navController: NavController) {
     BottomNavItem(
       route = Destinations.Roll.route,
       navigateRoute = Destinations.Roll.route,
-      emoji = "🎲",
+      icon = Icons.Default.Casino,
       label = stringResource(R.string.nav_roll)
     ),
     BottomNavItem(
       route = Destinations.RecipeList.route,
       navigateRoute = Destinations.RecipeList.route,
-      emoji = "📖",
+      icon = Icons.AutoMirrored.Filled.MenuBook,
       label = stringResource(R.string.nav_recipes)
     ),
     BottomNavItem(
       route = Destinations.History.route,
       navigateRoute = Destinations.History.routeWithoutArgs,
-      emoji = "📜",
+      icon = Icons.Default.History,
       label = stringResource(R.string.nav_history)
     )
   )
@@ -55,8 +61,9 @@ fun BottomNavBar(navController: NavController) {
     ?.route
 
   val colors = BottomNavigationDefaults.colors(
+    containerColor = MaterialTheme.colorScheme.surface,
     selectedContentColor = PrimaryOrange,
-    contentColor = Color.Gray,
+    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
     selectedIndicatorColor = PrimaryOrange.copy(alpha = 0.12f)
   )
 
@@ -72,9 +79,10 @@ fun BottomNavBar(navController: NavController) {
           key = item.route,
           label = item.label,
           icon = {
-            PText(
-              text = item.emoji,
-              fontSize = 20.sp,
+            Icon(
+              imageVector = item.icon,
+              contentDescription = null,
+              modifier = Modifier.size(22.dp),
             )
           },
         )
@@ -104,6 +112,6 @@ fun BottomNavBar(navController: NavController) {
 private data class BottomNavItem(
   val route: String,
   val navigateRoute: String,
-  val emoji: String,
+  val icon: ImageVector,
   val label: String
 )

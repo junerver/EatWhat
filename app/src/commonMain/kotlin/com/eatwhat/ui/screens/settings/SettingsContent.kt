@@ -248,7 +248,11 @@ internal fun SettingsCard(
 
         PCard(
             modifier = Modifier.fillMaxWidth(),
-            variant = CardVariant.Elevated
+            variant = CardVariant.Elevated,
+            colors = CardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            )
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 content()
