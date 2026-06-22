@@ -14,6 +14,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import xyz.junerver.compose.palette.core.tokens.PaletteColors
 import xyz.junerver.compose.palette.core.theme.PaletteTheme as PaletteDesignTheme
 
 private val LightColorScheme = lightColorScheme(
@@ -102,8 +103,25 @@ fun EatWhatTheme(
         }
     }
 
+  val paletteColors = (if (darkTheme) PaletteColors.dark() else PaletteColors.light()).derive(
+    primary = colorScheme.primary,
+    onPrimary = colorScheme.onPrimary,
+    border = colorScheme.outlineVariant,
+    surface = colorScheme.surface,
+    onSurface = colorScheme.onSurface,
+    error = colorScheme.error,
+    onError = colorScheme.onError,
+    pageBackground = colorScheme.background,
+    appBackground = colorScheme.background,
+    surfaceElevated = colorScheme.surface,
+    divider = colorScheme.outlineVariant
+  )
+
   CompositionLocalProvider(LocalDarkTheme provides darkTheme) {
-    PaletteDesignTheme(darkTheme = darkTheme) {
+    PaletteDesignTheme(
+      colors = paletteColors,
+      darkTheme = darkTheme
+    ) {
       MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
