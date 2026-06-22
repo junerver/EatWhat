@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eatwhat.domain.model.RollConfig
+import com.eatwhat.ui.components.PaletteDialogConfirmAction
 import com.eatwhat.ui.theme.DarkGradientEnd
 import com.eatwhat.ui.theme.DarkGradientStart
 import com.eatwhat.ui.theme.LocalDarkTheme
@@ -45,8 +46,6 @@ import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
 import xyz.junerver.compose.hooks.invoke
 import xyz.junerver.compose.hooks.useGetState
-import xyz.junerver.compose.palette.components.button.ButtonSize
-import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.text.PText
@@ -424,7 +423,10 @@ private fun SelectorDialog(
                   color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                   modifier = Modifier.size(48.dp)
                 ) {
-                  Box(contentAlignment = Alignment.Center) {
+                  Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                  ) {
                     Icon(
                       imageVector = Icons.Rounded.Remove,
                       contentDescription = "Decrease",
@@ -450,7 +452,10 @@ private fun SelectorDialog(
                   color = PrimaryOrange,
                   modifier = Modifier.size(48.dp)
                 ) {
-                  Box(contentAlignment = Alignment.Center) {
+                  Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                  ) {
                     Icon(
                       imageVector = Icons.Rounded.Add,
                       contentDescription = "Increase",
@@ -479,7 +484,10 @@ private fun SelectorDialog(
                       .weight(1f)
                       .height(48.dp)
                   ) {
-                    Box(contentAlignment = Alignment.Center) {
+                    Box(
+                      modifier = Modifier.fillMaxSize(),
+                      contentAlignment = Alignment.Center
+                    ) {
                       PText(
                         text = "$option",
                         style = MaterialTheme.typography.titleMedium.copy(
@@ -495,12 +503,7 @@ private fun SelectorDialog(
             }
       },
       actions = {
-        PButton(
-          text = "确定",
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-          size = ButtonSize.LARGE,
+        PaletteDialogConfirmAction(
           onClick = { onSelect(count.value) }
         )
       },
@@ -547,17 +550,23 @@ private fun TypeSelectorDialog(
                                     shape = RoundedCornerShape(12.dp),
                                     color = color.copy(alpha = 0.1f),
                                     border = BorderStroke(1.dp, color.copy(alpha = 0.3f)),
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(48.dp)
                                 ) {
-                                    PText(
-                                        text = count.toString(),
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Medium
-                                        ),
-                                        color = color,
-                                        modifier = Modifier.padding(vertical = 14.dp),
-                                        textAlign = TextAlign.Center
-                                    )
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        PText(
+                                            text = count.toString(),
+                                            style = MaterialTheme.typography.titleMedium.copy(
+                                                fontWeight = FontWeight.Medium
+                                            ),
+                                            color = color,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
                                 }
                             }
                             // Fill empty slots

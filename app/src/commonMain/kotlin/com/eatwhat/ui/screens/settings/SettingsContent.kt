@@ -41,10 +41,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.eatwhat.data.preferences.ThemeMode
 import com.eatwhat.ui.components.AppToolbar
+import com.eatwhat.ui.components.PaletteDialogCancelAction
 import xyz.junerver.compose.hooks.useState
-import xyz.junerver.compose.palette.components.button.ButtonSize
-import xyz.junerver.compose.palette.components.button.ButtonType
-import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
@@ -451,13 +449,7 @@ private fun ThemeSelectionDialog(
             }
         },
         actions = {
-            PButton(
-                text = "取消",
-                modifier = Modifier.weight(1f),
-                size = ButtonSize.SMALL,
-                type = ButtonType.PLAIN,
-                onClick = onDismiss
-            )
+            PaletteDialogCancelAction(onClick = onDismiss)
         }
     )
 }

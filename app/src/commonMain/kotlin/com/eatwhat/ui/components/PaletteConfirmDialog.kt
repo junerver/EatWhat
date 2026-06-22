@@ -15,9 +15,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import xyz.junerver.compose.palette.components.button.ButtonSize
 import xyz.junerver.compose.palette.components.button.ButtonType
-import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.dialog.PDialog
 import xyz.junerver.compose.palette.components.text.PText
 
@@ -73,18 +71,19 @@ fun PaletteConfirmDialog(
             )
         },
         actions = {
-            PButton(
+            PaletteDialogCancelAction(
                 text = cancelText,
-                modifier = Modifier.weight(1f),
-                size = ButtonSize.SMALL,
-                type = ButtonType.PLAIN,
                 onClick = onDismiss
             )
-            PButton(
+            PaletteDialogActionDivider()
+            PaletteDialogConfirmAction(
                 text = confirmText,
-                modifier = Modifier.weight(1f),
-                size = ButtonSize.SMALL,
-                type = confirmType,
+                color = when (confirmType) {
+                    ButtonType.DANGER -> MaterialTheme.colorScheme.error
+                    ButtonType.PLAIN -> MaterialTheme.colorScheme.onSurfaceVariant
+                    ButtonType.PRIMARY,
+                    ButtonType.OUTLINED -> null
+                },
                 onClick = onConfirm
             )
         }

@@ -6,6 +6,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -47,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -65,10 +68,7 @@ import xyz.junerver.compose.hooks.useGetState
 import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.floatbutton.FloatButtonDefaults
 import xyz.junerver.compose.palette.components.floatbutton.PFloatButton
-import xyz.junerver.compose.palette.components.segmented.PSegmented
-import xyz.junerver.compose.palette.components.segmented.SegmentedOption
 import xyz.junerver.compose.palette.components.text.PText
-import xyz.junerver.compose.palette.core.spec.ComponentSize
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -202,36 +202,24 @@ fun RecipeListScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surface
             ) {
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    PSegmented(
-                        options = tabs.map { (type, tabInfo) ->
-                            SegmentedOption(
-                                value = tabKey(type),
-                                label = tabInfo.title,
-                                icon = {
-                                    PText(
-                                        text = tabInfo.emoji,
-                                        fontSize = 16.sp
-                                    )
-                                }
-                            )
-                        },
-                        value = tabKey(tabs[pagerState.currentPage].first),
-                        onValueChange = { selectedValue ->
-                            val index = tabs.indexOfFirst { (type, _) -> tabKey(type) == selectedValue }
-                            if (index >= 0) {
+                    tabs.forEachIndexed { index, (_, tabInfo) ->
+                        RecipeTypeFilterChip(
+                            tabInfo = tabInfo,
+                            selected = index == pagerState.currentPage,
+                            onClick = {
                                 scope.launch {
                                     pagerState.animateScrollToPage(index)
                                 }
                             }
-                        },
-                        size = ComponentSize.Small
-                    )
+                        )
+                    }
                 }
             }
             
@@ -288,4 +276,59 @@ private data class TabInfo(
     val emoji: String
 )
 
-private fun tabKey(type: RecipeType?): String = type?.name ?: "ALL"
+@Composable
+private fun RecipeTypeFilterChip(
+    tabInfo: TabInfo,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val containerColor = if (selected) {
+        PrimaryOrange.copy(alpha = 0.12f)
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+    }
+    val contentColor = if (selected) {
+        PrimaryOrange
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val borderColor = if (selected) {
+        PrimaryOrange.copy(alpha = 0.5f)
+    } else {
+        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    }
+
+    PContainer(
+        onClick = onClick,
+        modifier = Modifier
+            .height(44.dp)
+            .widthIn(min = 72.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = containerColor,
+        border = BorderStroke(1.dp, borderColor)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                PText(
+                    text = tabInfo.emoji,
+                    fontSize = 16.sp
+                )
+                PText(
+                    text = tabInfo.title,
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium
+                    ),
+                    color = contentColor
+                )
+            }
+        }
+    }
+}

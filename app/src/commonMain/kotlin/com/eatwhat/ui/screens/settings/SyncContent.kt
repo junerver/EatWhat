@@ -48,6 +48,9 @@ import com.eatwhat.data.sync.SyncMetadata
 import com.eatwhat.data.sync.SyncResult
 import com.eatwhat.data.sync.WebDAVConfig
 import com.eatwhat.ui.components.AppToolbar
+import com.eatwhat.ui.components.PaletteDialogActionDivider
+import com.eatwhat.ui.components.PaletteDialogCancelAction
+import com.eatwhat.ui.components.PaletteDialogConfirmAction
 import com.eatwhat.ui.components.StyledTextField
 import com.eatwhat.ui.theme.LocalDarkTheme
 import com.eatwhat.ui.theme.PrimaryOrange
@@ -787,19 +790,19 @@ private fun PasswordInputDialog(
             )
         },
         actions = {
-            PButton(
-                text = "取消",
-                modifier = Modifier.weight(1f),
-                size = ButtonSize.SMALL,
-                type = ButtonType.PLAIN,
-                onClick = onDismiss
-            )
-            PButton(
-                text = "确定",
-                modifier = Modifier.weight(1f),
-                size = ButtonSize.SMALL,
-                disabled = password.isBlank(),
-                onClick = { onConfirm(password) }
+            PaletteDialogCancelAction(onClick = onDismiss)
+            PaletteDialogActionDivider()
+            PaletteDialogConfirmAction(
+                color = if (password.isBlank()) {
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                } else {
+                    null
+                },
+                onClick = {
+                    if (password.isNotBlank()) {
+                        onConfirm(password)
+                    }
+                }
             )
         }
     )

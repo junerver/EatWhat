@@ -1,7 +1,12 @@
 package com.eatwhat.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
@@ -49,42 +54,51 @@ fun BottomNavBar(navController: NavController) {
     .firstOrNull { item -> currentRoute?.startsWith(item.route.substringBefore("?")) == true }
     ?.route
 
-  PBottomNavigation(
-    items = items.map { item ->
-      BottomNavigationItem(
-        key = item.route,
-        label = item.label,
-        icon = {
-          PText(
-            text = item.emoji,
-            fontSize = 24.sp,
-          )
-        },
-      )
-    },
-    selectedKey = selectedKey,
-    colors = BottomNavigationDefaults.colors(
-      selectedContentColor = PrimaryOrange,
-      contentColor = Color.Gray,
-      selectedIndicatorColor = PrimaryOrange.copy(alpha = 0.12f)
-    ),
-    onItemClick = { selectedRoute ->
-      val item = items.firstOrNull { it.route == selectedRoute } ?: return@PBottomNavigation
-      val isSelected = currentRoute?.startsWith(item.route.substringBefore("?")) == true
-      if (!isSelected) {
-        navController.navigate(item.navigateRoute) {
-          // Pop up to the start destination to avoid building up a large stack
-          popUpTo(Destinations.Roll.route) {
-            saveState = true
+  val colors = BottomNavigationDefaults.colors(
+    selectedContentColor = PrimaryOrange,
+    contentColor = Color.Gray,
+    selectedIndicatorColor = PrimaryOrange.copy(alpha = 0.12f)
+  )
+
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .background(colors.containerColor)
+      .navigationBarsPadding()
+  ) {
+    PBottomNavigation(
+      items = items.map { item ->
+        BottomNavigationItem(
+          key = item.route,
+          label = item.label,
+          icon = {
+            PText(
+              text = item.emoji,
+              fontSize = 24.sp,
+            )
+          },
+        )
+      },
+      selectedKey = selectedKey,
+      colors = colors,
+      onItemClick = { selectedRoute ->
+        val item = items.firstOrNull { it.route == selectedRoute } ?: return@PBottomNavigation
+        val isSelected = currentRoute?.startsWith(item.route.substringBefore("?")) == true
+        if (!isSelected) {
+          navController.navigate(item.navigateRoute) {
+            // Pop up to the start destination to avoid building up a large stack
+            popUpTo(Destinations.Roll.route) {
+              saveState = true
+            }
+            // Avoid multiple copies of the same destination
+            launchSingleTop = true
+            // Restore state when reselecting a previously selected item
+            restoreState = true
           }
-          // Avoid multiple copies of the same destination
-          launchSingleTop = true
-          // Restore state when reselecting a previously selected item
-          restoreState = true
         }
       }
-    }
-  )
+    )
+  }
 }
 
 private data class BottomNavItem(
