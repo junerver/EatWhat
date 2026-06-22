@@ -74,7 +74,7 @@ fun BottomNavBar(navController: NavController) {
           icon = {
             PText(
               text = item.emoji,
-              fontSize = 24.sp,
+              fontSize = 20.sp,
             )
           },
         )
