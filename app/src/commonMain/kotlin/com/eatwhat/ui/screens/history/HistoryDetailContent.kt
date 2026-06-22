@@ -66,14 +66,14 @@ import com.eatwhat.ui.theme.SoftBlue
 import com.eatwhat.ui.theme.SoftGreen
 import com.eatwhat.ui.theme.WarmYellow
 import xyz.junerver.compose.hooks.useState
-import xyz.junerver.compose.palette.components.button.ButtonSize
-import xyz.junerver.compose.palette.components.button.ButtonType
-import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.dialog.PDialog
+import xyz.junerver.compose.palette.components.dialog.PDialogActionDivider
+import xyz.junerver.compose.palette.components.dialog.PDialogCancelAction
+import xyz.junerver.compose.palette.components.dialog.PDialogConfirmAction
 import xyz.junerver.compose.palette.components.loading.PLoading
 import xyz.junerver.compose.palette.components.progress.PProgress
 import xyz.junerver.compose.palette.components.scaffold.PScaffold
@@ -413,17 +413,10 @@ private fun EditNameDialog(
             }
         },
         actions = {
-            PButton(
-                text = "取消",
-                modifier = Modifier.weight(1f),
-                size = ButtonSize.SMALL,
-                type = ButtonType.PLAIN,
-                onClick = onDismiss
-            )
-            PButton(
+            PDialogCancelAction(onClick = onDismiss)
+            PDialogActionDivider()
+            PDialogConfirmAction(
                 text = "保存",
-                modifier = Modifier.weight(1f),
-                size = ButtonSize.SMALL,
                 onClick = onSave
             )
         }
@@ -551,17 +544,16 @@ private fun PrepItemCheckRow(
                 shape = CircleShape,
                 color = if (item.isChecked) SoftGreen else uncheckedCheckboxColor,
                 border = if (!item.isChecked) BorderStroke(2.dp, uncheckedCheckboxBorderColor) else null,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    if (item.isChecked) {
-                        Icon(
-                            Icons.Default.Check,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
+                if (item.isChecked) {
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp)
+                    )
                 }
             }
 

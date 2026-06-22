@@ -336,25 +336,24 @@ fun AIProviderEditContent(
                             enabled = !isTesting.value && baseUrl.value.isNotBlank() && apiKey.value.isNotBlank(),
                             modifier = Modifier
                                 .height(56.dp)
-                                .width(56.dp)
+                                .width(56.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                if (isTesting.value) {
-                                    PLoading(
-                                        size = 24.dp,
-                                        color = PrimaryOrange
-                                    )
-                                } else {
-                                    Icon(
-                                        Icons.Default.Bolt,
-                                        contentDescription = "Test Connection",
-                                        tint = if (baseUrl.value.isNotBlank() && apiKey.value.isNotBlank()) {
-                                            PrimaryOrange
-                                        } else {
-                                            subTextColor
-                                        }
-                                    )
-                                }
+                            if (isTesting.value) {
+                                PLoading(
+                                    size = 24.dp,
+                                    color = PrimaryOrange
+                                )
+                            } else {
+                                Icon(
+                                    Icons.Default.Bolt,
+                                    contentDescription = "Test Connection",
+                                    tint = if (baseUrl.value.isNotBlank() && apiKey.value.isNotBlank()) {
+                                        PrimaryOrange
+                                    } else {
+                                        subTextColor
+                                    }
+                                )
                             }
                         }
                     }

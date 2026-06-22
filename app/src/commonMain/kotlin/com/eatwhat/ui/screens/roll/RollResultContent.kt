@@ -245,14 +245,13 @@ private fun DishCard(
                 onClick = onReRoll,
                 shape = CircleShape,
                 color = PrimaryOrange.copy(alpha = 0.1f),
-                modifier = Modifier.size(44.dp)
+                modifier = Modifier.size(44.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    PText(
-                        text = "🎲",
-                        fontSize = 22.sp
-                    )
-                }
+                PText(
+                    text = "🎲",
+                    fontSize = 22.sp
+                )
             }
         }
     }

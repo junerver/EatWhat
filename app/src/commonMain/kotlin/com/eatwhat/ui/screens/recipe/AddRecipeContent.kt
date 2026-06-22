@@ -529,16 +529,15 @@ private fun AddButton(
     onClick = onClick,
     shape = CircleShape,
     color = color.copy(alpha = 0.1f),
-    modifier = Modifier.size(36.dp)
+    modifier = Modifier.size(36.dp),
+    contentAlignment = Alignment.Center
   ) {
-    Box(contentAlignment = Alignment.Center) {
-      Icon(
-        Icons.Default.Add,
-        contentDescription = "添加",
-        tint = color,
-        modifier = Modifier.size(20.dp)
-      )
-    }
+    Icon(
+      Icons.Default.Add,
+      contentDescription = "添加",
+      tint = color,
+      modifier = Modifier.size(20.dp)
+    )
   }
 }
 
@@ -899,16 +898,15 @@ fun StepConnectorWithInsert(
       onClick = onInsertStep,
       shape = CircleShape,
       color = SoftBlue.copy(alpha = 0.1f),
-      modifier = Modifier.size(32.dp)
+      modifier = Modifier.size(32.dp),
+      contentAlignment = Alignment.Center
     ) {
-      Box(contentAlignment = Alignment.Center) {
-        Icon(
-          Icons.Default.Add,
-          contentDescription = "在此处插入步骤",
-          tint = SoftBlue,
-          modifier = Modifier.size(18.dp)
-        )
-      }
+      Icon(
+        Icons.Default.Add,
+        contentDescription = "在此处插入步骤",
+        tint = SoftBlue,
+        modifier = Modifier.size(18.dp)
+      )
     }
 
     Box(

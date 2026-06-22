@@ -47,14 +47,14 @@ import xyz.junerver.compose.hooks._useState
 import xyz.junerver.compose.hooks.getValue
 import xyz.junerver.compose.hooks.useCreation
 import xyz.junerver.compose.hooks.useState
-import xyz.junerver.compose.palette.components.button.ButtonSize
-import xyz.junerver.compose.palette.components.button.ButtonType
-import xyz.junerver.compose.palette.components.button.PButton
 import xyz.junerver.compose.palette.components.card.CardColors
 import xyz.junerver.compose.palette.components.card.CardVariant
 import xyz.junerver.compose.palette.components.card.PCard
 import xyz.junerver.compose.palette.components.container.PContainer
 import xyz.junerver.compose.palette.components.dialog.PDialog
+import xyz.junerver.compose.palette.components.dialog.PDialogActionDivider
+import xyz.junerver.compose.palette.components.dialog.PDialogCancelAction
+import xyz.junerver.compose.palette.components.dialog.PDialogConfirmAction
 import xyz.junerver.compose.palette.components.radio.PRadio
 import xyz.junerver.compose.palette.components.text.PText
 import java.text.SimpleDateFormat
@@ -366,13 +366,7 @@ private fun ExportOptionsDialog(
       }
     },
     actions = {
-      PButton(
-        text = "取消",
-        modifier = Modifier.weight(1f),
-        size = ButtonSize.SMALL,
-        type = ButtonType.PLAIN,
-        onClick = onDismiss
-      )
+      PDialogCancelAction(onClick = onDismiss)
     }
   )
 }
@@ -508,17 +502,10 @@ private fun ImportPreviewDialog(
       }
     },
     actions = {
-      PButton(
-        text = "取消",
-        modifier = Modifier.weight(1f),
-        size = ButtonSize.SMALL,
-        type = ButtonType.PLAIN,
-        onClick = onDismiss
-      )
-      PButton(
+      PDialogCancelAction(onClick = onDismiss)
+      PDialogActionDivider()
+      PDialogConfirmAction(
         text = "开始导入",
-        modifier = Modifier.weight(1f),
-        size = ButtonSize.SMALL,
         onClick = { onImport(selectedStrategy) }
       )
     }
